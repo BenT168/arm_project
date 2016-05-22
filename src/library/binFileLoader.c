@@ -5,8 +5,8 @@
 #include "arm11.h"
 
 
-void read_ARM(const char *binFile) {
-    file = fopen(binFile, "rb"); //open the file r = read , b = binary
+void read_ARM(FILE *file) {
+    //file = fopen(binFile, "rb"); //open the file r = read , b = binary
 
     if (file != NULL) {
       fseek(file, 0, SEEK_END);
@@ -35,4 +35,5 @@ void read_ARM(const char *binFile) {
     } else {
       perror("Error opening file");
     }
+
 }

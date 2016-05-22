@@ -309,7 +309,8 @@ int main(int argc, char **argv) {
     printf("Please type in a bin file\n");
     return -1;
 
-  read_ARM(argv[0]);
+file = fopen(argv[0], "rb"); //open the file r = read , b = binary
+  read_ARM(*file);
 
   return EXIT_SUCCESS;
   }

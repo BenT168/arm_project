@@ -5,7 +5,7 @@
 
 FILE *file;
 
-void read_ARM(const char *binFile);
+void read_ARM(FILE *file);
 struct ARM_State *arm_Ptr;
 
 #endif
