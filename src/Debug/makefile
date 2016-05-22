@@ -8,12 +8,6 @@ RM := rm -rf
 
 # All of the sources participating in the build are defined here
 -include sources.mk
--include src/subdir.mk
-<<<<<<< HEAD
-=======
--include .metadata/.plugins/org.eclipse.cdt.managedbuilder.core/subdir.mk
--include .metadata/.plugins/org.eclipse.cdt.make.core/subdir.mk
->>>>>>> edcb83e3a1a13d26ce6174906f44fc80646b215c
 -include subdir.mk
 -include objects.mk
 
@@ -29,32 +23,32 @@ endif
 
 # All Target
 <<<<<<< HEAD
-all: ARM_a
+all: ARMProject
 
 # Tool invocations
-ARM_a: $(OBJS) $(USER_OBJS)
+ARMProject: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: Cross GCC Linker'
-	gcc  -o "ARM_a" $(OBJS) $(USER_OBJS) $(LIBS)
+	gcc  -o "ARMProject" $(OBJS) $(USER_OBJS) $(LIBS)
 =======
-all: Arm11_09
+all: ARM
 
 # Tool invocations
-Arm11_09: $(OBJS) $(USER_OBJS)
+ARM: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
-	@echo 'Invoking: Cross GCC Linker'
-	gcc  -o "Arm11_09" $(OBJS) $(USER_OBJS) $(LIBS)
->>>>>>> edcb83e3a1a13d26ce6174906f44fc80646b215c
+	@echo 'Invoking: Cygwin C Linker'
+	gcc  -o "ARM" $(OBJS) $(USER_OBJS) $(LIBS)
+>>>>>>> d92123bcbc824b444712f5cdd0ff06e09b9d2171
 	@echo 'Finished building target: $@'
 	@echo ' '
 
 # Other Targets
 clean:
 <<<<<<< HEAD
-	-$(RM) $(OBJS)$(C_DEPS)$(EXECUTABLES) ARM_a
+	-$(RM) $(OBJS)$(C_DEPS)$(EXECUTABLES) ARMProject
 =======
-	-$(RM) $(OBJS)$(C_DEPS)$(EXECUTABLES) Arm11_09
->>>>>>> edcb83e3a1a13d26ce6174906f44fc80646b215c
+	-$(RM) $(OBJS)$(C_DEPS)$(EXECUTABLES) ARM
+>>>>>>> d92123bcbc824b444712f5cdd0ff06e09b9d2171
 	-@echo ' '
 
 .PHONY: all clean dependents

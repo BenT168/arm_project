@@ -8,27 +8,29 @@
 
 typedef struct DataProcessingInstruct
 {
-    unsigned int Cond     : 4; /* Condition field 4-bits */
-    unsigned int _00      : 2; /* Nullity field 2-bits */
-    unsigned int ImmOp    : 1; /* Immediate Operand field 1-bit */
-    unsigned int Opcode   : 4; /* Operation code 4-bits */
-    unsigned int SetCond  : 1; /* Set condition codes 1-bit */
-    unsigned int Rn       : 4; /* First operand register 4-bits */
-    unsigned int Rd       : 4; /* Destination register 4-bits */
-    unsigned int Operand2 : 12;/* Second Operand 12-bits */
+  unsigned int Operand2 : 12;/* Second Operand 12-bits */
+  unsigned int Rd       : 4; /* Destination register 4-bits */
+  unsigned int Rn       : 4; /* First operand register 4-bits */
+  unsigned int SetCond  : 1; /* Set condition codes 1-bit */
+  unsigned int Opcode   : 4; /* Operation code 4-bits */
+  unsigned int ImmOp    : 1; /* Immediate Operand field 1-bit */
+  unsigned int _00      : 2; /* Nullity field 2-bits */
+  unsigned int Cond     : 4; /* Condition field 4-bits */
 } DataProcessingInstruct;
 
 typedef struct MultiplyInstruct
 {
-    unsigned int Cond 	: 4; /* Condition field 4-bits */
-    unsigned int Acc 	  : 1; /* Accumulate 1-bit */
-    unsigned int SetCond: 1; /* Set Condition codes  1-bit */
-    unsigned int Rd 	  : 4; /* Destination registers 4-bits */
+  //Operand registers 4-bits each
+  unsigned int Rm      : 4;
+  unsigned int _1001   : 3;
+  unsigned int Rs      : 4;
+  unsigned int Rn      : 4;
+  unsigned int Rd 	   : 4; /* Destination registers 4-bits */
+  unsigned int SetCond : 1; /* Set Condition codes  1-bit */
+  unsigned int Acc 	   : 1; /* Accumulate 1-bit */
+  unsigned int _000000 : 6;
+  unsigned int Cond 	 : 4; /* Condition field 4-bits */
 
- //Operand registers 4-bits each
-    unsigned int Rn : 4;
-    unsigned int Rs : 4;
-    unsigned int Rm : 4;
 } MultyplyInstruct;
 
 typedef struct SDTInstruct

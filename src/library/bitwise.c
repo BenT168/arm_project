@@ -1,35 +1,38 @@
 #include <stdint.h>
-#include <stdint.h>
+#include <stdio.h>
 #include "bitwise.h"
 
 /*PrintBits Function */
 void print_bits(int32_t x){
-        int i;
-        uint32_t mask = 1 << 31;
+  int i;
+  uint32_t mask = 1 << 31;
 
-        for(i=0; i<32; ++i) {
-                if((x & mask) == 0){
-                        printf("0");
-                } else {
-                        printf("1");
-                }
-                x = x << 1;
-        }
-        printf("/n");
+  for(i=0; i<32; ++i) {
+    if((x & mask) == 0){
+      printf("0");
+    } else {
+      printf("1");
+    }
+    x = x << 1;
+  }
+  printf("/n");
+
 }
+
 
 /* Get Bits Function */
 int32_t get_bits(int32_t i, int start, int end){
   if(end - start == 31){
     return i;
   }
-    //create a mask that matches the bits between start and end
-    int32_t mask = (((1 << (end - start + 1)) - 1)  >> (31 - end)) << start;
-    //use the & operation to extract the required bits
-    int32_t result = mask & i;
-    return result >> start;
+  //create a mask that matches the bits between start and end
+  int32_t mask = (((1 << (end - start + 1)) - 1)  >> (31 - end)) << start;
+  //use the & operation to extract the required bits
+  int32_t result = mask & i;
+  return result >> start;
 
 }
+
 
 /* Rotate_Right Function */
 int32_t rotate_right(int32_t x, int n){
@@ -50,4 +53,3 @@ int32_t rotate_left(int32_t x, int n){
   }
   return x;
 }
-
