@@ -1,108 +1,38 @@
 #include <stdlib.h>
 <<<<<<< HEAD
 #include <stdio.h>
-//#include <string.h>
 #include <stdint.h>
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#define BIT_SET(x, n)       ((x) |=   1 << (n))
-#define BIT_CLR(x, n)       ((x) &= ~(1 << (n)))
-#define BIT_GET(x, n)    (!!((x) &   (1 << (n))))
-#define BIT_PUT(x, n, b) { if (IS_SET(b)) BIT_SET(x, n); else BIT_CLR(x, n); }
 
-#define IS_SET(x)   (x == 1)
-#define IS_CLEAR(x) (x == 0)
+#include "library/bitwise.h"
 
-#define SIZE_OF_WORD 32
-#define memoryCapacity 65536
-#define numRegisters 17
+//////////////////////////////ARM INSTRUCTION//////////////////////////////////
 
-////for arm instruction////////
+#include "library/arm11.h"
+
+///////////////////////// Structure of Instruction ////////////////////////////
+
+#include "library/instruction.h"
+
+/////////////////////////////// Bin File Loader ///////////////////////////////
+
+#include "library/binFileLoader.h"
+
+////////////////////////////////Registers read and write////////////////////////
+
+#include "library/registerwise.h"
+
 
 
 struct state *arm_ptr;
 #define read_memory(m) (arm_ptr->memory[m])
 
-#define getRegister(r) (arm_ptr->registers[r])
-
-//!!! TODO: Check!!! 15 or PC???////if change change the print reg state bit as well//
-#define increment_PC(i) (getRegister(PC) += (i))
-
 
 //////For Branch /////////
 #define branchOffset 24
 #define branchShift 2
-
-////////////////////////////////////////////////////////////////////////////////
-typedef enum Registers { //Register defs
-  R0, R1, R2, R3, R4,
-  R5, R6, R7, R8, R9,
-  R10, R11, R12, R13,
-  R14, PC, CPSR
-} registers;
-
-typedef enum {
-  eq = 0,
-  ne = 1,
-  ge = 10,
-  lt = 11,
-  gt = 12,
-  le = 13,
-  al = 14,
-} suffix;
-
-typedef struct Pipeline {
-  int32_t fetched;
-  int32_t decoded;
-} Pipeline;
-
-typedef struct state {
-  int8_t memory[memoryCapacity];
-  int32_t registers[numRegisters];
-  struct Pipeline *pipeline;
-} state;
-
-typedef enum CPSR { // CPSR register defs
-   N = 31, /*Negative*/
-   Z = 30, /*zero*/
-   C = 29, /*carried-out bit*/
-   V = 28  /*overflow*/
-} CPSRRegister;
-
-typedef struct multiplyStruct {
-  unsigned int Cond : 4; /*Condition field 4-bits*/
-  unsigned int A : 1; /*Accumulate 1-bit*/
-  unsigned int S : 1; /*Set Condition codes  1-bit*/
-  unsigned int Rd : 4; /* Destination registers 4-bits*/
-
-  //Operand registers 4-bits each
-  unsigned int Rn : 4;
-  unsigned int Rs : 4;
-  unsigned int Rm : 4;
-} multyplyStructure;
-
-typedef struct SDTinstr
-{
-    unsigned int Offset : 12;
-    unsigned int Rd     : 4;
-    unsigned int Rn     : 4;
-    unsigned int L      : 1;
-    unsigned int _00    : 2;
-    unsigned int U      : 1;
-    unsigned int P      : 1;
-    unsigned int I      : 1;
-    unsigned int _01    : 2;
-    unsigned int Cond   : 4;
-} SDTinstr;
-
-typedef struct Branchinstr
-{
-    unsigned int Offset : 24;
-    unsigned int _0     : 1;
-    unsigned int _101   : 3;
-    unsigned int Cond   : 4;
-} Branchinstr;
 
 //////////////////////////////functions/////////////////////////////////////////
 int32_t get_bits(int32_t word, int start, int end){
@@ -114,32 +44,6 @@ int32_t mask = (((1 << (end - start + 1)) - 1)  >> ((SIZE_OF_WORD) - end)) << st
 int32_t result = mask & word;
 return result >> start;
 
-}
-
-void printBits(uint32_t x) {
-  int i;
-  uint32_t mask = 1 << 31;
-
-  for(i = 0; i < 32; ++i) {
-    printf("%i", (x & mask) != 0);
-    x <<= 1;
-    }
-
-  printf("\n");
-}
-
-int32_t rotateRight(int amount, int32_t value){
-  int rotated = value << (32 - amount);
-  int remaining = value >> amount;
-  return rotated + remaining;
-
-}
-
-int immediate_Offset(int bitsValue){
-  uint32_t Imm = get_bits(bitsValue, 0, 7);
-  int rotate_amount = get_bits(bitsValue, 8, 11) * 2;
-
-  return rotateRight(rotate_amount, Imm);
 }
 
 
@@ -165,16 +69,10 @@ Rn += offsetSDT;
   }else{
 Rn -= offsetSDT;
   }
-
-
-
 }
 
 
-int look_CPSR(int i){
-  return get_bits(getRegister(16), i-1, i);
-}
-
+///////Check condiitons ////////////////////////////////////////////////////////
 int checkCond(int32_t word){
   int cond = get_bits(word, 28, 31);
 
@@ -191,6 +89,7 @@ int checkCond(int32_t word){
   return 0;
 }
 
+/*branch */
 
 void branch(int32_t word){
   struct Branchinstr *branchStrc = (Branchinstr *) &word;
@@ -230,7 +129,8 @@ printf("%08x \n", getRegister(i));
 
 }
 
-///////////////////emulator//////////////////////////////////////////////////////
+/*emulator */
+
 void emulator(){
 
   arm_ptr->pipeline->fetched = read_memory(getRegister(15)); //USE PC OR 15?????
@@ -261,10 +161,159 @@ print_register_state();
 }
 
 
-//////////////////////////////Main//////////////////////////////////////////////
+//////////////////////////EMULATE INSTRUCTION//////////////////////////////////////
 
-int main(int argc, char **argv) {
 
+/*data processing */
+
+void data_processing(int32_t word)
+{
+	DataProcessingInstr *inst = (DataProcessingInstr *) &word;
+
+	int ImmOp    = (*inst).immOperad;        // 25
+	int OpCode   = (*inst).OpCode;   // 24-21
+	int SetCond  = (*inst).setcond;
+	int Rn       = (*inst).Rn;
+	int Rd       = (*inst).Rd;
+	int Operand2 = (*inst).Operand2; // 11-0
+
+	int Operand1 = (*arm11).registers[Rn];
+
+	Operand2     = IS_CLEAR(I) ? as_shifted_reg(Operand2, S)
+	           		           : as_immediate_reg(Operand2);
+	int result   = 0;
+
+	// calculate result by opcode
+	switch (OpCode)
+	{
+		case AND :
+		case TST :
+      result = Operand1 & Operand2; break;
+		case EOR :
+		case TEQ :
+      result = Operand1 ^ Operand2; break;
+		case SUB :
+		case CMP :
+      result = Operand1 - Operand2; break;
+		case RSB :
+      result = Operand2 - Operand1; break;
+		case ADD :
+      result = Operand1 + Operand2; break;
+		case ORR :
+      result = Operand1 | Operand2; break;
+		case MOV :
+      result = Operand2; break;
+		default  :
+      result = 0;
+	}
+  	// save results if necessary
+  if(Opcode != TST || Opcode != TEQ || Opcode != CMP) {
+      REG_WRITE(Rd, result);
+  }
+
+
+	if (IS_SET(S)) {
+	// set flags
+  	CPSR_PUT(ZERO, (result == 0));
+  	CPSR_PUT(NEGATIVE, BIT_GET(result, 31));
+  	switch (OpCode)
+  	{
+  		case 2  :
+  		case 3  :
+  		case 10 :
+        CPSR_PUT(CARRY, (result >= 0));
+        break;
+  		case 4  :
+        CPSR_PUT(CARRY, CPSR_GET(OVERFLOW));
+        break;
+      }
+	}
+}
+
+
+/* multiply*/
+
+int32_t convert();
+int32_t addNumbers();
+//Converts number in register
+//if 2's complement then negates and add 1, else return;
+int32_t convert2complement();
+
+
+void multiply(int32_t word) {
+  int CPSR = arm_ptr->registers[CPSR];
+  //int *CPSR = (int *)&CRegs;
+
+  struct multiplyStruct *mStruct = (multiplyStruct *)&word;
+
+  int A  = mStruct->A;
+  int Rm = mStruct->Rm;
+  int Rs = mStruct->Rs;
+  int Rd = mStruct->Rd;
+  int S = mStruct->S;
+
+  int32_t dataRm = convert(REG_READ(Rm));
+  int32_t dataRs = convert(REG_READ(Rs));
+  int32_t mulResult = dataRm * dataRs;
+
+  if(IS_SET(A)) {
+    int Rn = mStruct->Rn;
+    int32_t dataRn = convert(REG_READ(Rn));
+
+    mulResult += dataRn;
+  }
+
+  REG_WRITE(Rd, mulResult);
+
+  if(IS_SET(S)) {
+    int bit31 = get_bits(mulResult, 30, 31); //N is the 31 bit of result
+    int32_t dataCPSR = REG_READ(CPSR);
+    int bitN = get_bits(dataCPSR, 30, 31);
+    int bitZ = get_bits(dataCPSR, 29, 30); 
+    CPSR = bit31;
+    if(mulResult == 0) {
+      CPSR[Z] = 1; //Z is set
+    } else {
+      CPSR[Z] = 0;
+    }
+  }
+}
+
+
+int32_t convert(int32_t reg) {
+  int mask = 1 >> 3;
+  int32_t result = reg;
+  if((mask & (reg >> 3)) == 1) {
+    result = convert2complement(reg);
+  }
+  return result;
+}
+
+int32_t convert2complement(int32_t reg) {
+  int32_t negatedReg = ~reg;
+  return negatedReg + 1;
+}
+
+/////////////////////////MAIN  FUNCTION//////////////////////////////////////
+
+int main(int argc, char **argv)
+{
+    char errorMsg[] = "No arguments in input!\n";
+
+    if(argc == 0)
+    {
+      printf( "%s", errorMsg);
+      printf("Please type in a bin file\n");
+      return -1;
+    } else if(argc > 1) {
+       char errorMsg2[] = "Too many arguments in input!\n";
+       printf("%s", errorMsg2);
+       printf("Please type in a bin file\n");
+       return -1;
+    }
+    readARM(argv[0]);
+
+<<<<<<< HEAD
   printf("Hello\n");
   /*uint32_t i = 33;
   printBits(i);
@@ -609,4 +658,7 @@ int main(int argc, char **argv)
 
     return EXIT_SUCCESS;
 >>>>>>> 70937aca35cabdfe421ae4c46a9cc1fb0adaac25
+=======
+    return EXIT_SUCCESS;
+>>>>>>> cyw115
 }
