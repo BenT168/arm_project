@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include "registerwise.h"
+#include "instruction.h"
 
 ////////////////////////// SHIFTING ////////////////////////////////////////////
 
@@ -8,8 +9,8 @@
 
 int32_t as_immediate_reg(int value)
 {
-	int Imm = bits_get(value, 0, 7);
-	int Rotate = bits_get(value, 8, 11) * 2;
+	int Imm = get_bits(value, 0, 7);
+	int Rotate = get_bits(value, 8, 11) * 2;
 	return rotate_right(Imm, Rotate);
 }
 
@@ -24,12 +25,12 @@ int32_t as_shifted_reg(int32_t value, int8_t S)
   	int Rm       = sreg->Rm;
   	int amount   = sreg->Amount;
   	uint32_t reg = REG_READ(Rm);
-  	int carry    = 0;
+  	int carryAmount    = 0;
 
   	if (IS_SET(Flag))
   	{
-  		int Rs = REG_READ(bits_get(amount, 1, 4));
-  		amount = bits_get(Rs, 0, 8);
+  		int Rs = REG_READ(get_bits(amount, 1, 4));
+  		amount = get_bits(Rs, 0, 8);
   	}
 
   	switch (Type)
@@ -37,22 +38,22 @@ int32_t as_shifted_reg(int32_t value, int8_t S)
   		case LSL : // Arithmetic and logical shift left are equivalent
   		{
   			value = reg << amount;
-  			if (amount != 0) carry = BIT_GET(reg, 31 - amount + 1);
-  			if (IS_SET(S))   CPSR_PUT(CARRY, carry);
+  			if (amount != 0) carryAmount = BIT_GET(reg, 31 - amount + 1);
+  			if (IS_SET(S))   CPSR_PUT(C, carryAmount);
   			break;
   		}
   		case LSR :
   		{
   			value = reg >> amount;
-  			if (amount != 0) carry = BIT_GET(reg, amount - 1);
-  			if (IS_SET(S))   CPSR_PUT(CARRY, carry);
+  			if (amount != 0) carryAmount = BIT_GET(reg, amount - 1);
+  			if (IS_SET(S))   CPSR_PUT(C, carryAmount);
   			break;
   		}
   		case ASR :
   		{
   			value = reg >> amount;
-  			if (amount != 0) carry = BIT_GET(reg, amount - 1);
-  			if (S == 1)      CPSR_PUT(CARRY, carry);
+  			if (amount != 0) carryAmount = BIT_GET(reg, amount - 1);
+  			if (S == 1)      CPSR_PUT(C, carryAmount);
   			int bit = BIT_GET(reg, 31); // TODO move to bits set
   			for (int j = 0; j < amount; j++) BIT_PUT(value, 31 - j, bit);
   			break;
@@ -68,7 +69,8 @@ int32_t as_shifted_reg(int32_t value, int8_t S)
   	return value;
 }
 
+
   int look_CPSR(int i)
 {
-    return get_bits(getRegister(16), i-1, i);
+    return BIT_GET(REG_READ(CPSR), i);
 }

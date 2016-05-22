@@ -1,6 +1,8 @@
 #ifndef _BIT_WISE
 #define _BIT_WISE
 
+#include <stdint.h>
+#include <stdio.h>
 
 void print_bits(int32_t i);
 /*PrintBits Function*/
@@ -22,9 +24,8 @@ FILE *input;
 #define BIT_GET(i, n)    (!!((i) &   (1 << (n))))
 #define BIT_PUT(i, n, b) { if (IS_SET(b)) BIT_SET(i, n); else BIT_CLR(i, n); }
 
-#define IS_SET(x)   (i == 1)
-#define IS_CLEAR(x) (i == 0)
+#define IS_SET(x)   (x == 1)
+#define IS_CLEAR(x) (x == 0)
 
 
 #endif
-

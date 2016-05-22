@@ -1,15 +1,14 @@
 #include <stdlib.h>
-<<<<<<< HEAD
 #include <stdint.h>
 #include <stdio.h>
 
 //////////////////////////////ARM INSTRUCTION//////////////////////////////////
 
-#include <library/arm11.h>
+#include "library/arm11.h"
 
 ///////////////////////// Structure of Instruction ////////////////////////////
 
-#include <library/instruction.h>
+#include "library/instruction.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -28,10 +27,11 @@
 #include "library/registerwise.h"
 
 
+struct ARM_State *arm_Ptr;
 
-struct state *arm_ptr;
-#define read_memory(m) (arm_ptr->memory[m])
-#define write_memory(m, w) (arm_ptr->memory[m] = w)
+//struct state *arm_Ptr;
+#define read_memory(m) (arm_Ptr->memory[m])
+#define write_memory(m, w) (arm_Ptr->memory[m] = w)
 
 //////For Branch /////////
 #define branchOffset 24
@@ -54,15 +54,15 @@ int checkCond(int32_t word){
   int cond = get_bits(word, 28, 31);
 
   switch(cond){
-  case(eq): return look_CPSR(Z); break;
-  case(ne): return !look_CPSR(Z); break;
-  case(ge): return look_CPSR(N) == look_CPSR(V); break;
-  case(lt): return look_CPSR(N) != look_CPSR(V); break;
-  case(gt): return look_CPSR(Z) & (look_CPSR(N) == look_CPSR(V)); break;
-  case(le): return look_CPSR(Z) | (look_CPSR(N) != look_CPSR(V)); break;
-  case(al): return 1; break;
+  case(EQ): return look_CPSR(Z); break;
+  case(NE): return !look_CPSR(Z); break;
+  case(GE): return look_CPSR(N) == look_CPSR(V); break;
+  case(LT): return look_CPSR(N) != look_CPSR(V); break;
+  case(GT): return look_CPSR(Z) & (look_CPSR(N) == look_CPSR(V)); break;
+  case(LE): return look_CPSR(Z) | (look_CPSR(N) != look_CPSR(V)); break;
+  case(AL): return 1; break;
 
-  }
+}
   return 0;
 }
 
@@ -71,12 +71,13 @@ void print_register_state(){
   printf("Registers state: \n");
   printf("General registers: \n");
   //Register 0 - 12 are the general registers
-  for(int i = 0; i <= numRegisters - 4; i++){
-printf("%08x \n", getRegister(i));
+  for(int i = 0; i <= REGISTER_COUNT - 4; i++){
+    int32_t reg = REG_READ(i);
+    printf("0x%08x \n", reg);
   }
 
-  printf("PC: %08x \n", getRegister(15));
-  printf("CPSR: %08x \n", getRegister(16));
+  printf("PC: 0x%08x \n", REG_READ(PC));
+  printf("CPSR: 0x%08x \n", REG_READ(CPSR));
 
 }
 
@@ -84,22 +85,22 @@ printf("%08x \n", getRegister(i));
 
 void emulator(){
 
-  arm_ptr->pipeline->fetched = read_memory(getRegister(15)); //USE PC OR 15?????
+  arm_Ptr->pipeline->fetched = read_memory(REG_READ(PC));
   increment_PC(4);
 
-  int32_t fetched_code = arm_ptr->pipeline->fetched;
+  int32_t fetched_code = arm_Ptr->pipeline->fetched;
 
   while(fetched_code != 0){
   //TODO : NEED A LOOP HERE WHAT I THE CONDITION????
   //for a cycle of pipeline, previously fetched instr is decoded and ancestor ints is executed.
-  arm_ptr->pipeline->decoded = arm_ptr->pipeline->fetched;
-  arm_ptr->pipeline->fetched = read_memory(getRegister(15));
+  arm_Ptr->pipeline->decoded = arm_Ptr->pipeline->fetched;
+  arm_Ptr->pipeline->fetched = read_memory(REG_READ(PC));
   increment_PC(4);
-
 
   int checked_cond = checkCond(fetched_code);
 
   //If the condition matched, we can execute the instr
+  //TODO !!!!!!
     if(checked_cond == 1){
     //decode instru // Has Ben implemented?
     }
@@ -112,7 +113,7 @@ print_register_state();
 }
 
 
-//////////////////////////EMULATE INSTRUCTION//////////////////////////////////////
+//////////////////////////EMULATE INSTRUCTION///////////////////////////////////
 
 
 /*data processing */
@@ -121,16 +122,16 @@ void data_processing(int32_t word)
 {
 	DataProcessingInstr *inst = (DataProcessingInstr *) &word;
 
-	int ImmOp    = (*inst).immOperad;        // 25
-	int OpCode   = (*inst).OpCode;   // 24-21
-	int SetCond  = (*inst).setcond;
-	int Rn       = (*inst).Rn;
-	int Rd       = (*inst).Rd;
-	int Operand2 = (*inst).Operand2; // 11-0
+	int ImmOp    = inst->ImmOp;        // 25
+	int OpCode   = inst->OpCode;   // 24-21
+	int SetCond  = inst->setcond;
+	int Rn       = inst->Rn;
+	int Rd       = inst->Rd;
+	int Operand2 = inst->Operand2; // 11-0
 
-	int Operand1 = (*arm11).registers[Rn];
+	int Operand1 = arm_Ptr->registers[Rn];
 
-	Operand2     = IS_CLEAR(I) ? as_shifted_reg(Operand2, S)
+	Operand2     = IS_CLEAR(ImmOp) ? as_shifted_reg(Operand2, S)
 	           		           : as_immediate_reg(Operand2);
 	int result   = 0;
 
@@ -138,93 +139,48 @@ void data_processing(int32_t word)
 	switch (OpCode)
 	{
 		case AND :
-		case TST :
-      result = Operand1 & Operand2; break;
+		case TST : result = Operand1 & Operand2; break;
 		case EOR :
-		case TEQ :
-      result = Operand1 ^ Operand2; break;
+		case TEQ : result = Operand1 ^ Operand2; break;
 		case SUB :
-		case CMP :
-      result = Operand1 - Operand2; break;
-		case RSB :
-      result = Operand2 - Operand1; break;
-		case ADD :
-      result = Operand1 + Operand2; break;
-		case ORR :
-      result = Operand1 | Operand2; break;
-		case MOV :
-      result = Operand2; break;
-		default  :
-      result = 0;
+		case CMP : result = Operand1 - Operand2; break;
+		case RSB : result = Operand2 - Operand1; break;
+		case ADD : result = Operand1 + Operand2; break;
+		case ORR : result = Operand1 | Operand2; break;
+		case MOV : result = Operand2; break;
+		default  : result = 0;
 	}
   	// save results if necessary
   if(Opcode != TST || Opcode != TEQ || Opcode != CMP) {
-      REG_WRITE(Rd, result);
+    REG_WRITE(Rd, result);
   }
 
 
 	if (IS_SET(S)) {
 	// set flags
-  	CPSR_PUT(ZERO, (result == 0));
-  	CPSR_PUT(NEGATIVE, BIT_GET(result, 31));
+  	CPSR_PUT(Z, (result == 0));
+  	CPSR_PUT(N, BIT_GET(result, 31));
   	switch (OpCode)
   	{
   		case 2  :
   		case 3  :
   		case 10 :
-        CPSR_PUT(CARRY, (result >= 0));
+        CPSR_PUT(C, (result >= 0));
         break;
   		case 4  :
-        CPSR_PUT(CARRY, CPSR_GET(OVERFLOW));
+        CPSR_PUT(C, CPSR_GET(V));
         break;
       }
 	}
 }
 
 
-/* multiply*/
+/* multiply */
 
-int32_t convert();
-int32_t addNumbers();
 //Converts number in register
 //if 2's complement then negates and add 1, else return;
+int32_t convert();
 int32_t convert2complement();
-
-
-void multiply(int32_t word) {
-  int CPSR = arm_ptr->registers[CPSR];
-  struct multiplyStruct *mStruct = (multiplyStruct *)&word;
-  struct CPSR_STRUCT *cpsrStruct;
-
-  int A  = mStruct->A;
-  int Rm = mStruct->Rm;
-  int Rs = mStruct->Rs;
-  int Rd = mStruct->Rd;
-  int S = mStruct->S;
-
-  int32_t dataRm = convert(REG_READ(Rm));
-  int32_t dataRs = convert(REG_READ(Rs));
-  int32_t mulResult = dataRm * dataRs;
-
-  if(IS_SET(A)) {
-    int Rn = mStruct->Rn;
-    int32_t dataRn = convert(REG_READ(Rn));
-    mulResult += dataRn;
-  }
-
-  REG_WRITE(Rd, mulResult);
-
-  if(IS_SET(S)) {
-    int bit31 = get_bits(mulResult, 30, 31); //N is the 31 bit of result
-    cpsrStruct->bitN = bit31;
-    if(mulResult == 0) {
-    cpsrStruct->bitZ = 1; //Z is set
-    } else {
-      cpsrStruct->bitZ = 0;
-    }
-  }
-}
-
 
 int32_t convert(int32_t reg) {
   int mask = 1 >> 3;
@@ -240,6 +196,42 @@ int32_t convert2complement(int32_t reg) {
   return negatedReg + 1;
 }
 
+void multiply(int32_t word) {
+  int CPSR = arm_Ptr->registers[CPSR];
+  struct multiplyStruct *mStruct = (multiplyStruct *) &word;
+  struct CPSR_STRUCT *cpsrStruct;
+
+  int A    = mStruct->Acc;
+  int Regm = mStruct->Rm;
+  int Regs = mStruct->Rs;
+  int Regd = mStruct->Rd;
+  int S    = mStruct->SetCond;
+
+  int32_t dataRm = convert(REG_READ(Regm));
+  int32_t dataRs = convert(REG_READ(Regs));
+  int32_t mulResult = dataRm * dataRs;
+
+  if(IS_SET(A)) {
+    int Regn = mStruct->Rn;
+    int32_t dataRn = convert(REG_READ(Regn));
+    mulResult += dataRn;
+  }
+
+  REG_WRITE(Regd, mulResult);
+
+  if(IS_SET(S)) {
+    int bit31 = get_bits(mulResult, 30, 31); //N is the 31 bit of result
+    cpsrStruct->bitN = bit31;
+    if(mulResult == 0) {
+    cpsrStruct->bitZ = 1; //Z is set
+    } else {
+      cpsrStruct->bitZ = 0;
+    }
+  }
+}
+
+
+
 
 /*Single data transfer */
 
@@ -251,10 +243,7 @@ void singleDataTransfer(int32_t word) {
 	int32_t dataOffset = instr->Offset;
 	int32_t dataRd     = instr->Rd;
 
-	//Check if I is set
-  dataOffset = IS_SET(instr->I)? as_shifted_reg(dataOffset, 1)
-                               : as_immediate_reg(dataOffset);
-
+	//Check if I is setbranchOffset
   //Pre-indexing
 	if (IS_SET(instr->P)) {
     dataRn += (IS_SET(instr->U)? dataOffset : -dataOffset);
@@ -277,15 +266,10 @@ void singleDataTransfer(int32_t word) {
 
 		instr->Rn = dataRn;
 	}
-
-  /*
-  		if (dataRn < 0 || dataRn >= MEMORY_CAPACITY) {
-  			printf("The address is out of boundary");
-  			return;
-  		}
-  */
 }
 
+  /*
+  		if (dataRn < 0 || dataRn >= MEMObranchShift
 /*branch */
 
 void branch(int32_t word){
@@ -300,7 +284,7 @@ void branch(int32_t word){
   int32_t offsetNewb = offsetb << branchShift;
 
   //signed bits extended to 32 bits
-  int signed_bits = (offsetNewb >> (branchOffset - 1)) << (branchOffset - 1);
+  int32_t signed_bits = (offsetNewb >> (branchOffset - 1)) << (SIZE_OF_WORD - 1);
 
   //add the signed bits to PC
   increment_PC(signed_bits);
@@ -312,23 +296,21 @@ void branch(int32_t word){
 }
 
 
+
 /////////////////////////MAIN  FUNCTION//////////////////////////////////////
+int main(int argc, char **argv) {
+  //int argc mumber of chars
 
-int main(int argc, char **argv)
-{
-    char errorMsg[] = "No arguments in input!\n";
+ char errorMsg[] = "No arguments in input!\n";
 
-    if(argc == 0)
-    {
-      printf( "%s", errorMsg);
-      printf("Please type in a bin file\n");
-      return -1;
-    } else if(argc > 1) {
-       char errorMsg2[] = "Too many arguments in input!\n";
-       printf("%s", errorMsg2);
-       printf("Please type in a bin file\n");
-       return -1;
-    }
-    readARM(argv[0]);
+  if(argc < 6) {
+    // not in form of .bin '.','b','i','n','/0';
+    printf( "%s", errorMsg);
+    printf("Please type in a bin file\n");
+    return -1;
 
-    return EXIT_SUCCESS;
+  read_ARM(argv[0]);
+
+  return EXIT_SUCCESS;
+  }
+}
