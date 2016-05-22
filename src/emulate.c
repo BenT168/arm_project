@@ -234,34 +234,43 @@ void data_processing(int32_t word)
 
 int32_t convert();
 int32_t addNumbers();
+//Converts number in register
+//if 2's complement then negates and add 1, else return;
+int32_t convert2complement();
 
-int CRegs[32];
-int *CPSR = (int *)&CRegs;
 
-void multiply(int32_t word)
-{
-    struct multiplyStruct *mStruct = (struct multiplyStruct *)&word;
-    mStruct->A  = get_bits(word, 20, 21); // Accumulate is bit-21
+void multiply(int32_t word) {
+  int CPSR = arm_ptr->registers[CPSR];
+  //int *CPSR = (int *)&CRegs;
 
-    mStruct->Rm = get_bits(word,0,3); // Rm is bit-0 to bit-3
-    int32_t newRm = convert(mStruct->Rm);
-    mStruct->Rs = get_bits(word,8, 11); //Rs is bit-8 to bit-11
-    int32_t newRs = convert(mStruct->Rs);
-    mStruct->Rd = get_bits(word, 16, 19); // Rd is bit-16 to bit-19
+  struct multiplyStruct *mStruct = (multiplyStruct *)&word;
 
-    mStruct->Rd = newRs & newRm;
+  int A  = mStruct->A;
+  int Rm = mStruct->Rm;
+  int Rs = mStruct->Rs;
+  int Rd = mStruct->Rd;
+  int S = mStruct->S;
 
-    if(IS_SET(mStruct->A)) {
-      mStruct->Rn = get_bits(word, 12, 15); //Rn is bit-12 to bit-15
-      int32_t newRn = convert(mStruct->Rn);
-      int32_t mul = mStruct->Rd;
-      mStruct->Rd = addNumbers(mul, newRn);
-    }
+  int32_t dataRm = convert(REG_READ(Rm));
+  int32_t dataRs = convert(REG_READ(Rs));
+  int32_t mulResult = dataRm * dataRs;
 
-    if(IS_SET(mStruct->S)) {
-    int bit31 = get_bits(mStruct->Rd, 30, 31); //N is the 31 bit of result
-    CPSR[N] = bit31;
-    if(mStruct->Rd == 0) {
+  if(IS_SET(A)) {
+    int Rn = mStruct->Rn;
+    int32_t dataRn = convert(REG_READ(Rn));
+
+    mulResult += dataRn;
+  }
+
+  REG_WRITE(Rd, mulResult);
+
+  if(IS_SET(S)) {
+    int bit31 = get_bits(mulResult, 30, 31); //N is the 31 bit of result
+    int32_t dataCPSR = REG_READ(CPSR);
+    int bitN = get_bits(dataCPSR, 30, 31);
+    int bitZ = get_bits(dataCPSR, 29, 30); 
+    CPSR = bit31;
+    if(mulResult == 0) {
       CPSR[Z] = 1; //Z is set
     } else {
       CPSR[Z] = 0;
@@ -270,9 +279,6 @@ void multiply(int32_t word)
 }
 
 
-int32_t convert2complement();
-//Converts number in register
-//if 2's complement then negates and add 1, else return;
 int32_t convert(int32_t reg) {
   int mask = 1 >> 3;
   int32_t result = reg;
@@ -285,18 +291,6 @@ int32_t convert(int32_t reg) {
 int32_t convert2complement(int32_t reg) {
   int32_t negatedReg = ~reg;
   return negatedReg + 1;
-}
-
-int32_t addNumbers(int32_t reg1, int32_t reg2) {
-  int32_t carry = reg1 & reg2;
-  int32_t result = reg1 ^ reg2;
-
-  while(carry != 0) {
-    int32_t shift = carry << 1;
-    carry = result & shift;
-    result ^= shift;
-  }
-  return result;
 }
 
 /////////////////////////MAIN  FUNCTION//////////////////////////////////////
