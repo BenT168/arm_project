@@ -1,0 +1,1 @@
+assemble.d: ../assemble.c
