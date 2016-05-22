@@ -1,5 +1,9 @@
 #include <stdint.h>
+<<<<<<< HEAD
 #include <stdint.h>
+=======
+#include <stdio.h>
+>>>>>>> cyw115
 #include "bitwise.h"
 
 /*PrintBits Function */
@@ -31,6 +35,10 @@ int32_t get_bits(int32_t i, int start, int end){
 
 }
 
+void set_bits(int32_t i, int start, int end) {
+  
+}
+
 /* Rotate_Right Function */
 int32_t rotate_right(int32_t x, int n){
   for (int i = 0; i < n; i++) {
@@ -50,4 +58,7 @@ int32_t rotate_left(int32_t x, int n){
   }
   return x;
 }
+<<<<<<< HEAD
 
+=======
+>>>>>>> cyw115
