@@ -18,11 +18,11 @@ typedef struct DataProcessingInstruct
     unsigned int Operand2 : 12;/* Second Operand 12-bits */
 } DataProcessingInstruct;
 
-typedef struct MultiplyInstruct 
+typedef struct MultiplyInstruct
 {
-    unsigned int Cond 	  : 4; /* Condition field 4-bits */
+    unsigned int Cond 	: 4; /* Condition field 4-bits */
     unsigned int Acc 	  : 1; /* Accumulate 1-bit */
-    unsigned int SetCond  : 1; /* Set Condition codes  1-bit */
+    unsigned int SetCond: 1; /* Set Condition codes  1-bit */
     unsigned int Rd 	  : 4; /* Destination registers 4-bits */
 
  //Operand registers 4-bits each
@@ -30,6 +30,28 @@ typedef struct MultiplyInstruct
     unsigned int Rs : 4;
     unsigned int Rm : 4;
 } MultyplyInstruct;
+
+typedef struct SDTInstruct
+{
+    unsigned int Offset : 12;
+    unsigned int Rd     : 4;
+    unsigned int Rn     : 4;
+    unsigned int L      : 1;
+    unsigned int _00    : 2;
+    unsigned int U      : 1;
+    unsigned int P      : 1;
+    unsigned int I      : 1;
+    unsigned int _01    : 2;
+    unsigned int Cond   : 4;
+} SDTInstruct;
+
+typedef struct BranchInstruct
+{
+    unsigned int Offset : 24;
+    unsigned int _0     : 1;
+    unsigned int _101   : 3;
+    unsigned int Cond   : 4;
+} BranchInstruct;
 
 ///////////////////////////// Types of Shift /////////////////////////////////
 
@@ -74,7 +96,7 @@ typedef enum Opcode
     MOV = 13
 } Opcode;
 
-typedef enum ShiftType 
+typedef enum ShiftType
 {
     LSL = 0, /* logical left */
     LSR = 1, /* logical right */
