@@ -17,6 +17,10 @@
 #include "library/bitwise.h"
 #include "library/registerwise.h"
 
+#include "library/bitwise.c"
+#include "library/registerwise.c"
+
+
 /* Memory Read/Write */
 #define MEMORY_READ(m)     (arm_Ptr->memory[m])
 #define MEMORY_WRITE(m, b) (arm_Ptr->memory[m] = b)
@@ -24,30 +28,30 @@
 
 ///////////////////////////// FUNCTION PROTOTYPE //////////////////////////////
 
-void read_ARM(const char *); 
- 
-void emulator(void); 
-int  check_cond(int32_t); 
+void read_ARM(const char *);
+
+void emulator(void);
+int  check_cond(int32_t);
 void decode_instr(int32_t);
 void decode_checker(int32_t);
-void print_register_state(void); 
+void print_register_state(void);
 
-void data_processing(int32_t); 
+void data_processing(int32_t);
 int32_t convert();
 int32_t convert2complement();
 void multiply(int32_t);
-void single_data_transfer(int32_t); 
-void branch(int32_t); 
+void single_data_transfer(int32_t);
+void branch(int32_t);
 
 ////////////////////////// BINARY FILE LOADER ////////////////////////////////
 
-
-ARM_State *arm_Ptr = NULL;
 
 void read_ARM(const char *filename)
 {
     FILE *file = fopen(filename, "rb");
     //file = fopen(binFile, "rb"); //open the file r = read , b = binary
+
+    int size_instruct = 4; /* 32 bits = 4 bytes */
 
     if (file != NULL)
     {
@@ -56,7 +60,7 @@ void read_ARM(const char *filename)
         fseek(file, 0, SEEK_SET); //go back to start
 
         //Allocate memory
-        arm_Ptr =  alloc(1, size+1);
+        arm_Ptr =  calloc(1, size+1);
         if(!arm_Ptr)
         {
             char errorMsg[] = "Memory Error!";
@@ -65,9 +69,10 @@ void read_ARM(const char *filename)
             return;
         }
 
+        int num_instruct = size / size_instruct;
         //Read instructions into ARM Memory
         // for(int i = 0; i < MEMORY_CAPACITY; i++) {
-        size_t newLen = fread(arm_Ptr->memory, size, file);
+        size_t newLen = fread(arm_Ptr->memory, size_instruct, num_instruct, file);
         if (newLen == 0)
         {
             fputs("Error reading file", stderr);
@@ -84,7 +89,7 @@ void read_ARM(const char *filename)
 
 /* emulator */
 void emulator()
-{   
+{
     REG_WRITE(PC, 0);
     arm_Ptr->pipeline->fetched = MEMORY_READ(REG_READ(PC));
     INC_PC(4);
@@ -106,7 +111,7 @@ void emulator()
         if(cond_check == 1)
             decode_instr(arm_Ptr->pipeline->decoded);
 
-  
+
 
   //the emulator should terminate when it executes an all-0 instr
   //Upon termination, output the state of all the registers
@@ -117,63 +122,39 @@ void emulator()
 /*decode instruction */
 void decode_instr(int32_t word)
 {
-    int code = bits_get(word, 26, 27);
-    switch (code)
-    {
-	case 1 : 
-	    single_data_transfer(word); 
-            break;
-	case 2 : 
-            branch(word);               
-            break;
-	case 0 :
-	    decode_checker(word);
-	    break;
-	default :
-            break;
+  int code = get_bits(word, 26, 27);
+  switch (code) {
+	  case 1: single_data_transfer(word); break;
+	  case 2: branch(word); break;
+	  case 0: decode_checker(word); break;
+	  default: break;
 	}
 }
 
 /* helper function for decode_instr */
 void decode_checker(int32_t word)
 {
-	if (IS_SET(BIT_GET(word, 25) || IS_CLEAR(BIT_GET(word, 4))))    
+	if (IS_SET(BIT_GET(word, 25) || IS_CLEAR(BIT_GET(word, 4))))
             data_processing(word);
-	else    
-           (IS_SET(BIT_GET(word, 7))) ? multiply(word) : data_processing(word);        
-}     
+	else
+           (IS_SET(BIT_GET(word, 7))) ? multiply(word) : data_processing(word);
+}
 
 /* Check condiitons */
 int check_cond(int32_t word)
 {
-    int cond = get_bits(word, 28, 31);
+  int cond = get_bits(word, 28, 31);
 
-    switch(cond){
- 	 case(EQ): 
-		return CPSR_GET(Z); 
-		break;
-	 case(NE): 
-		return !CPSR_GET(Z); 
-		break;
- 	 case(GE): 
-		return CPSR_GET(N) == CPSR_GET(V); 
-		break;
- 	 case(LT): 
-		return CPSR_GET(N) != CPSR_GET(V); 
-		break;
- 	 case(GT): 
-		return CPSR_GET(Z) & (CPSR_GET(N) == CPSR_GET(V)); 
-		break;
-  	 case(LE): 
-		return CPSR_GET(Z) | (CPSR_GET(N) != CPSR_GET(V)); 
-		break;
-  	 case(AL): 
-		return 1; 
-		break;
-	 default;
-		return 0;
-
-    }
+  switch(cond){
+ 	  case(EQ): return CPSR_GET(Z); break;
+	  case(NE): return !CPSR_GET(Z); break;
+ 	  case(GE): return CPSR_GET(N) == CPSR_GET(V); break;
+ 	  case(LT): return CPSR_GET(N) != CPSR_GET(V); break;
+ 	  case(GT): return CPSR_GET(Z) & (CPSR_GET(N) == CPSR_GET(V)); break;
+    case(LE): return CPSR_GET(Z) | (CPSR_GET(N) != CPSR_GET(V)); break;
+    case(AL): return 1; break;
+	  default: return 0;
+  }
 }
 
 /* Print Register State (upon termination) */
@@ -190,7 +171,7 @@ void print_register_state()
     printf("PC: (0x%08x)\n", REG_READ(PC));
     printf("CPSR: (0x%08x)\n", REG_READ(CPSR));
 }
-  
+
 
 //////////////////////////EMULATE INSTRUCTION///////////////////////////////////
 
@@ -199,10 +180,10 @@ void print_register_state()
 
 void data_processing(int32_t word)
 {
-	DataProcessingInstr *DPInst = (DataProcessingInstr *) &word;
+	DataProcessingInstruct *DPInst = (DataProcessingInstruct *) &word;
 
 	int ImmOp    = DPInst->ImmOp;        // 25
-	int OpCode   = DPInst->OpCode;   // 24-21
+	int OpCode   = DPInst->Opcode;   // 24-21
 	int SetCond  = DPInst->SetCond;
 	int Rn       = DPInst->Rn;
 	int Rd       = DPInst->Rd;
@@ -218,43 +199,43 @@ void data_processing(int32_t word)
 	switch (OpCode)
 	{
 		case AND :
-		case TST : 
-                    result = Operand1 & Operand2; 
+		case TST :
+                    result = Operand1 & Operand2;
                     break;
 		case EOR :
-		case TEQ : 
-                    result = Operand1 ^ Operand2; 
+		case TEQ :
+                    result = Operand1 ^ Operand2;
                     break;
 		case SUB :
-		case CMP : 
-                    result = Operand1 - Operand2; 
+		case CMP :
+                    result = Operand1 - Operand2;
                     break;
-		case RSB : 
-                    result = Operand2 - Operand1; 
+		case RSB :
+                    result = Operand2 - Operand1;
                     break;
-		case ADD : 
-                    result = Operand1 + Operand2; 
+		case ADD :
+                    result = Operand1 + Operand2;
                     break;
-		case ORR : 
-                    result = Operand1 | Operand2; 
+		case ORR :
+                    result = Operand1 | Operand2;
                     break;
-		case MOV : 
-                    result = Operand2; 
+		case MOV :
+                    result = Operand2;
                     break;
-		default  : 
+		default  :
                     result = 0;
 	}
   	// save results if necessary
-	if(Opcode != TST || Opcode != TEQ || Opcode != CMP) {
-   	     REG_WRITE(Rd, result);
-        }
+	if(OpCode != TST || OpCode != TEQ || OpCode != CMP) {
+    REG_WRITE(Rd, result);
+  }
 
 
 	if (IS_SET(SetCond)) {
 	// set flags
   	    CPSR_PUT(Z, (result == 0));
             CPSR_PUT(N, BIT_GET(result, 31));
-  	
+
             switch (OpCode)
             {
   		case 2  :
@@ -274,7 +255,7 @@ void data_processing(int32_t word)
 
 //Converts number in register
 //if 2's complement then negates and add 1, else return;
-int32_t convert(int32_t reg) 
+int32_t convert(int32_t reg)
 {
     int mask = 1 >> 3;
     int32_t result = reg;
@@ -285,18 +266,18 @@ int32_t convert(int32_t reg)
 }
 
 
-int32_t convert2complement(int32_t reg) 
+int32_t convert2complement(int32_t reg)
 {
     int32_t negatedReg = ~reg;
     return negatedReg + 1;
 }
 
 
-void multiply(int32_t word) 
+void multiply(int32_t word)
 {
-    int CPSR = arm_Ptr->registers[CPSR];
+    int cpsrReg = arm_Ptr->registers[CPSR];
     MultiplyInstruct *MultiInst = (MultiplyInstruct *) &word;
-    struct CPSR_STRUCT *cpsrStruct;
+    CPSR_STRUCT *cpsrStruct = (CPSR_STRUCT *) &cpsrReg;
 
     int Rd      = MultiInst->Rd;
     int Rn      = MultiInst->Rn;
@@ -309,18 +290,17 @@ void multiply(int32_t word)
     int32_t dataRs = convert(REG_READ(Rs));
     int32_t mulResult = dataRm * dataRs;
 
-    if(IS_SET(A)) {
-        int Rn = MultiInst->Rn;
+    if(IS_SET(Acc)) {
         int32_t dataRn = convert(REG_READ(Rn));
         mulResult += dataRn;
     }
 
     REG_WRITE(Rd, mulResult);
 
-    if(IS_SET(S)) {
+    if(IS_SET(SetCond)) {
         int bit31 = get_bits(mulResult, 30, 31); //N is the 31 bit of result
         cpsrStruct->bitN = bit31;
-    
+
         if(mulResult == 0) {
             cpsrStruct->bitZ = 1; //Z is set
         } else {
@@ -332,35 +312,41 @@ void multiply(int32_t word)
 
 /*Single data transfer */
 
-void single_data_transfer(int32_t word) 
+void single_data_transfer(int32_t word)
 {
     SDTInstruct *SDTInst = (SDTInstruct *) &word;
 
     int dataRn     = SDTInst->Rn;         // base register
-    int dataRd     = SDTInst->Rd;         // destination register
+    //int dataRd     = SDTInst->Rd;         // destination register
     int dataOffset = SDTInst->Offset;
-    int dataI      = SDTInst->_I;
+    int dataI      = SDTInst->I;
     int dataP      = SDTInst->P;
     int dataU      = SDTInst->U;
     int dataL      = SDTInst->L;
 
 	//Check if I is setbranchOffset
+  if (IS_SET(dataI)) {
+    dataOffset = as_shifted_reg(dataOffset, 1);
+  } else {
+    dataOffset = as_immediate_reg(dataOffset);
+  }
+
   //Pre-indexing
     if (IS_SET(dataP)) {
       dataRn += (IS_SET(dataU)? dataOffset : -dataOffset);
 
       IS_SET(dataL) ? (word = MEMORY_READ(dataRn)) : MEMORY_WRITE(dataRn, word);
-	
+
   //Post-indexing
     } else {
         if (IS_SET(dataL)) {
-          word = read_memory(dataRn);
+          word = MEMORY_READ(dataRn);
 	} else {
-          write_memory(dataRn, word);
+          MEMORY_WRITE(dataRn, word);
 	}
         dataRn += (IS_SET(dataU)? dataOffset : -dataOffset);
 
-        
+
     }
 }
 
@@ -368,7 +354,7 @@ void single_data_transfer(int32_t word)
 /*branch */
 
 void branch(int32_t word)
-{    
+{
      int branchOffset = 24;
      int branchShift  =  2;
 

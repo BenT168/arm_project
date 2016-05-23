@@ -37,42 +37,50 @@ int32_t as_shifted_reg(int32_t value, int8_t setCond)
   		case LSL : // Arithmetic and logical shift left are equivalent
   		{
   			value = reg << amount;
-  			if (amount != 0) 
-                            carryAmount = BIT_GET(reg, 31 - amount + 1);
-  			if (IS_SET(setCond))   
-                            CPSR_PUT(C, carryAmt);
-  			break;
+  			if (amount != 0) {
+				  carryAmt = BIT_GET(reg, 31 - amount + 1);
+				}
+  			if (IS_SET(setCond)) {
+				  CPSR_PUT(C, carryAmt);
+				}
   		}
+			break;
+
   		case LSR :
   		{
   			value = reg >> amount;
-  			if (amount != 0) 
-                            carryAmt = BIT_GET(reg, amount - 1);
-  			if (IS_SET(setCond))   
-                            CPSR_PUT(C, carryAmt);
-  			break;
+  			if (amount != 0) {
+				  carryAmt = BIT_GET(reg, amount - 1);
+				}
+  			if (IS_SET(setCond)){
+					CPSR_PUT(C, carryAmt);
+				}
   		}
+			break;
+
   		case ASR :
   		{
   			value = reg >> amount;
-  			if (amount != 0) 
-                            carryAmt = BIT_GET(reg, amount - 1);
-  			if (S == 1)      
-                            CPSR_PUT(C, carryAmt);
-  			    int bit = BIT_GET(reg, 31); // TODO move to bits set
-  			for (int j = 0; j < amount; j++) 
-                            BIT_PUT(value, 31 - j, bit);
-  			break;
+  			if (amount != 0){
+   				carryAmt = BIT_GET(reg, amount - 1);
+				}
+  			if (setCond == 1){
+				  CPSR_PUT(C, carryAmt);
+          int bit = BIT_GET(reg, 31); // TODO move to bits set
+            for (int j = 0; j < amount; j++){
+							BIT_PUT(value, 31 - j, bit);
+						}
+				}
   		}
+			break;
+
   		case ROR :
   		{
   			value = rotate_right(reg, amount);
-  			break;
   		}
-  		default : 
+			break;
+
   	}
-  	return value;
+
+		return value;
 }
-
-
- 
