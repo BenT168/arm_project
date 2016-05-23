@@ -17,10 +17,10 @@ int32_t as_immediate_reg(int value);
 
 ///////////////////////////// MACROS /////////////////////////////////////////
 
-
 /* REGISTER READ/WRITE */
 #define REG_READ(r)     (arm_Ptr->registers[(r)])
 #define REG_WRITE(r, v) (arm_Ptr->registers[(r)] = (v))
+
 
 /* CPSR READ/WRITE */
 #define CPSR_CLR(posf)    (BIT_CLR(REG_READ(CPSR), (posf)))
