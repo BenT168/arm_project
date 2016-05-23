@@ -9,14 +9,14 @@
 
 typedef struct DataProcessingInstruct
 {
-    unsigned int Operand2 : 12;/* Second Operand 12-bits */
-    unsigned int Rd       : 4; /* Destination register 4-bits */
-    unsigned int Rn       : 4; /* First operand register 4-bits */
-    unsigned int SetCond  : 1; /* Set condition codes 1-bit */
-    unsigned int Opcode   : 4; /* Operation code 4-bits */
-    unsigned int ImmOp    : 1; /* Immediate Operand field 1-bit */
-    unsigned int _00      : 2; /* Nullity field 2-bits */
-    unsigned int Cond     : 4; /* Condition field 4-bits */
+    unsigned int Operand2 : 12; /* Second Operand 12-bits */
+    unsigned int Rd       :  4; /* Destination register 4-bits */
+    unsigned int Rn       :  4; /* First operand register 4-bits */
+    unsigned int SetCond  :  1; /* Set condition codes 1-bit */
+    unsigned int Opcode   :  4; /* Operation code 4-bits */
+    unsigned int ImmOp    :  1; /* Immediate Operand field 1-bit */
+    unsigned int _00      :  2; /* Nullity field 2-bits */
+    unsigned int Cond     :  4; /* Condition field 4-bits */
 } DataProcessingInstruct;
 
 
@@ -38,24 +38,24 @@ typedef struct MultiplyInstruct
 typedef struct SDTInstruct
 {
     unsigned int Offset : 12;
-    unsigned int Rd     : 4;
-    unsigned int Rn     : 4;
-    unsigned int L      : 1;
-    unsigned int _00    : 2;
-    unsigned int U      : 1;
-    unsigned int P      : 1;
-    unsigned int I      : 1;
-    unsigned int _01    : 2;
-    unsigned int Cond   : 4;
+    unsigned int Rd     :  4;
+    unsigned int Rn     :  4;
+    unsigned int L      :  1;
+    unsigned int _00    :  2;
+    unsigned int U      :  1;
+    unsigned int P      :  1;
+    unsigned int I      :  1;
+    unsigned int _01    :  2;
+    unsigned int Cond   :  4;
 } SDTInstruct;
 
 
 typedef struct BranchInstruct
 {
     unsigned int Offset : 24;
-    unsigned int _0     : 1;
-    unsigned int _101   : 3;
-    unsigned int Cond   : 4;
+    unsigned int _0     :  1;
+    unsigned int _101   :  3;
+    unsigned int Cond   :  4;
 } BranchInstruct;
 
 

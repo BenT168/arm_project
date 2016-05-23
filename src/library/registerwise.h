@@ -9,23 +9,32 @@
 #include "arm11.h"
 
 
-int look_CPSR(int i);
 int32_t as_shifted_reg(int32_t value, int8_t S);
+/* AS SHIFT REGISTER FUNCTION */
 int32_t as_immediate_reg(int value);
+/* AS IMMEDIATE REGISER FUNCTION */
 
 
+///////////////////////////// MACROS /////////////////////////////////////////
+
+
+/* REGISTER READ/WRITE */
 #define REG_READ(r)     (arm_Ptr->registers[(r)])
 #define REG_WRITE(r, v) (arm_Ptr->registers[(r)] = (v))
 
-#define CPSR_CLR(f)    (BIT_CLR(REG_READ(CPSR), (f)))
-#define CPSR_SET(f)    (BIT_SET(REG_READ(CPSR), (f)))
-#define CPSR_GET(f)    (BIT_GET(REG_READ(CPSR), (f)))
-#define CPSR_PUT(f, b) { if (IS_SET(b)) CPSR_SET(f); else CPSR_CLR(f); }
+/* CPSR READ/WRITE */
+#define CPSR_CLR(posf)    (BIT_CLR(REG_READ(CPSR), (posf)))
+#define CPSR_SET(posf)    (BIT_SET(REG_READ(CPSR), (posf)))
+#define CPSR_GET(posf    (BIT_GET(REG_READ(CPSR), (posf)))
+#define CPSR_PUT(posf, i) {(IS_SET(i)) ? CPSR_SET(posf): CPSR_CLR(posf); }
 
-#define increment_PC(i) (REG_READ(PC) += (i))
+/* PC INCREMENT */
+#define INC_PC(i) (REG_READ(PC) += (i))
 
 
 //////////////////////////////CPSR Structure //////////////////////////////////
+
+
 typedef struct CPSR_STRUCT {
 
   unsigned int _000 : 28;
@@ -34,5 +43,7 @@ typedef struct CPSR_STRUCT {
   unsigned int bitZ : 1;
   unsigned int bitN : 1;
 }CPSR_STRUCT;
+
+
 
 #endif

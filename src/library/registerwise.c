@@ -3,7 +3,6 @@
 #include "registerwise.h"
 #include "instruction.h"
 
-////////////////////////// SHIFTING ////////////////////////////////////////////
 
 /* AS IMMEDIATE REGISTER  */
 
@@ -25,7 +24,7 @@ int32_t as_shifted_reg(int32_t value, int8_t S)
   	int Rm       = sreg->Rm;
   	int amount   = sreg->Amount;
   	uint32_t reg = REG_READ(Rm);
-  	int carryAmount    = 0;
+  	int carryAmt = 0;
 
   	if (IS_SET(Flag))
   	{
@@ -38,24 +37,31 @@ int32_t as_shifted_reg(int32_t value, int8_t S)
   		case LSL : // Arithmetic and logical shift left are equivalent
   		{
   			value = reg << amount;
-  			if (amount != 0) carryAmount = BIT_GET(reg, 31 - amount + 1);
-  			if (IS_SET(S))   CPSR_PUT(C, carryAmount);
+  			if (amount != 0) 
+                            carryAmount = BIT_GET(reg, 31 - amount + 1);
+  			if (IS_SET(S))   
+                            CPSR_PUT(C, carryAmt);
   			break;
   		}
   		case LSR :
   		{
   			value = reg >> amount;
-  			if (amount != 0) carryAmount = BIT_GET(reg, amount - 1);
-  			if (IS_SET(S))   CPSR_PUT(C, carryAmount);
+  			if (amount != 0) 
+                            carryAmt = BIT_GET(reg, amount - 1);
+  			if (IS_SET(S))   
+                            CPSR_PUT(C, carryAmt);
   			break;
   		}
   		case ASR :
   		{
   			value = reg >> amount;
-  			if (amount != 0) carryAmount = BIT_GET(reg, amount - 1);
-  			if (S == 1)      CPSR_PUT(C, carryAmount);
-  			int bit = BIT_GET(reg, 31); // TODO move to bits set
-  			for (int j = 0; j < amount; j++) BIT_PUT(value, 31 - j, bit);
+  			if (amount != 0) 
+                            carryAmt = BIT_GET(reg, amount - 1);
+  			if (S == 1)      
+                            CPSR_PUT(C, carryAmt);
+  			    int bit = BIT_GET(reg, 31); // TODO move to bits set
+  			for (int j = 0; j < amount; j++) 
+                            BIT_PUT(value, 31 - j, bit);
   			break;
   		}
   		case ROR :
@@ -63,14 +69,10 @@ int32_t as_shifted_reg(int32_t value, int8_t S)
   			value = rotate_right(reg, amount);
   			break;
   		}
-  		default : exit(EXIT_FAILURE);
+  		default : 
   	}
-
   	return value;
 }
 
 
-  int look_CPSR(int i)
-{
-    return BIT_GET(REG_READ(CPSR), i);
-}
+ 
