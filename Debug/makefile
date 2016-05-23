@@ -9,12 +9,6 @@ RM := rm -rf
 # All of the sources participating in the build are defined here
 -include sources.mk
 -include src/subdir.mk
-<<<<<<< HEAD
-=======
--include .metadata/.plugins/org.eclipse.cdt.managedbuilder.core/subdir.mk
--include .metadata/.plugins/org.eclipse.cdt.make.core/subdir.mk
->>>>>>> edcb83e3a1a13d26ce6174906f44fc80646b215c
--include subdir.mk
 -include objects.mk
 
 ifneq ($(MAKECMDGOALS),clean)
@@ -25,7 +19,7 @@ endif
 
 -include ../makefile.defs
 
-# Add inputs and outputs from these tool invocations to the build variables 
+# Add inputs and outputs from these tool invocations to the build variables
 
 # All Target
 <<<<<<< HEAD
