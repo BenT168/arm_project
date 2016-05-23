@@ -1,5 +1,6 @@
 CC      = gcc
 CFLAGS  = -Wall -g -D_POSIX_SOURCE -D_BSD_SOURCE -std=c99 -Werror -pedantic
+SOURCES = library/arm11.h library/bitwise.h library/bitwise.c library/instruction.h library/registerwise.h library/registerwise.c
 
 .SUFFIXES: .c .o
 

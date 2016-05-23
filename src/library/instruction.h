@@ -32,7 +32,7 @@ typedef struct MultiplyInstruct
     unsigned int Acc 	 : 1; /* Accumulate 1-bit */
     unsigned int _000000 : 6;
     unsigned int Cond 	 : 4; /* Condition field 4-bits */
-} MultyplyInstruct;
+} MultiplyInstruct;
 
 
 typedef struct SDTInstruct
