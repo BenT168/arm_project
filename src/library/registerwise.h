@@ -9,7 +9,7 @@
 #include "arm11.h"
 
 
-int32_t as_shifted_reg(int32_t value, int8_t S);
+int32_t as_shifted_reg(int32_t value, int8_t setCond);
 /* AS SHIFT REGISTER FUNCTION */
 int32_t as_immediate_reg(int value);
 /* AS IMMEDIATE REGISER FUNCTION */

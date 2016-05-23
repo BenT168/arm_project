@@ -27,7 +27,7 @@ int32_t get_bits(int32_t i, int start, int end)
 {
     uint32_t mask;
 
-    if(end - start == 31)
+    if (end - start == 31)
         return i;
 
     // create a mask that matches the bits between start and end 
@@ -65,7 +65,3 @@ int32_t rotate_left(int32_t x, int n)
     return x;
 }
 
-int main(void)
-{
-    return 0;
-}

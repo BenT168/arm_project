@@ -15,7 +15,7 @@ int32_t as_immediate_reg(int value)
 
 /*  AS SHIFT REGISTER  */
 
-int32_t as_shifted_reg(int32_t value, int8_t S)
+int32_t as_shifted_reg(int32_t value, int8_t setCond)
 {
   	ShiftReg *sreg = (ShiftReg *) &value;
 
@@ -39,7 +39,7 @@ int32_t as_shifted_reg(int32_t value, int8_t S)
   			value = reg << amount;
   			if (amount != 0) 
                             carryAmount = BIT_GET(reg, 31 - amount + 1);
-  			if (IS_SET(S))   
+  			if (IS_SET(setCond))   
                             CPSR_PUT(C, carryAmt);
   			break;
   		}
@@ -48,7 +48,7 @@ int32_t as_shifted_reg(int32_t value, int8_t S)
   			value = reg >> amount;
   			if (amount != 0) 
                             carryAmt = BIT_GET(reg, amount - 1);
-  			if (IS_SET(S))   
+  			if (IS_SET(setCond))   
                             CPSR_PUT(C, carryAmt);
   			break;
   		}
