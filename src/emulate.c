@@ -22,9 +22,30 @@
 
 
 /* Memory Read/Write */
+//reading one byte (8-bits)
 #define MEMORY_READ(m)     (arm_Ptr->memory[m])
-#define MEMORY_WRITE(m, b) (arm_Ptr->memory[m] = b)
+//reading 4 bytes (32-bits)
+#define MEMORY_READ_32bits(m) ((MEMORY_READ(m + 0) & 0xFF) << (SIZE_OF_WORD - 8) |\
+                               (MEMORY_READ(m + 1) & 0xFF) << (SIZE_OF_WORD - 16) |\
+                               (MEMORY_READ(m + 2) & 0xFF) << (SIZE_OF_WORD - 24) |\
+                               (MEMORY_READ(m + 3) & 0xFF) << (SIZE_OF_WORD - 32))
 
+/*static inline byte ReadMemory(register word Address)
+{
+  return(MemoryPage[Address>>13][Address&0x1FFF]);
+}
+
+static inline void WriteMemory(register word Address,register byte Value)
+{
+  MemoryPage[Address>>13][Address&0x1FFF]=Value;
+}
+*/
+
+//writign one byte(8-bits)
+#define MEMORY_WRITE(m, b) (arm_Ptr->memory[m] = b)
+//writing 4 bytes(32-bits)
+//#define MEMORY_WRITE_32bits(m, b) {MEMORY_WRITE(m+0, )
+//}
 
 ///////////////////////////// FUNCTION PROTOTYPE //////////////////////////////
 
@@ -71,8 +92,8 @@ void read_ARM(const char *filename)
 
         int num_instruct = size / size_instruct;
         //Read instructions into ARM Memory
-        // for(int i = 0; i < MEMORY_CAPACITY; i++) {
         size_t newLen = fread(arm_Ptr->memory, size_instruct, num_instruct, file);
+        printf("reading arm file \n");
         if (newLen == 0)
         {
             fputs("Error reading file", stderr);
@@ -85,17 +106,30 @@ void read_ARM(const char *filename)
     }
 }
 
+
 //////////////////////////// EMULATE CORE /////////////////////////////////////
 
 /* emulator */
 void emulator()
 {
+
+    printf("start of emulator \n");
     REG_WRITE(PC, 0);
-    arm_Ptr->pipeline->fetched = MEMORY_READ(REG_READ(PC));
+    printf("after write \n");
+
+    printf("0x%x",REG_READ(PC));
+
+
+    arm_Ptr->pipeline->fetched = MEMORY_READ_32bits(REG_READ(PC));
+    printf("pointing emulator \n");
+
     INC_PC(4);
 
     int32_t fetched_code = arm_Ptr->pipeline->fetched;
 
+    printf("emulator before while loop");
+
+    //the emulator should terminate when it executes an all-0 instr
     while(fetched_code != 0)
     {
      //TODO : NEED A LOOP HERE WHAT I THE CONDITION????
@@ -108,36 +142,44 @@ void emulator()
 
   //If the condition matched, we can execute the instr
   //TODO !!!!!!
-        if(cond_check == 1)
-            decode_instr(arm_Ptr->pipeline->decoded);
+        if(cond_check == 1){
+          decode_instr(arm_Ptr->pipeline->decoded);
+        }
 
-
-
-  //the emulator should terminate when it executes an all-0 instr
-  //Upon termination, output the state of all the registers
-        print_register_state();
      }
+
+     //Upon termination, output the state of all the registers
+     print_register_state();
+
 }
 
 /*decode instruction */
 void decode_instr(int32_t word)
 {
-  int code = get_bits(word, 26, 27);
+  int code = get_bits(word, 27, 28) + get_bits(word, 25,26);
   switch (code) {
-	  case 1: single_data_transfer(word); break;
 	  case 2: branch(word); break;
-	  case 0: decode_checker(word); break;
-	  default: break;
+    case 1:
+	  case 0:
+      IS_SET(get_bits(word, 26, 27)) ? single_data_transfer(word) : decode_checker(word);
+      break;
+	  default:
+      break;
 	}
 }
 
 /* helper function for decode_instr */
 void decode_checker(int32_t word)
 {
-	if (IS_SET(BIT_GET(word, 25) || IS_CLEAR(BIT_GET(word, 4))))
-            data_processing(word);
-	else
-           (IS_SET(BIT_GET(word, 7))) ? multiply(word) : data_processing(word);
+  if(IS_SET(get_bits(word, 25, 26))) {
+    data_processing(word);
+  } else {
+    if(IS_SET(get_bits(word, 6, 7) || IS_SET(get_bits(word, 5, 6 )))) {
+      data_processing(word);
+    } else{
+      (IS_SET(get_bits(word, 4,5))) ? multiply(word) : data_processing(word);
+    }
+  }
 }
 
 /* Check condiitons */
@@ -390,11 +432,14 @@ int main(int argc, char **argv)
   //int argc mumber of chars
     char errorMsg[] = "No arguments in input!\n";
 
-    if(argc < 6) {
+    if(argc == 0) {
       // not in form of .bin '.','b','i','n','/0';
         printf( "%s", errorMsg);
         printf("Please type in a bin file\n");
         return -1;
+    }
+
+    printf("Hello World\n");
 
     //Read input file and emulate
     read_ARM(argv[1]);
@@ -402,9 +447,9 @@ int main(int argc, char **argv)
 
     //Free memory and exit program
     free(arm_Ptr);
-    free(arm_Ptr->pipeline);
+    //free(arm_Ptr->pipeline);
 
     return EXIT_SUCCESS;
-    }
+
 
 }
