@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include "bitwise.h"
 #include "instruction.h"
-#include "binFileLoader.h"
+//#include "binFileLoader.h"
 #include "arm11.h"
 
 
