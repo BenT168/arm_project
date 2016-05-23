@@ -1,8 +1,8 @@
 #ifndef _BIT_WISE
 #define _BIT_WISE
 
-#include <stdint.h>
 #include <stdio.h>
+#include <stdint.h>
 
 void print_bits(int32_t i);
 /*PrintBits Function*/
@@ -17,15 +17,18 @@ FILE *output;
 FILE *input;
 /*Input file containing program */
 
-// Set/Clear/Get/Put the nth bit of integer i where 0 is rightmost bit
+/* Set/Clear/Get/Flip/Put the bit n pos of int i where 0 is rightmost bit */
 
-#define BIT_SET(i, n)       ((i) |=   1 << (n))
-#define BIT_CLR(i, n)       ((i) &= ~(1 << (n)))
-#define BIT_GET(i, n)    (!!((i) &   (1 << (n))))
-#define BIT_PUT(i, n, b) { if (IS_SET(b)) BIT_SET(i, n); else BIT_CLR(i, n); }
+#define BOOL(x) (!(!(x)))
 
-#define IS_SET(x)   (x == 1)
-#define IS_CLEAR(x) (x == 0)
+#define BIT_SET(i, pos)       ((i) |=  (1 << (pos)))
+#define BIT_CLR(i, pos)       ((i) &= ~(1 << (pos)))
+#define BIT_GET(i, pos)   BOOL((i) &   (1 << (pos)))
+#define BIT_FLP(i, pos)       ((i) ^   (1 << (pos)))
+#define BIT_PUT(i, pos, b) { (IS_SET(b)) ? BIT_SET(i, pos) : BIT_CLR(i, pos); }
+
+#define IS_SET(i)   (i == 1)
+#define IS_CLEAR(i) (i == 0)
 
 
 #endif

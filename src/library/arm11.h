@@ -2,14 +2,15 @@
 #define _ARM_TYPE
 
 #include <stdint.h>
+#include <stdio.h>
 
 #define MEMORY_CAPACITY 65536
 #define REGISTER_COUNT  17
-#define SIZE_OF_WORD 32
+#define SIZE_OF_WORD    32
 
 ////////////////////////////   PIPELINE  //////////////////////////////////////
 
-typedef struct
+typedef struct Pipeline
 {
     int32_t fetched;
     int32_t decoded;
@@ -24,7 +25,6 @@ typedef struct ARM_State
     Pipeline *pipeline;
 } ARM_State;
 
-struct ARM_State *arm_Ptr;
 ////////////////////////// REGISTER DEFINITIONS  //////////////////////////////
 
 typedef enum
