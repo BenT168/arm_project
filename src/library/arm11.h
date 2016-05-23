@@ -25,6 +25,7 @@ typedef struct ARM_State
     Pipeline *pipeline;
 } ARM_State;
 
+ARM_State *arm_Ptr = NULL;
 ////////////////////////// REGISTER DEFINITIONS  //////////////////////////////
 
 typedef enum
