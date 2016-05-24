@@ -144,12 +144,13 @@ void emulator()
 
     INC_PC(4);
 
+    int32_t decoded_code = arm_Ptr.pipeline.decoded;
     int32_t fetched_code = arm_Ptr.pipeline.fetched;
     int cond_check = check_cond(fetched_code);
 
     //the emulator should terminate when it executes an all-0 instr
 
-    while(fetched_code != 0) {
+    do {
       //If the condition matched, we can execute the instr
       if(cond_check == 1) {
         decode_instr(arm_Ptr.pipeline.decoded);
@@ -160,8 +161,11 @@ void emulator()
       INC_PC(4);
 
       fetched_code = arm_Ptr.pipeline.fetched;
+      decoded_code = arm_Ptr.pipeline.decoded;
 
-    }
+
+    } while(decoded_code != 0);
+
 
      //for a cycle of pipeline, previously fetched instr is decoded and ancestor ints is executed.
      //the emulator should terminate when it executes an all-0 instr
@@ -229,7 +233,7 @@ void print_register_state()
     printf("Registers state: \n");
     printf("General registers: \n");
     //Register 0 - 12 are the general registers
-    for(int i = 0; i <= REGISTER_COUNT - 4; i++){
+    for(int i = 0; i < REGISTER_COUNT - 4; i++){
         int32_t reg = REG_READ(i);
         printf("$%-3i:   %10d  (0x%08x)\n", i, reg, reg);
     }
