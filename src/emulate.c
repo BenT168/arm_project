@@ -20,7 +20,6 @@
 #include "library/bitwise.c"
 #include "library/registerwise.c"
 
-
 /* Memory Read/Write */
 //reading one byte (8-bits)
 #define MEMORY_READ(m)     (arm_Ptr->memory[m])
