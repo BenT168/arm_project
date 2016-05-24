@@ -33,12 +33,12 @@
                            (MEM_R_8bits(m + 3) & 0xFF) << (SIZE_OF_WORD - 32))
 
 //writing one byte(8-bits)
-#define MEM_W_8bits(m, b) (arm_Ptr->memory[m] = b)
+#define MEM_W_8bits(m, b) (arm_Ptr->memory[(m)] = (b))
 //writing 4 bytes(32-bits)
-#define MEM_W_32bits(m)   ((MEM_W_8bits(m + 0) & 0xFF) << (SIZE_OF_WORD - 8) |\
-                           (MEM_W_8bits(m + 1) & 0xFF) << (SIZE_OF_WORD - 16) |\
-                           (MEM_W_8bits(m + 2) & 0xFF) << (SIZE_OF_WORD - 24) |\
-                           (MEM_W_8bits(m + 3) & 0xFF) << (SIZE_OF_WORD - 32))
+#define MEM_W_32bits(m, w)   MEM_W_8bits(m + 0, ((w) >>  0 ) & 0xFF); \
+                             MEM_W_8bits(m + 1, ((w) >>  8 ) & 0xFF); \
+                             MEM_W_8bits(m + 2, ((w) >> 16 ) & 0xFF); \
+                             MEM_W_8bits(m + 3, ((w) >> 24 ) & 0xFF);
 
 
 ///////////////////////////// FUNCTION PROTOTYPE //////////////////////////////
@@ -114,7 +114,7 @@ void emulator()
     printf("0x%x",REG_READ(PC));
 
 
-    arm_Ptr->pipeline->fetched = MEMORY_READ_32bits(REG_READ(PC));
+    arm_Ptr->pipeline->fetched = MEM_R_32bits(REG_READ(PC));
     printf("pointing emulator \n");
 
     INC_PC(4);
@@ -129,7 +129,7 @@ void emulator()
      //TODO : NEED A LOOP HERE WHAT I THE CONDITION????
      //for a cycle of pipeline, previously fetched instr is decoded and ancestor ints is executed.
         arm_Ptr->pipeline->decoded = arm_Ptr->pipeline->fetched;
-        arm_Ptr->pipeline->fetched = MEMORY_READ(REG_READ(PC));
+        arm_Ptr->pipeline->fetched = MEM_R_32bits(REG_READ(PC));
         INC_PC(4);
 
         int cond_check = check_cond(fetched_code);
@@ -151,13 +151,16 @@ void emulator()
 void decode_instr(int32_t word)
 {
   int code = get_bits(word, 27, 28) + get_bits(word, 25,26);
-  switch (code) {
-	  case 2: branch(word); break;
+  switch (code) 
+  {
+    case 2: 
+      branch(word); 
+      break;
     case 1:
-	  case 0:
+    case 0:
       IS_SET(get_bits(word, 26, 27)) ? single_data_transfer(word) : decode_checker(word);
       break;
-	  default:
+    default:
       break;
 	}
 }
@@ -182,14 +185,14 @@ int check_cond(int32_t word)
   int cond = get_bits(word, 28, 31);
 
   switch(cond){
- 	  case(EQ): return CPSR_GET(Z); break;
-	  case(NE): return !CPSR_GET(Z); break;
- 	  case(GE): return CPSR_GET(N) == CPSR_GET(V); break;
- 	  case(LT): return CPSR_GET(N) != CPSR_GET(V); break;
- 	  case(GT): return CPSR_GET(Z) & (CPSR_GET(N) == CPSR_GET(V)); break;
+    case(EQ): return CPSR_GET(Z); break;
+    case(NE): return !CPSR_GET(Z); break;
+    case(GE): return CPSR_GET(N) == CPSR_GET(V); break;
+    case(LT): return CPSR_GET(N) != CPSR_GET(V); break;
+    case(GT): return CPSR_GET(Z) & (CPSR_GET(N) == CPSR_GET(V)); break;
     case(LE): return CPSR_GET(Z) | (CPSR_GET(N) != CPSR_GET(V)); break;
     case(AL): return 1; break;
-	  default: return 0;
+    default : return 0;
   }
 }
 
@@ -206,6 +209,13 @@ void print_register_state()
 
     printf("PC: (0x%08x)\n", REG_READ(PC));
     printf("CPSR: (0x%08x)\n", REG_READ(CPSR));
+
+   printf("Non-zero memory:\n");
+	for (int i = 0; i < MEMORY_CAPACITY; i += 4)
+	{
+		if (MEM_R_32bits(i) == 0) continue;
+		printf("0x%08x: 0x%08x\n", i, MEM_R_32bits_BE(i));
+	}
 }
 
 
@@ -371,14 +381,14 @@ void single_data_transfer(int32_t word)
     if (IS_SET(dataP)) {
       dataRn += (IS_SET(dataU)? dataOffset : -dataOffset);
 
-      IS_SET(dataL) ? (word = MEMORY_READ(dataRn)) : MEMORY_WRITE(dataRn, word);
+      IS_SET(dataL) ? (word = MEM_R_32bits(dataRn)) : MEM_W_32bits(dataRn, word);
 
   //Post-indexing
     } else {
         if (IS_SET(dataL)) {
-          word = MEMORY_READ(dataRn);
+          word = MEM_R_32bits(dataRn);
 	} else {
-          MEMORY_WRITE(dataRn, word);
+          MEM_W_32bits(dataRn, word);
 	}
         dataRn += (IS_SET(dataU)? dataOffset : -dataOffset);
 
