@@ -1,8 +1,8 @@
 #include <stdint.h>
 #include <stdio.h>
+
 #include "registerwise.h"
 #include "instruction.h"
-
 
 /* AS IMMEDIATE REGISTER  */
 

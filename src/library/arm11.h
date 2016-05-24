@@ -25,10 +25,7 @@ typedef struct ARM_State
     Pipeline *pipeline;
 } ARM_State;
 
-struct ARM_State arm_state;
 struct ARM_State *arm_Ptr;
-arm_Ptr = &arm_state;
-//ARM_State *arm_Ptr;
 
 ////////////////////////// REGISTER DEFINITIONS  //////////////////////////////
 

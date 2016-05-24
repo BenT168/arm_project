@@ -17,34 +17,29 @@
 #include "library/bitwise.h"
 #include "library/registerwise.h"
 
-#include "library/bitwise.c"
-#include "library/registerwise.c"
-
 /* Memory Read/Write */
+
 //reading one byte (8-bits)
-#define MEMORY_READ(m)     (arm_Ptr->memory[m])
-//reading 4 bytes (32-bits)
-#define MEMORY_READ_32bits(m) ((MEMORY_READ(m + 0) & 0xFF) << (SIZE_OF_WORD - 8) |\
-                               (MEMORY_READ(m + 1) & 0xFF) << (SIZE_OF_WORD - 16) |\
-                               (MEMORY_READ(m + 2) & 0xFF) << (SIZE_OF_WORD - 24) |\
-                               (MEMORY_READ(m + 3) & 0xFF) << (SIZE_OF_WORD - 32))
+#define MEM_R_8bits(m)     (arm_Ptr->memory[m])
+//reading 4 bytes (32-bits) LITTLE ENDIAN
+#define MEM_R_32bits(m)   ((MEM_R_8bits(m + 3) & 0xFF) << (SIZE_OF_WORD - 8) |\
+                           (MEM_R_8bits(m + 2) & 0xFF) << (SIZE_OF_WORD - 16) |\
+                           (MEM_R_8bits(m + 1) & 0xFF) << (SIZE_OF_WORD - 24) |\
+                           (MEM_R_8bits(m + 0) & 0xFF) << (SIZE_OF_WORD - 32))
+//reading 4 bytes (32-bits) BIG ENDIAN
+#define MEM_R_32bits_BE(m)((MEM_R_8bits(m + 0) & 0xFF) << (SIZE_OF_WORD - 8) |\
+                           (MEM_R_8bits(m + 1) & 0xFF) << (SIZE_OF_WORD - 16) |\
+                           (MEM_R_8bits(m + 2) & 0xFF) << (SIZE_OF_WORD - 24) |\
+                           (MEM_R_8bits(m + 3) & 0xFF) << (SIZE_OF_WORD - 32))
 
-/*static inline byte ReadMemory(register word Address)
-{
-  return(MemoryPage[Address>>13][Address&0x1FFF]);
-}
-
-static inline void WriteMemory(register word Address,register byte Value)
-{
-  MemoryPage[Address>>13][Address&0x1FFF]=Value;
-}
-*/
-
-//writign one byte(8-bits)
-#define MEMORY_WRITE(m, b) (arm_Ptr->memory[m] = b)
+//writing one byte(8-bits)
+#define MEM_W_8bits(m, b) (arm_Ptr->memory[m] = b)
 //writing 4 bytes(32-bits)
-//#define MEMORY_WRITE_32bits(m, b) {MEMORY_WRITE(m+0, )
-//}
+#define MEM_W_32bits(m)   ((MEM_W_8bits(m + 0) & 0xFF) << (SIZE_OF_WORD - 8) |\
+                           (MEM_W_8bits(m + 1) & 0xFF) << (SIZE_OF_WORD - 16) |\
+                           (MEM_W_8bits(m + 2) & 0xFF) << (SIZE_OF_WORD - 24) |\
+                           (MEM_W_8bits(m + 3) & 0xFF) << (SIZE_OF_WORD - 32))
+
 
 ///////////////////////////// FUNCTION PROTOTYPE //////////////////////////////
 
