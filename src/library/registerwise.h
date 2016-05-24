@@ -14,23 +14,21 @@ int32_t as_shifted_reg(int32_t value, int8_t setCond);
 int32_t as_immediate_reg(int value);
 /* AS IMMEDIATE REGISER FUNCTION */
 
+struct ARM_State arm_Ptr;
 
 ///////////////////////////// MACROS /////////////////////////////////////////
 
 /* REGISTER READ/WRITE */
-//#define REG_READ(r)     (&arm_Ptr.registers[(r)])
-//#define REG_WRITE(r, v) (arm_Ptr.registers[(r)] = (v))
-
+#define REG_READ(r)     (arm_Ptr.registers[(r)])
+#define REG_WRITE(r, v) (arm_Ptr.registers[(r)] = (v))
 
 /* CPSR READ/WRITE */
-//#define CPSR_CLR(posf)    (BIT_CLR(REG_READ(CPSR), (posf)))
-//#define CPSR_SET(posf)    (BIT_SET(REG_READ(CPSR), (posf)))
-//#define CPSR_GET(posf)    (BIT_GET(REG_READ(CPSR), (posf)))
-//#define CPSR_PUT(posf, i) {(IS_SET(i)) ? CPSR_SET(posf): CPSR_CLR(posf);
+#define CPSR_CLR(posf)    (BIT_CLR(REG_READ(CPSR), (posf)))
+#define CPSR_SET(posf)    (BIT_SET(REG_READ(CPSR), (posf)))
+#define CPSR_GET(posf)    (BIT_GET(REG_READ(CPSR), (posf)))
+#define CPSR_PUT(posf, i) {(IS_SET(i)) ? CPSR_SET(posf): CPSR_CLR(posf);}
 /* PC INCREMENT */
-//#define INC_PC(i) (REG_READ(PC) += (i))
-
-
+#define INC_PC(i) (REG_READ(PC) += (i))
 
 //////////////////////////////CPSR Structure //////////////////////////////////
 
