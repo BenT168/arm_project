@@ -22,10 +22,9 @@ typedef struct ARM_State
 {
     int8_t   memory[MEMORY_CAPACITY];
     int32_t  registers[REGISTER_COUNT];
-    Pipeline *pipeline;
+    Pipeline pipeline;
 } ARM_State;
 
-ARM_State *arm_Ptr = NULL;
 ////////////////////////// REGISTER DEFINITIONS  //////////////////////////////
 
 typedef enum

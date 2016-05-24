@@ -22,13 +22,15 @@
 
 
 /* Memory Read/Write */
-#define MEMORY_READ(m)     (arm_Ptr->memory[m])
-#define MEMORY_WRITE(m, b) (arm_Ptr->memory[m] = b)
+#define MEMORY_READ(m)     (arm_Ptr.memory[m])
+#define MEMORY_WRITE(m, b) (arm_Ptr.memory[m] = b)
 
+ ARM_State arm_Ptr;
 
+// Pipeline pipeline;
 ///////////////////////////// FUNCTION PROTOTYPE //////////////////////////////
 
-void read_ARM(const char *);
+//void read_ARM();
 
 void emulator(void);
 int  check_cond(int32_t);
@@ -43,16 +45,31 @@ void multiply(int32_t);
 void single_data_transfer(int32_t);
 void branch(int32_t);
 
+
 ////////////////////////// BINARY FILE LOADER ////////////////////////////////
 
 
 void read_ARM(const char *filename)
 {
+    char k[] = "readArm begin";
+    printf("%s\n", k);
     FILE *file = fopen(filename, "rb");
     //file = fopen(binFile, "rb"); //open the file r = read , b = binary
 
     int size_instruct = 4; /* 32 bits = 4 bytes */
+  //  char l[] = "Please";
+    //printf("%s\n", l);
+    printf("%ld\n", sizeof(int));
+    printf("%d\n", SIZE_OF_WORD);
+    //void *memory = malloc( sizeof(int));
+    printf("after memory\n");
 
+    //arm_Ptr->pipeline =  memory;
+    printf("before pipeline\n");
+    //if(arm_Ptr->pipeline == NULL) {
+  //    printf(" There has been a malloc error");
+  //  }
+    //printf("allocate pipeline");
     if (file != NULL)
     {
         fseek(file, 0, SEEK_END);
@@ -60,19 +77,27 @@ void read_ARM(const char *filename)
         fseek(file, 0, SEEK_SET); //go back to start
 
         //Allocate memory
-        arm_Ptr =  calloc(1, size+1);
-        if(!arm_Ptr)
-        {
-            char errorMsg[] = "Memory Error!";
-            fprintf(stderr, "%s\n", errorMsg);
-            fclose(file);
-            return;
-        }
+        char l[] = "Please";
+        printf("%s\n", l);
+
+
+        printf("beforeAllocating");
+  //      arm_Ptr =  calloc(1, size+1);
+        printf("allocatedARM\n");
+  //      if(arm_Ptr == NULL)
+  //
+  //          char errorMsg[] = "Memory Error!";
+  //          fprintf(stderr, "%s\n", errorMsg);
+          //  fclose(file);
+
+
+        printf("afterIf\n");
+
 
         int num_instruct = size / size_instruct;
         //Read instructions into ARM Memory
-        // for(int i = 0; i < MEMORY_CAPACITY; i++) {
-        size_t newLen = fread(arm_Ptr->memory, size_instruct, num_instruct, file);
+        // for(int i = 0; i < MEMORY_CAPACITY; i++)
+        size_t newLen = fread(arm_Ptr.memory, size_instruct, num_instruct, file);
         if (newLen == 0)
         {
             fputs("Error reading file", stderr);
@@ -85,59 +110,74 @@ void read_ARM(const char *filename)
     }
 }
 
+
 //////////////////////////// EMULATE CORE /////////////////////////////////////
 
 /* emulator */
 void emulator()
 {
     REG_WRITE(PC, 0);
-    arm_Ptr->pipeline->fetched = MEMORY_READ(REG_READ(PC));
+    arm_Ptr.pipeline.fetched = MEMORY_READ(REG_READ(PC));
     INC_PC(4);
 
-    int32_t fetched_code = arm_Ptr->pipeline->fetched;
 
-    while(fetched_code != 0)
-    {
-     //TODO : NEED A LOOP HERE WHAT I THE CONDITION????
+    int32_t fetched_code = arm_Ptr.pipeline.fetched;
+    int cond_check = check_cond(fetched_code);
+
+    while(fetched_code != 0) {
+
+      //If the condition matched, we can execute the instr
+      if(cond_check == 1) {
+        decode_instr(arm_Ptr.pipeline.decoded);
+      }
+
+      arm_Ptr.pipeline.decoded = arm_Ptr.pipeline.fetched;
+      arm_Ptr.pipeline.fetched = MEMORY_READ(REG_READ(PC));
+      INC_PC(4);
+
+      fetched_code = arm_Ptr.pipeline.fetched;
+
+    }
+
+
      //for a cycle of pipeline, previously fetched instr is decoded and ancestor ints is executed.
-        arm_Ptr->pipeline->decoded = arm_Ptr->pipeline->fetched;
-        arm_Ptr->pipeline->fetched = MEMORY_READ(REG_READ(PC));
-        INC_PC(4);
-
-        int cond_check = check_cond(fetched_code);
-
-  //If the condition matched, we can execute the instr
-  //TODO !!!!!!
-        if(cond_check == 1)
-            decode_instr(arm_Ptr->pipeline->decoded);
-
 
 
   //the emulator should terminate when it executes an all-0 instr
   //Upon termination, output the state of all the registers
-        print_register_state();
-     }
+    print_register_state();
 }
+
+
+
 
 /*decode instruction */
 void decode_instr(int32_t word)
 {
-  int code = get_bits(word, 26, 27);
-  switch (code) {
-	  case 1: single_data_transfer(word); break;
-	  case 2: branch(word); break;
-	  case 0: decode_checker(word); break;
-	  default: break;
+  int code = get_bits(word, 27, 28) + get_bits(word, 25,26);
+  switch (code)
+  {
+    case 2: branch(word); break;
+    case 1:
+    case 0:
+      IS_SET(get_bits(word, 26, 27)) ? single_data_transfer(word) : decode_checker(word);
+      break;
+    default: break;
 	}
 }
 
 /* helper function for decode_instr */
 void decode_checker(int32_t word)
 {
-	if (IS_SET(BIT_GET(word, 25) || IS_CLEAR(BIT_GET(word, 4))))
-            data_processing(word);
-	else
-           (IS_SET(BIT_GET(word, 7))) ? multiply(word) : data_processing(word);
+  if(IS_SET(get_bits(word, 25, 26))) {
+    data_processing(word);
+  } else {
+    if(IS_SET(get_bits(word, 6, 7) || IS_SET(get_bits(word, 5, 6 )))) {
+      data_processing(word);
+    } else{
+      (IS_SET(get_bits(word, 4,5))) ? multiply(word) : data_processing(word);
+    }
+  }
 }
 
 /* Check condiitons */
@@ -165,11 +205,11 @@ void print_register_state()
     //Register 0 - 12 are the general registers
     for(int i = 0; i <= REGISTER_COUNT - 4; i++){
         int32_t reg = REG_READ(i);
-        printf("%-3i:(0x%08x)\n", i, reg);
+        printf("$%-3i:      (0x%08x)\n", i, reg);
     }
 
-    printf("PC: (0x%08x)\n", REG_READ(PC));
-    printf("CPSR: (0x%08x)\n", REG_READ(CPSR));
+    printf("PC : (0x%08x)\n", REG_READ(PC));
+    printf("CPSR : (0x%08x)\n", REG_READ(CPSR));
 }
 
 
@@ -189,7 +229,7 @@ void data_processing(int32_t word)
 	int Rd       = DPInst->Rd;
 	int Operand2 = DPInst->Operand2; // 11-0
 
-	int Operand1 = arm_Ptr->registers[Rn];
+	int Operand1 = arm_Ptr.registers[Rn];
 
 	Operand2     = IS_CLEAR(ImmOp) ? as_shifted_reg(Operand2, SetCond)
 	           		           : as_immediate_reg(Operand2);
@@ -236,8 +276,7 @@ void data_processing(int32_t word)
   	    CPSR_PUT(Z, (result == 0));
             CPSR_PUT(N, BIT_GET(result, 31));
 
-            switch (OpCode)
-            {
+            switch (OpCode)  {
   		case 2  :
   		case 3  :
   		case 10 :
@@ -246,7 +285,7 @@ void data_processing(int32_t word)
   		case 4  :
                     CPSR_PUT(C, CPSR_GET(V));
                     break;
-            }
+    }
 	}
 }
 
@@ -275,7 +314,7 @@ int32_t convert2complement(int32_t reg)
 
 void multiply(int32_t word)
 {
-    int cpsrReg = arm_Ptr->registers[CPSR];
+    int cpsrReg = arm_Ptr.registers[CPSR];
     MultiplyInstruct *MultiInst = (MultiplyInstruct *) &word;
     CPSR_STRUCT *cpsrStruct = (CPSR_STRUCT *) &cpsrReg;
 
@@ -387,24 +426,27 @@ void branch(int32_t word)
 
 int main(int argc, char **argv)
 {
+
+    printf("at beginning\n");
   //int argc mumber of chars
     char errorMsg[] = "No arguments in input!\n";
+      printf("before if\n");
 
-    if(argc < 6) {
+    if(argc == 0) {
       // not in form of .bin '.','b','i','n','/0';
         printf( "%s", errorMsg);
         printf("Please type in a bin file\n");
         return -1;
-
+    }
     //Read input file and emulate
+    printf("before read arm\n");
+
     read_ARM(argv[1]);
+    printf("readarm?\n");
+
     emulator();
 
-    //Free memory and exit program
-    free(arm_Ptr);
-    free(arm_Ptr->pipeline);
 
     return EXIT_SUCCESS;
-    }
 
 }
