@@ -1,8 +1,10 @@
 #include <stdint.h>
 #include <stdio.h>
+
 #include "registerwise.h"
 #include "instruction.h"
 
+<<<<<<< HEAD
 extern ARM_State arm_Ptr;
 
 
@@ -24,6 +26,8 @@ extern ARM_State arm_Ptr;
 
 
 
+=======
+>>>>>>> 25e3d1847907448d33aabb2d502767e1ddfa6362
 /* AS IMMEDIATE REGISTER  */
 
 int32_t as_immediate_reg(int value)

@@ -25,6 +25,11 @@ typedef struct ARM_State
     Pipeline pipeline;
 } ARM_State;
 
+<<<<<<< HEAD
+=======
+struct ARM_State *arm_Ptr;
+
+>>>>>>> 25e3d1847907448d33aabb2d502767e1ddfa6362
 ////////////////////////// REGISTER DEFINITIONS  //////////////////////////////
 
 typedef enum
