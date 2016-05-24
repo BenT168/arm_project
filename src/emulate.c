@@ -17,8 +17,6 @@
 #include "library/bitwise.h"
 #include "library/registerwise.h"
 
-ARM_State arm_Ptr;
-
 /* Memory Read/Write */
 
 //reading one byte (8-bits)
@@ -46,8 +44,9 @@ ARM_State arm_Ptr;
 ///////////////////////////// FUNCTION PROTOTYPE //////////////////////////////
 
 
+ARM_State arm_Ptr;
+
 void read_ARM(const char *);
-void read_ARM01(const char *);
 
 void emulator(void);
 int  check_cond(int32_t);
@@ -64,9 +63,10 @@ void branch(int32_t);
 
 
 ////////////////////////// BINARY FILE LOADER ////////////////////////////////
+
+
 void read_ARM(const char *filename)
 {
-
     FILE *file = fopen(filename, "rb");
     //file = fopen(binFile, "rb"); //open the file r = read , b = binary
 
@@ -85,7 +85,7 @@ void read_ARM(const char *filename)
         size_t newLen = fread(arm_Ptr.memory, size_instruct, num_instruct, file);
         if (newLen == 0)
         {
-            fputs("Error reading file", stderr);
+           fputs("Error reading file", stderr);
         } else {
            fclose(file);
         }
@@ -95,44 +95,7 @@ void read_ARM(const char *filename)
     }
 }
 
-
-
-
-/*void read_ARM01(const char *filename)
-{
-    char k[] = "readArm begin";
-    printf("%s\n", k);
-    FILE *file = fopen(filename, "rb");
-    //file = fopen(binFile, "rb"); //open the file r = read , b = binary
-    long size = ftell(file);
-    //Size of file in bytes
-
-
-    if (file != NULL && fseek(file, 0, SEEK_END) != 0)
-    {
-        fseek(file, 0, SEEK_SET); //go back to start
-
-    }   //Allocate memory
-
-    if(!arm_Ptr)
-    {
-        char errorMsg[] = "Memory Error!";
-        fprintf(stderr, "%s\n", errorMsg);
-        fclose(file);
-        exit(EXIT_FAILURE);
-    }
-
-    //Read instructions into ARM Memory
-    size_t newLen = fread(arm_Ptr->memory, 1, size, file);
-    printf("reading arm file \n");
-
-   (newLen == size) ? fclose(file) : fputs("Error reading file", stderr);
-
-    perror("Error opening file");
-
-}
-
-*/
+  
 //////////////////////////// EMULATE CORE /////////////////////////////////////
 
 /* emulator */
@@ -144,7 +107,7 @@ void emulator()
 
     INC_PC(4);
 
-    int32_t decoded_code = arm_Ptr.pipeline.decoded;
+    int32_t decoded_code;
     int32_t fetched_code = arm_Ptr.pipeline.fetched;
     int cond_check = check_cond(fetched_code);
 
@@ -163,17 +126,13 @@ void emulator()
       fetched_code = arm_Ptr.pipeline.fetched;
       decoded_code = arm_Ptr.pipeline.decoded;
 
-
     } while(decoded_code != 0);
-
 
      //for a cycle of pipeline, previously fetched instr is decoded and ancestor ints is executed.
      //the emulator should terminate when it executes an all-0 instr
      //Upon termination, output the state of all the registers
     print_register_state();
 }
-
-
 
 
 /*decode instruction */
@@ -183,12 +142,13 @@ void decode_instr(int32_t word)
 
   switch (code)
   {
-    case 2:
-      branch(word);
+    case 2: 
+      branch(word); 
       break;
     case 1:
-    case 0:
-      IS_SET(get_bits(word, 26, 27)) ? single_data_transfer(word) : decode_checker(word);
+    case 0: 
+      IS_SET(get_bits(word, 26, 27)) ? single_data_transfer(word) 
+                                         : decode_checker(word);
       break;
     default:
       break;
@@ -216,14 +176,29 @@ int check_cond(int32_t word)
   int cond = get_bits(word, 28, 31);
 
   switch(cond){
-    case(EQ): return CPSR_GET(Z); break;
-    case(NE): return !CPSR_GET(Z); break;
-    case(GE): return CPSR_GET(N) == CPSR_GET(V); break;
-    case(LT): return CPSR_GET(N) != CPSR_GET(V); break;
-    case(GT): return CPSR_GET(Z) & (CPSR_GET(N) == CPSR_GET(V)); break;
-    case(LE): return CPSR_GET(Z) | (CPSR_GET(N) != CPSR_GET(V)); break;
-    case(AL): return 1; break;
-    default : return 0;
+    case(EQ): 
+         return CPSR_GET(Z); 
+         break;
+    case(NE): 
+         return !CPSR_GET(Z); 
+         break;
+    case(GE): 
+         return CPSR_GET(N) == CPSR_GET(V); 
+         break;
+    case(LT): 
+         return CPSR_GET(N) != CPSR_GET(V); 
+         break;
+    case(GT): 
+         return CPSR_GET(Z) & (CPSR_GET(N) == CPSR_GET(V)); 
+         break;
+    case(LE): 
+         return CPSR_GET(Z) | (CPSR_GET(N) != CPSR_GET(V)); 
+         break;
+    case(AL): 
+         return 1; 
+         break;
+    default : 
+         return 0;
   }
 }
 
@@ -233,7 +208,8 @@ void print_register_state()
     printf("Registers state: \n");
     printf("General registers: \n");
     //Register 0 - 12 are the general registers
-    for(int i = 0; i < REGISTER_COUNT - 4; i++){
+    for(int i = 0; i < REGISTER_COUNT - 4; i++)
+    {
         int32_t reg = REG_READ(i);
         printf("$%-3i:   %10d  (0x%08x)\n", i, reg, reg);
     }
@@ -241,10 +217,9 @@ void print_register_state()
     printf("PC  :   %10d  (0x%08x)\n", REG_READ(PC), REG_READ(PC));
     printf("CPSR:   %10d  (0x%08x)\n", REG_READ(CPSR),  REG_READ(CPSR));
 
-
-   printf("Non-zero memory:\n");
-   for (int i = 0; i < MEMORY_CAPACITY; i += 4)
-   {
+    printf("Non-zero memory:\n");
+    for (int i = 0; i < MEMORY_CAPACITY; i += 4)
+    {
     	if (MEM_R_32bits(i) == 0) continue;
     	printf("0x%08x: 0x%08x\n", i, MEM_R_32bits_BE(i));
     }
@@ -368,22 +343,19 @@ void multiply(int32_t word)
     int32_t dataRs = convert(REG_READ(Rs));
     int32_t mulResult = dataRm * dataRs;
 
-    if(IS_SET(Acc)) {
+    if(IS_SET(Acc)) 
+    {
         int32_t dataRn = convert(REG_READ(Rn));
         mulResult += dataRn;
     }
 
     REG_WRITE(Rd, mulResult);
 
-    if(IS_SET(SetCond)) {
+    if(IS_SET(SetCond)) 
+    {
         int bit31 = get_bits(mulResult, 30, 31); //N is the 31 bit of result
         cpsrStruct->bitN = bit31;
-
-        if(mulResult == 0) {
-            cpsrStruct->bitZ = 1; //Z is set
-        } else {
-            cpsrStruct->bitZ = 0;
-        }
+        (mulResult == 0) ? (cpsrStruct->bitZ = 1) : (cpsrStruct->bitZ = 0);
     }
 }
 
@@ -395,7 +367,6 @@ void single_data_transfer(int32_t word)
     SDTInstruct *SDTInst = (SDTInstruct *) &word;
 
     int dataRn     = SDTInst->Rn;         // base register
-    //int dataRd     = SDTInst->Rd;         // destination register
     int dataOffset = SDTInst->Offset;
     int dataI      = SDTInst->I;
     int dataP      = SDTInst->P;
@@ -403,32 +374,26 @@ void single_data_transfer(int32_t word)
     int dataL      = SDTInst->L;
 
 	//Check if I is setbranchOffset
-  if (IS_SET(dataI)) {
+  if (IS_SET(dataI)) 
+  {
     dataOffset = as_shifted_reg(dataOffset, 1);
   } else {
     dataOffset = as_immediate_reg(dataOffset);
   }
 
   //Pre-indexing
-    if (IS_SET(dataP)) {
-      dataRn += (IS_SET(dataU)? dataOffset : -dataOffset);
-
-      IS_SET(dataL) ? (word = MEM_R_32bits(dataRn)) : MEM_W_32bits(dataRn, word);
-
+  if (IS_SET(dataP)) 
+  {
+    dataRn += (IS_SET(dataU)? dataOffset : -dataOffset);
+    IS_SET(dataL) ? (word = MEM_R_32bits(dataRn)) : MEM_W_32bits(dataRn, word);
   //Post-indexing
-    } else {
-        if (IS_SET(dataL)) {
-          word = MEM_R_32bits(dataRn);
-	} else {
-          MEM_W_32bits(dataRn, word);
-	}
-        dataRn += (IS_SET(dataU)? dataOffset : -dataOffset);
-
-
+  } else {
+    IS_SET(dataL) ? (word = MEM_R_32bits(dataRn)) : MEM_W_32bits(dataRn, word);	
+    dataRn += (IS_SET(dataU)? dataOffset : -dataOffset);
     }
 }
 
-
+ 
 /*branch */
 
 void branch(int32_t word)
@@ -442,14 +407,14 @@ void branch(int32_t word)
      //offset is between in bits 0-23
      //branchStrc -> Offset = get_bits(word, 0, 23);
 
-     int32_t offsetb = BranchInst-> Offset;
+     int32_t offsetb = BranchInst-> Offset; 
 
      //offset is shifted left 2 bits
      int32_t offsetNewb = offsetb << branchShift;
 
      //signed bits extended to 32 bits
      int32_t signed_bits = (offsetNewb >> (branchPC - branchShift)) << (SIZE_OF_WORD - branchOffset - branchShift);
-
+ 
      //add the signed bits to PC
      INC_PC(signed_bits);
 
