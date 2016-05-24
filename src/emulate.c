@@ -205,11 +205,11 @@ void print_register_state()
     //Register 0 - 12 are the general registers
     for(int i = 0; i <= REGISTER_COUNT - 4; i++){
         int32_t reg = REG_READ(i);
-        printf("$%-3i:      (0x%08x)\n", i, reg);
+        printf("$%-3i:   %10d  (0x%08x)\n", i, reg, reg);
     }
 
-    printf("PC : (0x%08x)\n", REG_READ(PC));
-    printf("CPSR : (0x%08x)\n", REG_READ(CPSR));
+    printf("PC  :   %10d  (0x%08x)\n", REG_READ(PC), REG_READ(PC));
+    printf("CPSR:   %10d  (0x%08x)\n", REG_READ(CPSR),  REG_READ(CPSR));
 }
 
 
