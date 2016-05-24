@@ -60,7 +60,6 @@ void branch(int32_t);
 
 ////////////////////////// BINARY FILE LOADER ////////////////////////////////
 
-
 void read_ARM(const char *filename)
 {
     FILE *file = fopen(filename, "rb");
@@ -433,17 +432,17 @@ void branch(int32_t word)
 
 int main(int argc, char **argv)
 {
-  //int argc mumber of chars
-    char errorMsg[] = "No arguments in input!\n";
-
-    if(argc == 0) {
+    if (argc < 2)
+    {
       // not in form of .bin '.','b','i','n','/0';
-        printf( "%s", errorMsg);
+        printf( "No argument in input\n");
         printf("Please type in a bin file\n");
-        return -1;
+        exit(EXIT_FAILURE);
     }
 
-    printf("Hello World\n");
+  //int argc mumber of chars  
+    arm_Ptr = calloc(1, sizeof(ARM_State));
+    arm_Ptr->pipeline = calloc(1, sizeof(Pipeline));
 
     //Read input file and emulate
     read_ARM(argv[1]);
@@ -451,9 +450,7 @@ int main(int argc, char **argv)
 
     //Free memory and exit program
     free(arm_Ptr);
-    //free(arm_Ptr->pipeline);
+    free(arm_Ptr->pipeline);
 
     return EXIT_SUCCESS;
-
-
 }
