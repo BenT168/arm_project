@@ -64,39 +64,31 @@ void read_ARM(const char *filename)
 {
     FILE *file = fopen(filename, "rb");
     //file = fopen(binFile, "rb"); //open the file r = read , b = binary
+    long size = ftell(file);
+    //Size of file in bytes
 
-    int size_instruct = 4; /* 32 bits = 4 bytes */
-
-    if (file != NULL)
+    if (file != NULL && fseek(file, 0, SEEK_END) != 0)
     {
-        fseek(file, 0, SEEK_END);
-        long size = ftell(file); //Size of file in bytes
         fseek(file, 0, SEEK_SET); //go back to start
 
-        //Allocate memory
-        arm_Ptr =  calloc(1, size+1);
-        if(!arm_Ptr)
-        {
-            char errorMsg[] = "Memory Error!";
-            fprintf(stderr, "%s\n", errorMsg);
-            fclose(file);
-            return;
-        }
-
-        int num_instruct = size / size_instruct;
-        //Read instructions into ARM Memory
-        size_t newLen = fread(arm_Ptr->memory, size_instruct, num_instruct, file);
-        printf("reading arm file \n");
-        if (newLen == 0)
-        {
-            fputs("Error reading file", stderr);
-        } else {
-           fclose(file);
-        }
-
-    } else {
-        perror("Error opening file");
+    }   //Allocate memory
+        
+    if(!arm_Ptr)
+    {
+        char errorMsg[] = "Memory Error!";
+        fprintf(stderr, "%s\n", errorMsg);
+        fclose(file);
+        exit(EXIT_FAILURE);
     }
+
+    //Read instructions into ARM Memory
+    size_t newLen = fread(arm_Ptr->memory, 1, size, file);
+    printf("reading arm file \n");
+        
+   (newLen == size) ? fclose(file) : fputs("Error reading file", stderr);
+   
+    perror("Error opening file");
+    
 }
 
 
