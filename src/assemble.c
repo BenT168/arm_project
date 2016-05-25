@@ -8,6 +8,19 @@
 
 
 
+//////////////////Special Instruction //////////////////////////////////////////
+/*andeq func */
+
+int32_t andeq_func(){
+  return 0x00000000
+}
+
+/*lsl func */
+
+
+
+
+
 int main(int argc, char **argv) {
   return EXIT_SUCCESS;
 }
