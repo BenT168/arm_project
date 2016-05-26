@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "library/assemblerInstruction.h"
+#include "library/tokens.h"
+
 ///////////////////////////two-pass assembly////////////////////////////////////
 
 /////// first pass//////////////////////////////////////////////////////////////
@@ -67,7 +70,11 @@ void write_File(const char *binaryFile) {
 //////////////////Special Instruction //////////////////////////////////////////
 /*andeq func */
 
-int32_t andeq_func(){
+//for instr that compute results, the syntax is <opcode> Rd, Rn, <Operand 2>
+//andeq is similar to and with cond set to 0000 (eq condition)
+//andeq r0, r0, r0
+//TOKENISE_STRUCT *line is to get 'andeq from the line read'
+int32_t andeq_func(TOKENISE_STRUCT *token_line, register(r0)){
   return 0x00000000
 }
 

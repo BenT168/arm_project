@@ -28,6 +28,6 @@ TOKENISE_STRUCT tokenise(char *string, const char *delim) {
   }
   tokenStruct.tokenCount = countToken;
 
-  free(tokenStruct.tokens); 
+  free(tokenStruct.tokens);
   return tokenStruct;
 }
