@@ -77,6 +77,9 @@ int32_t andeq_func(TOKENISE_STRUCT *token_line, register(r0)){
 }
 
 /*lsl func */
+int32_t lsl_func(TOKENISE_STRUCT *token_line, ){
+  
+}
 
 
 
