@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "library/assemblerInstruction.h"
+#include "library/Instruction.h"
 #include "library/tokens.h"
 
 ///////////////////////////two-pass assembly////////////////////////////////////

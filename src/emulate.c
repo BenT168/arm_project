@@ -15,7 +15,7 @@
 ////////////////////////////////////MACROS/////////////////////////////////////
 
 #include "library/bitwise.h"
-#include "library/registerwise.h"
+#include "library/register.h"
 
 /* Memory Read/Write */
 
@@ -95,7 +95,7 @@ void read_ARM(const char *filename)
     }
 }
 
-  
+
 //////////////////////////// EMULATE CORE /////////////////////////////////////
 
 /* emulator */
@@ -142,12 +142,12 @@ void decode_instr(int32_t word)
 
   switch (code)
   {
-    case 2: 
-      branch(word); 
+    case 2:
+      branch(word);
       break;
     case 1:
-    case 0: 
-      IS_SET(get_bits(word, 26, 27)) ? single_data_transfer(word) 
+    case 0:
+      IS_SET(get_bits(word, 26, 27)) ? single_data_transfer(word)
                                          : decode_checker(word);
       break;
     default:
@@ -176,28 +176,28 @@ int check_cond(int32_t word)
   int cond = get_bits(word, 28, 31);
 
   switch(cond){
-    case(EQ): 
-         return CPSR_GET(Z); 
+    case(EQ):
+         return CPSR_GET(Z);
          break;
-    case(NE): 
-         return !CPSR_GET(Z); 
+    case(NE):
+         return !CPSR_GET(Z);
          break;
-    case(GE): 
-         return CPSR_GET(N) == CPSR_GET(V); 
+    case(GE):
+         return CPSR_GET(N) == CPSR_GET(V);
          break;
-    case(LT): 
-         return CPSR_GET(N) != CPSR_GET(V); 
+    case(LT):
+         return CPSR_GET(N) != CPSR_GET(V);
          break;
-    case(GT): 
-         return CPSR_GET(Z) & (CPSR_GET(N) == CPSR_GET(V)); 
+    case(GT):
+         return CPSR_GET(Z) & (CPSR_GET(N) == CPSR_GET(V));
          break;
-    case(LE): 
-         return CPSR_GET(Z) | (CPSR_GET(N) != CPSR_GET(V)); 
+    case(LE):
+         return CPSR_GET(Z) | (CPSR_GET(N) != CPSR_GET(V));
          break;
-    case(AL): 
-         return 1; 
+    case(AL):
+         return 1;
          break;
-    default : 
+    default :
          return 0;
   }
 }
@@ -343,7 +343,7 @@ void multiply(int32_t word)
     int32_t dataRs = convert(REG_READ(Rs));
     int32_t mulResult = dataRm * dataRs;
 
-    if(IS_SET(Acc)) 
+    if(IS_SET(Acc))
     {
         int32_t dataRn = convert(REG_READ(Rn));
         mulResult += dataRn;
@@ -351,7 +351,7 @@ void multiply(int32_t word)
 
     REG_WRITE(Rd, mulResult);
 
-    if(IS_SET(SetCond)) 
+    if(IS_SET(SetCond))
     {
         int bit31 = get_bits(mulResult, 30, 31); //N is the 31 bit of result
         cpsrStruct->bitN = bit31;
@@ -374,7 +374,7 @@ void single_data_transfer(int32_t word)
     int dataL      = SDTInst->L;
 
 	//Check if I is setbranchOffset
-  if (IS_SET(dataI)) 
+  if (IS_SET(dataI))
   {
     dataOffset = as_shifted_reg(dataOffset, 1);
   } else {
@@ -382,18 +382,18 @@ void single_data_transfer(int32_t word)
   }
 
   //Pre-indexing
-  if (IS_SET(dataP)) 
+  if (IS_SET(dataP))
   {
     dataRn += (IS_SET(dataU)? dataOffset : -dataOffset);
     IS_SET(dataL) ? (word = MEM_R_32bits(dataRn)) : MEM_W_32bits(dataRn, word);
   //Post-indexing
   } else {
-    IS_SET(dataL) ? (word = MEM_R_32bits(dataRn)) : MEM_W_32bits(dataRn, word);	
+    IS_SET(dataL) ? (word = MEM_R_32bits(dataRn)) : MEM_W_32bits(dataRn, word);
     dataRn += (IS_SET(dataU)? dataOffset : -dataOffset);
     }
 }
 
- 
+
 /*branch */
 
 void branch(int32_t word)
@@ -407,14 +407,14 @@ void branch(int32_t word)
      //offset is between in bits 0-23
      //branchStrc -> Offset = get_bits(word, 0, 23);
 
-     int32_t offsetb = BranchInst-> Offset; 
+     int32_t offsetb = BranchInst-> Offset;
 
      //offset is shifted left 2 bits
      int32_t offsetNewb = offsetb << branchShift;
 
      //signed bits extended to 32 bits
      int32_t signed_bits = (offsetNewb >> (branchPC - branchShift)) << (SIZE_OF_WORD - branchOffset - branchShift);
- 
+
      //add the signed bits to PC
      INC_PC(signed_bits);
 
