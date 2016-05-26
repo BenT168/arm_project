@@ -1,5 +1,5 @@
-#ifndef ASSEMBLER
-#define ASSEMBLER
+#ifndef ASSEMBLER_H
+#define ASSEMBLER_H
 
 #include <stdint.h>
 
