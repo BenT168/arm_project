@@ -1,7 +1,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "registerwise.h"
+#include "register.h"
 #include "instruction.h"
 
 ///////////////////////////// SHIFTING //////////////////////////////////////
