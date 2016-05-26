@@ -9,13 +9,13 @@ void print_bits(int32_t x)
     int i;
     uint32_t mask = 1 << 31;
 
-    for (i = 0; i < 32; ++i) 
+    for (i = 0; i < 32; ++i)
     {
         if((x & mask) == 0)
             printf("0");
-        else 
+        else
             printf("1");
-    
+
         x = x << 1;
     }
     printf("\n");
@@ -30,19 +30,19 @@ int32_t get_bits(int32_t i, int start, int end)
     if (end - start == 31)
         return i;
 
-    // create a mask that matches the bits between start and end 
+    /* create a mask that matches the bits between start and end*/
     mask = ((1 << (end - start + 1)) - 1) << start;
-    // use the & operation to extract the required bits 
+    /* use the & operation to extract the required bits*/
     return (mask & i) >> start;
 }
 
 
 /* Rotate Right Function */
 int32_t rotate_right(int32_t x, int n)
-{   
+{
     int i;
 
-    for (i = 0; i < n; i++) 
+    for (i = 0; i < n; i++)
     {
       int last = BIT_GET(x, 0);
       x >>= 1;
@@ -55,8 +55,8 @@ int32_t rotate_right(int32_t x, int n)
 int32_t rotate_left(int32_t x, int n)
 {
     int i;
- 
-    for (i = 0; i < n; i++) 
+
+    for (i = 0; i < n; i++)
     {
         int last = BIT_GET(x, 31);
         x <<= 1;
@@ -64,4 +64,3 @@ int32_t rotate_left(int32_t x, int n)
     }
     return x;
 }
-
