@@ -1,5 +1,12 @@
-
 #include <stdlib.h>
+#include <stdint.h>
+#include <assert.h>
+#include <string.h>
+#include <stdio.h>
+
+///////////////////////// STRUCTURE OF INSTRUCTION /////////////////////////////
+
+#include "library/assemblerInstruction.h"
 
 ///////////////////////////two-pass assembly////////////////////////////////////
 
@@ -9,5 +16,6 @@
 
 
 int main(int argc, char **argv) {
-  return EXIT_SUCCESS;
+
+
 }

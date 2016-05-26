@@ -1,8 +1,9 @@
-#ifndef _INSTRUCTION_TYPE
-#define _INSTRUCTION_TYPE
+#ifndef _INSTRUCTION_ASSEMBLER_TYPE_
+#define _INSTRUCTION_ASSEMBLER_TYPE_
 
 #include <stdint.h>
 #include <stdlib.h>
+
 
 //////////////////// Structure of Instruction //////////////////////////////
 
@@ -59,71 +60,48 @@ typedef struct BranchInstruct
 } BranchInstruct;
 
 
-///////////////////////////// Types of Shift /////////////////////////////////
+////////////////////////// REGISTER DEFINITIONS  //////////////////////////////
 
-
-typedef struct ImmReg
+typedef enum
 {
-    unsigned int Imm      : 8;
-    unsigned int Rotate   : 4;
-} ImmReg;
-
-
-typedef struct ShiftReg
-{
-    unsigned int Rm       : 4;
-    unsigned int Flag     : 1;
-    unsigned int Type     : 2;
-    unsigned int Amount   : 5;
-} ShiftReg;
-
-
-typedef struct ShiftRegOptional
-{
-    unsigned int Amount   : 5;
-    unsigned int Type     : 2;
-    unsigned int Flag     : 1;
-    unsigned int Rm       : 4;
-} ShiftRegOptional;
-
+    r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, r16
+} Register;
 
 ////////////////////////// Definition of Mnemonic ////////////////////////////
 
+typedef enum Mnemonic
+{
+    //Data Processing
+    add = 4,
+    sub = 2,
+    rsb = 3,
+    and = 0,
+    eor = 1,
+    orr = 12,
+    mov = 13,
+    tst = 8,
+    tqe = 9,
+    cmp = 10,
+    //Multiply
+    mul, mla,
+    //Single Data Transfer
+    ldr, str,
+    //Branch
+    beq, bne, bge, blt, bgt, ble, b,
+    //Special
+    lsl, andeq
+} Mnemonic;
 
 typedef enum Cond
 {
-    EQ =  0,
-    NE =  1,
-    GE = 10,
-    LT = 11,
-    GT = 12,
-    LE = 13,
-    AL = 14
+    eq =  0,
+    ne =  1,
+    ge = 10,
+    lt = 11,
+    gt = 12,
+    le = 13,
+    al = 14
 } Cond;
-
-
-typedef enum Opcode
-{
-    AND =  0,
-    EOR =  1,
-    SUB =  2,
-    RSB =  3,
-    ADD =  4,
-    TST =  8,
-    TEQ =  9,
-    CMP = 10,
-    ORR = 12,
-    MOV = 13
-} Opcode;
-
-
-typedef enum ShiftType
-{
-    LSL = 0, /* logical left */
-    LSR = 1, /* logical right */
-    ASR = 2, /* arithmetic right */
-    ROR = 3  /* rotate right */
-} ShiftType;
 
 
 #endif
