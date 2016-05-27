@@ -17,7 +17,7 @@
 #include "library/tokens.h"
 // for numerica constant it's in the form "#x" where x is a natural number
 // or in the form "=x" for ldr instr (the expr can be 32 bits after =)
-#define Is_Expression(token)  (token[0] == '#' | token[0] == '=')
+#define Is_Expression(token)  (token[0] == '#' || token[0] == '=')
 #define Is_Hexadecimal(token) (Is_Expression(token) & token[1] == '0' & token[2] == 'x')
 #define max_8bit_represented = 256; // 2^8 = 256
 
@@ -217,7 +217,12 @@ int32_t SDT_PostIndexing(int Rd, char *adr) {
 //////////////////////////Instruction //////////////////////////////////////////
 
 /////////////////////// Data Processing ////////////////////////////////////////
-char *decimal_to_binary(int number){
+//a lookup table for binary numbers
+static const char *const binaries = {"0000","0001","0010","0011","0100"\
+                                    ,"0101", "0110","0111","1000","1001"\
+                                    ,"1010","1011","1100"."1101","1110","1111"};
+
+const char *decimal_to_binary(int number){
   int count = 1, quotient, binary;
 
   while(number != 0){
@@ -229,19 +234,13 @@ char *decimal_to_binary(int number){
   return binary;
 }
 
-char *hex_to_binary(int number){
-  int count = 1, quotient, binary;
-
-  while(number != 0){
-    quotient= number
-  }
+const char *hex_to_binary(char number){
+  if(number >= '0' & number <= '9') return binaries[number];
+  if(number >= 'A' & number <= 'F') return binaries[10 + number - 'A'];
+  if(number >= 'a' & number <= 'f') return binaries[10 + number - 'a'];
 }
 
-
-int32_t as_shifted_reg(){
-
-}
-
+//TODO: CHECKKKKKK!!!!!!
 int as_numeric_constant(int value){
   int num_bit = 0;
 
@@ -253,6 +252,54 @@ int as_numeric_constant(int value){
     perror("numerical constant cannot be represented.");
     exit(EXIT_FAILURE);
   }
+}
+
+// can be either <shiftname><register> or <shiftname><#expression>
+//<shiftname> can be either asr, lsl, lsr or ror
+//If operand2 is a register the 12-bit is shift(11-4)+Rm(3-0)
+  //first case integer(11-7)+shift type(6-5)+0(4)
+  //second case shiftReg RS(11-8)+0(7)+shift type(6-5)+1(4)
+//TOKENISE_STRUCT *elem is a pointer to elems in tokenized line
+int as_shifted_reg(TOKENISE_STRUCT *line, int pos_of_Rm){
+  char *shift_name = line->tokens[1];
+  char *Operand2 = line->tokens[2];
+  int result = 0;
+
+  shiftReg shiftReg;
+  ShiftRegOptional regOp;
+  int shiftType = STR_TO_ENUM(shift_name);
+
+//in the form <shiftname><#expression>
+if(Is_Expression(Operand2)){
+  //+1 to git rid of 'r' but just getting the reg number
+  shiftReg.Rm = atoi(line->tokens[pos_of_Rm] + 1); //TODO: check
+  shiftReg.Flag = 0;
+  shiftReg.Type = shiftType;
+  shiftReg.Amount = atoi(Operand2);
+
+  result = (int) &shiftReg;
+
+} else { //in the form <shiftname><register>
+  //CHECK THE STRUC?!??!
+  regOp.Type = shiftType;
+  regOp.Flag = 0;
+  regOp.Rs = atoi(line->tokens[pos_of_Rm] = 1) << 3; //getting the last bit of Rs
+
+  result = (int) &regOp;
+}
+
+return result;
+}
+
+//to check if operand2 is an expression or a register
+int check_op2(TOKENISE_STRUCT *line, int pos_of_op2){
+  char *op2 = line->tokens[pos_of_op2 + 2];
+
+  if(Is_Expression(op2)){
+    return as_numeric_constant(atoi(op2));
+  }
+  return as_shifted_reg(line, pos_of_op2);
+
 }
 
 //////////////////Special Instruction //////////////////////////////////////////
