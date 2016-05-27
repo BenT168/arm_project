@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+<<<<<<< HEAD
+#include "library/instruction.h"
+=======
 ////////////////////////////////ARM STRUCTURE//////////////////////////////////
 
 #include "library/arm11.h"
@@ -10,18 +13,18 @@
 /////////////////////////////two-pass assembly/////////////////////////////////
 #include "library/instruction.h"
 
-<<<<<<< HEAD
 ////////////////////////////////////MACROS/////////////////////////////////////
 
 #include "library/register.h"
 #include "library/tokens.h"
-=======
 // for numerica constant it's in the form "#x" where x is a natural number
-// or in the form "=x" for single data transfer instr
+// or in the form "=x" for ldr instr (the expr can be 32 bits after =)
 #define Is_Expression(token)  (token[0] == '#' | token[0] == '=')
+#define Is_Hexadecimal(token) (Is_Expression(token) & token[1] == '0' & token[2] == 'x')
+#define max_8bit_represented = 256; // 2^8 = 256
+
 
 ///////////////////////////two-pass assembly////////////////////////////////////
->>>>>>> 53118222889e018997cb32662ba423aadbe42dc1
 
 /////// first pass//////////////////////////////////////////////////////////////
 
@@ -80,7 +83,6 @@ void write_File(const char *binaryFile) {
   fclose(binaryFile);
 }
 
-<<<<<<< HEAD
 //////////////////////////   Core     //////////////////////////////////////////
 
 void data_processing(int32_t word)
@@ -158,27 +160,46 @@ void data_processing(int32_t word)
 	}
 }
 
-=======
 //////////////////////////Instruction //////////////////////////////////////////
 
 /////////////////////// Data Processing ////////////////////////////////////////
+char *decimal_to_binary(int number){
+  int count = 1, quotient, binary;
+
+  while(number != 0){
+    quotient = number % 2;
+    number /= 2;
+    binary = quotient * count;
+    i *= 10;
+  }
+  return binary;
+}
+
+char *hex_to_binary(int number){
+  int count = 1, quotient, binary;
+
+  while(number != 0){
+    quotient= number
+  }
+}
+
+
 int32_t as_shifted_reg(){
 
 }
 
-int as_numeric_constant(int  value){
+int as_numeric_constant(int value){
   int num_bit = 0;
 
   while(num_bit < 32){
     rotate_right(value, 2);
     num_bit += 2;
   }
-  if(num_bit == 32){
+  if(value > max_8bit_represented) {
     perror("numerical constant cannot be represented.");
     exit(EXIT_FAILURE);
   }
 }
->>>>>>> 53118222889e018997cb32662ba423aadbe42dc1
 
 //////////////////Special Instruction //////////////////////////////////////////
 /*andeq func */
@@ -192,6 +213,9 @@ int32_t andeq_func(TOKENISE_STRUCT *token_line){
 }
 
 /*lsl func */
+int32_t lsl_func(TOKENISE_STRUCT *token_line, ){
+
+}
 
 
 

@@ -131,6 +131,8 @@ typedef enum ShiftType
     ROR = 3  /* rotate right */
 } ShiftType;
 
+<<<<<<< HEAD
+=======
 //////////////////////////// ASSEMBLER /////////////////////////////////////
 
 #define f_pair(x) { x, #x },
@@ -234,5 +236,6 @@ STR_TO_ENUM(opcode)
 STR_TO_ENUM(cond)
 STR_TO_ENUM(shiftType)
 
+>>>>>>> 58dcb114b4e3f35aff7f4f0c959542746424b486
 
 #endif
