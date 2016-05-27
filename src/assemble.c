@@ -157,6 +157,36 @@ void data_processing(int32_t word)
 	}
 }
 
+
+
+int32_t single_data_transfer(int Rd, char *adr)
+{
+  int address = get_value(adr);
+  if (IS_SET(L)) {                        // ldr: Load from memory into register
+    if (adr[0] == '=') {                  // In numeric form
+      return SDT_num_const(Rd, address, *adr);
+    } else {
+
+    }
+
+  } else {                                // str: store register into memory
+
+  }
+
+}
+
+int32_t SDT_num_const(int r0, int address, char *adr) {
+
+  if (address <= 0xFF) {                  // Treat as mov Instruction
+    adr[0] = '#';
+    return data_processing(mov r0, adr);
+
+  } else {
+    //TODO place address in four bytes
+  }
+}
+
+
 =======
 //////////////////////////Instruction //////////////////////////////////////////
 
