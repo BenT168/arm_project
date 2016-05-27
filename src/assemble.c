@@ -5,6 +5,10 @@
 #include "library/Instruction.h"
 #include "library/tokens.h"
 
+// for numerica constant it's in the form "#x" where x is a natural number
+// or in the form "=x" for single data transfer instr
+#define Is_Expression(token)  (token[0] == '#' | token[0] == '=')
+
 ///////////////////////////two-pass assembly////////////////////////////////////
 
 /////// first pass//////////////////////////////////////////////////////////////
@@ -64,6 +68,25 @@ void write_File(const char *binaryFile) {
   fclose(binaryFile);
 }
 
+//////////////////////////Instruction //////////////////////////////////////////
+
+/////////////////////// Data Processing ////////////////////////////////////////
+int32_t as_shifted_reg(){
+
+}
+
+int as_numeric_constant(int  value){
+  int num_bit = 0;
+
+  while(num_bit < 32){
+    rotate_right(value, 2);
+    num_bit += 2;
+  }
+  if(num_bit == 32){
+    perror("numerical constant cannot be represented.");
+    exit(EXIT_FAILURE);
+  }
+}
 
 //////////////////Special Instruction //////////////////////////////////////////
 /*andeq func */
@@ -81,7 +104,7 @@ int32_t andeq_func(TOKENISE_STRUCT *token_line, register(r0)){
 
 
 
-
+///////////////////////// Main /////////////////////////////////////////////////
 int main(int argc, char **argv) {
 
   if(argc < 2) { // Need two files
