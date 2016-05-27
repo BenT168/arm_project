@@ -6,7 +6,9 @@
 #include <string.h>
 #include <ctype.h>
 
+////////////////////////////////////////////////////////////////////////////
 ////////////////////////////// EMULATE /////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 
 //////////////////// Structure of Instruction //////////////////////////////
 
@@ -129,5 +131,111 @@ typedef enum ShiftType
     ROR = 3  /* rotate right */
 } ShiftType;
 
+<<<<<<< HEAD
+=======
+//////////////////////////// ASSEMBLER /////////////////////////////////////
+
+#define f_pair(x) { x, #x },
+
+////////////////////////// Definition of Mnemonic ////////////////////////////
+
+#define mnemonic_toString(f) \
+        f(add) f(sub) f(rsb) f(and) f(eor) f(orr) f(mov) f(tst) \
+        f(teq) f(cmp) f(mul) f(mla) f(ldr) f(str) f(beq) f(bne) \
+        f(bge) f(blt) f(bgt) f(ble) f(b)   f(lsl) f(andeq)
+
+typedef enum Mnemonic
+{
+    //Data Processing
+    add = 4,
+    sub = 2,
+    rsb = 3,
+    and = 0,
+    eor = 1,
+    orr = 12,
+    mov = 13,
+    tst = 8,
+    tqe = 9,
+    cmp = 10,
+    //Multiply
+    mul, mla,
+    //Single Data Transfer
+    ldr, str,
+    //Branch
+    beq, bne, bge, blt, bgt, ble, b,
+    //Special
+    lsl, andeq
+} Mnemonic;
+
+struct { /* Mnemoic_toString is implemented as */
+  Mnemonic num;  /* name of the Mnemonic */
+  char *str; /* string of the mmemonic within in */
+} mnemonic_array[] = { mnemonic_toString(f_pair) };
+
+
+/////////////////////////////// Opcode ///////////////////////////////////
+
+
+#define opcode_toString(f) \
+	f(AND) f(EOR) f(SUB) f(RSB) f(ADD) f(TST) f(TEQ) f(CMP) f(ORR) f(MOV)
+
+struct { /* Opcode_toString is implemented as */
+  Opcode num;  /* name of the opcode */
+  char *str; /* string where opcode within in */
+} opcode_array[] = { opcode_toString(f_pair) };
+
+
+//////////////////////////// Cond //////////////////////////////////////////
+
+
+#define Cond_toString(f) \
+	f(EQ) f(NE) f(GE) f(LT) f(GT) f(LE) f(AL)
+
+struct { /* Cond_toString is implemented as */
+  Cond num;  /* name of the Cond */
+  char *str; /* string where the cond within in */
+}cond_array[] = { cond_toString(f_pair) };
+
+
+//////////////////////////// Shift Type ////////////////////////////////////
+
+
+#define ShiftType_toString(f) \
+	f(LSL) f(LSR) f(ASR) f(ROR)
+
+struct { /* ShiftType_toString is implemented as */
+  ShiftType num;  /* name of the shift type */
+  char *str; /* string where the shift type within in */
+}shiftType_array[] = { shiftType_toString(f_pair) };
+
+
+/////////////////////////// String_to_Enum ////////////////////////////////////
+
+
+#define STR_TO_ENUM(a) int str_to_##a(char *buffer)     \
+{                                                         \
+ 	int len = sizeof(a##_array)/sizeof(a##_array[0]);    \
+  	for (int i = 0; i < len; i++)                          \
+	{	        					\
+                char *low_buffer = strdup(a##_array[i].str);      \                             for ( int j = 0 ; j < strlen(low_buffer) ; j++ ) \
+                {                                                \
+			low_buffer[j] = tolower(low_buffer[j]);	\
+                }    \
+        				  \
+		if (strcmp(buffer, low_buffer) == 0)                           \
+		{                                                    \
+			return a##_array[i].num;                          \
+		}                                                    \
+	}                                                      \
+	return -1;                                             \
+}
+
+
+STR_TO_ENUM(mnemonic)
+STR_TO_ENUM(opcode)
+STR_TO_ENUM(cond)
+STR_TO_ENUM(shiftType)
+
+>>>>>>> 58dcb114b4e3f35aff7f4f0c959542746424b486
 
 #endif
