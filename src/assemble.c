@@ -10,10 +10,18 @@
 /////////////////////////////two-pass assembly/////////////////////////////////
 #include "library/instruction.h"
 
+<<<<<<< HEAD
 ////////////////////////////////////MACROS/////////////////////////////////////
 
 #include "library/register.h"
 #include "library/tokens.h"
+=======
+// for numerica constant it's in the form "#x" where x is a natural number
+// or in the form "=x" for single data transfer instr
+#define Is_Expression(token)  (token[0] == '#' | token[0] == '=')
+
+///////////////////////////two-pass assembly////////////////////////////////////
+>>>>>>> 53118222889e018997cb32662ba423aadbe42dc1
 
 /////// first pass//////////////////////////////////////////////////////////////
 
@@ -72,6 +80,7 @@ void write_File(const char *binaryFile) {
   fclose(binaryFile);
 }
 
+<<<<<<< HEAD
 //////////////////////////   Core     //////////////////////////////////////////
 
 void data_processing(int32_t word)
@@ -149,6 +158,27 @@ void data_processing(int32_t word)
 	}
 }
 
+=======
+//////////////////////////Instruction //////////////////////////////////////////
+
+/////////////////////// Data Processing ////////////////////////////////////////
+int32_t as_shifted_reg(){
+
+}
+
+int as_numeric_constant(int  value){
+  int num_bit = 0;
+
+  while(num_bit < 32){
+    rotate_right(value, 2);
+    num_bit += 2;
+  }
+  if(num_bit == 32){
+    perror("numerical constant cannot be represented.");
+    exit(EXIT_FAILURE);
+  }
+}
+>>>>>>> 53118222889e018997cb32662ba423aadbe42dc1
 
 //////////////////Special Instruction //////////////////////////////////////////
 /*andeq func */
@@ -166,7 +196,7 @@ int32_t andeq_func(TOKENISE_STRUCT *token_line){
 
 
 
-
+///////////////////////// Main /////////////////////////////////////////////////
 int main(int argc, char **argv) {
 
   if(argc < 2) { // Need two files
