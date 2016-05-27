@@ -1,10 +1,26 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "library/Instruction.h"
+////////////////////////////////ARM STRUCTURE//////////////////////////////////
+
+#include "library/arm11.h"
+
+///////////////////////// STRUCTURE OF INSTRUCTION ////////////////////////////
+/////////////////////////////two-pass assembly/////////////////////////////////
+#include "library/instruction.h"
+
+<<<<<<< HEAD
+////////////////////////////////////MACROS/////////////////////////////////////
+
+#include "library/register.h"
 #include "library/tokens.h"
+=======
+// for numerica constant it's in the form "#x" where x is a natural number
+// or in the form "=x" for single data transfer instr
+#define Is_Expression(token)  (token[0] == '#' | token[0] == '=')
 
 ///////////////////////////two-pass assembly////////////////////////////////////
+>>>>>>> 53118222889e018997cb32662ba423aadbe42dc1
 
 /////// first pass//////////////////////////////////////////////////////////////
 
@@ -63,6 +79,105 @@ void write_File(const char *binaryFile) {
   fclose(binaryFile);
 }
 
+<<<<<<< HEAD
+//////////////////////////   Core     //////////////////////////////////////////
+
+void data_processing(int32_t word)
+{
+	DataProcessingInstruct *DPInst = (DataProcessingInstruct *) &word;
+
+	int ImmOp    = DPInst->ImmOp;        // 25
+	int OpCode   = DPInst->Opcode;   // 24-21
+	int SetCond  = DPInst->SetCond;
+	int Rn       = DPInst->Rn;
+	int Rd       = DPInst->Rd;
+	int Operand2 = DPInst->Operand2; // 11-0
+
+	int Operand1 = arm_Ptr.registers[Rn];
+
+	Operand2     = IS_CLEAR(ImmOp) ? as_shifted_reg(Operand2, SetCond)
+	           		           : as_immediate_reg(Operand2);
+	int result   = 0;
+
+	// calculate result by opcode
+	switch (Mnemonic)
+	{
+		case and :
+		case eor :
+		case sub :
+		case rsb :
+		case add :
+		case orr :
+
+                    break;
+		case mov :
+
+                    break;
+		case tst :
+		case teq :
+		case cmp :
+
+                    break;
+		case RSB :
+                    result = Operand2 - Operand1;
+                    break;
+		case ADD :
+                    result = Operand1 + Operand2;
+                    break;
+		case ORR :
+                    result = Operand1 | Operand2;
+                    break;
+		case MOV :
+                    result = Operand2;
+                    break;
+		default  :
+                    result = 0;
+	}
+  	// save results if necessary
+	if(OpCode != TST || OpCode != TEQ || OpCode != CMP) {
+    REG_WRITE(Rd, result);
+  }
+
+
+	if (IS_SET(SetCond)) {
+	// set flags
+  	    CPSR_PUT(Z, (result == 0));
+            CPSR_PUT(N, BIT_GET(result, 31));
+
+            switch (OpCode)  {
+  		case 2  :
+  		case 3  :
+  		case 10 :
+        	    CPSR_PUT(C, (result >= 0));
+                    break;
+  		case 4  :
+                    CPSR_PUT(C, CPSR_GET(V));
+                    break;
+    }
+	}
+}
+
+=======
+//////////////////////////Instruction //////////////////////////////////////////
+
+/////////////////////// Data Processing ////////////////////////////////////////
+int32_t as_shifted_reg(){
+
+}
+
+int as_numeric_constant(int  value){
+  int num_bit = 0;
+
+  while(num_bit < 32){
+    rotate_right(value, 2);
+    num_bit += 2;
+  }
+  if(num_bit == 32){
+    perror("numerical constant cannot be represented.");
+    exit(EXIT_FAILURE);
+  }
+}
+>>>>>>> 53118222889e018997cb32662ba423aadbe42dc1
 
 //////////////////Special Instruction //////////////////////////////////////////
 /*andeq func */
@@ -71,8 +186,8 @@ void write_File(const char *binaryFile) {
 //andeq is similar to and with cond set to 0000 (eq condition)
 //andeq r0, r0, r0
 //TOKENISE_STRUCT *line is to get 'andeq from the line read'
-int32_t andeq_func(TOKENISE_STRUCT *token_line, register(r0)){
-  return 0x00000000
+int32_t andeq_func(TOKENISE_STRUCT *token_line){
+  return 0x00000000;
 }
 
 /*lsl func */
@@ -80,7 +195,7 @@ int32_t andeq_func(TOKENISE_STRUCT *token_line, register(r0)){
 
 
 
-
+///////////////////////// Main /////////////////////////////////////////////////
 int main(int argc, char **argv) {
 
   if(argc < 2) { // Need two files
