@@ -35,7 +35,7 @@ typedef struct MultiplyInstruct
     unsigned int Rn      : 4;
     unsigned int Rd      : 4; /* Destination registers 4-bits */
     unsigned int SetCond : 1; /* Set Condition codes  1-bit */
-    unsigned int Acc 	 : 1; /* Accumulate 1-bit */
+    unsigned int Acc 	   : 1; /* Accumulate 1-bit */
     unsigned int _000000 : 6;
     unsigned int Cond 	 : 4; /* Condition field 4-bits */
 } MultiplyInstruct;
