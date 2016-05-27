@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "library/assemblerInstruction.h"
+#include "library/Instruction.h"
 #include "library/tokens.h"
 
 ///////////////////////////two-pass assembly////////////////////////////////////
@@ -30,6 +30,9 @@ TOKENISE_STRUCT read_Source(const char *sourceFile) {
     //char *token;
     //token = strtok(buffer, s);
     fread(buffer, size, 1, sourceFile);
+    if(ferror(sourceFile)) {
+      perror("Error reading from sourceFile.\n");
+    }
 
     int sizeBuffer = sizeof(buffer);
 
@@ -37,11 +40,6 @@ TOKENISE_STRUCT read_Source(const char *sourceFile) {
 
     return tokenise(buffer, ",");
 
-
-    //while(token != NULL) {
-      //}
-  //  tokenise(buffer, )
-  //  assembler();
   }
 
   free(buffer);

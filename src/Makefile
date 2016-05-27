@@ -9,11 +9,15 @@ all: assemble emulate
 
 assemble: assemble.o
 
-emulate: emulate.o library/bitwise.o library/registerwise.o
+emulate: emulate.o library/bitwise.o library/register.o
 
 clean:
 	rm -f $(wildcard *.o)
 	rm -f assemble
 	rm -f emulate
 	rm -f library/bitwise
-	rm -f library/registerwise
+	rm -f library/register
+	rm -f library/arm11
+	rm -f library/instruction
+	rm -f library/bitwise.o
+	rm -f library/register.o
