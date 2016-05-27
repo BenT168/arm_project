@@ -2,9 +2,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-<<<<<<< HEAD
 #include "library/instruction.h"
-=======
+
 ////////////////////////////////ARM STRUCTURE//////////////////////////////////
 
 #include "library/arm11.h"
