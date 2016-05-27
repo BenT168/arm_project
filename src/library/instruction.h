@@ -131,6 +131,7 @@ typedef enum ShiftType
     ROR = 3  /* rotate right */
 } ShiftType;
 
+
 //////////////////////////// ASSEMBLER /////////////////////////////////////
 
 #define f_pair(x) { x, #x },

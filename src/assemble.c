@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "library/instruction.h"
+
 ////////////////////////////////ARM STRUCTURE//////////////////////////////////
 
 #include "library/arm11.h"
@@ -9,18 +11,18 @@
 /////////////////////////////two-pass assembly/////////////////////////////////
 #include "library/instruction.h"
 
-<<<<<<< HEAD
 ////////////////////////////////////MACROS/////////////////////////////////////
 
 #include "library/register.h"
 #include "library/tokens.h"
-=======
 // for numerica constant it's in the form "#x" where x is a natural number
-// or in the form "=x" for single data transfer instr
+// or in the form "=x" for ldr instr (the expr can be 32 bits after =)
 #define Is_Expression(token)  (token[0] == '#' | token[0] == '=')
+#define Is_Hexadecimal(token) (Is_Expression(token) & token[1] == '0' & token[2] == 'x')
+#define max_8bit_represented = 256; // 2^8 = 256
+
 
 ///////////////////////////two-pass assembly////////////////////////////////////
->>>>>>> 53118222889e018997cb32662ba423aadbe42dc1
 
 /////// first pass//////////////////////////////////////////////////////////////
 
@@ -79,7 +81,6 @@ void write_File(const char *binaryFile) {
   fclose(binaryFile);
 }
 
-<<<<<<< HEAD
 //////////////////////////   Core     //////////////////////////////////////////
 
 void data_processing(int32_t word)
@@ -161,16 +162,27 @@ void data_processing(int32_t word)
 
 int32_t single_data_transfer(int Rd, char *adr)
 {
+  /*
+
+  int dataRn     = SDTInst->Rn;         // base register
+  int dataOffset = SDTInst->Offset;
+  int dataI      = SDTInst->I;
+  int dataP      = SDTInst->P;
+  int dataU      = SDTInst->U;
+  int dataL      = SDTInst->L;
+
+
   int address = get_value(adr);
-  if (IS_SET(L)) {                        // ldr: Load from memory into register
+  if (IS_SET(dataL)) {                    // ldr: Load from memory into register
     if (adr[0] == '=') {                  // In numeric form
       return SDT_num_const(Rd, address, *adr);
-    } else {
-
     }
 
-  } else {                                // str: store register into memory
-
+    if (IS_SET(dataP)) {                  // Pre-indexing
+      return SDT_PreIndexing(int Rd, char *adr);
+    } else {                              // Post-indexing
+      return SDT_PsotIndexing(int Rd, char *adr);
+    }
   }
 
 }
@@ -186,28 +198,62 @@ int32_t SDT_num_const(int r0, int address, char *adr) {
   }
 }
 
+int32_t SDT_PreIndexing(int Rd, char *adr) {
+  int offset = 0;
+  if ((*adr[1])[0] == '#') {              //Case offset = <#expression>
+    offset = get_value(*adr[1]);
+  }
+  dataRn += (IS_SET(dataU)? dataOffset : -dataOffset);
+  IS_SET(dataL) ? (word = MEM_R_32bits(dataRn)) : MEM_W_32bits(dataRn, word);
+}
 
-=======
+int32_t SDT_PostIndexing(int Rd, char *adr) {
+  int offset = get_value(*adr[1]);
+  IS_SET(dataL) ? (word = MEM_R_32bits(dataRn)) : MEM_W_32bits(dataRn, word);
+  dataRn += (IS_SET(dataU)? dataOffset : -dataOffset);
+*/
+}
+
 //////////////////////////Instruction //////////////////////////////////////////
 
 /////////////////////// Data Processing ////////////////////////////////////////
+char *decimal_to_binary(int number){
+  int count = 1, quotient, binary;
+
+  while(number != 0){
+    quotient = number % 2;
+    number /= 2;
+    binary = quotient * count;
+    i *= 10;
+  }
+  return binary;
+}
+
+char *hex_to_binary(int number){
+  int count = 1, quotient, binary;
+
+  while(number != 0){
+    quotient= number
+  }
+}
+
+
 int32_t as_shifted_reg(){
 
 }
 
-int as_numeric_constant(int  value){
+int as_numeric_constant(int value){
   int num_bit = 0;
 
   while(num_bit < 32){
     rotate_right(value, 2);
     num_bit += 2;
   }
-  if(num_bit == 32){
+  if(value > max_8bit_represented) {
     perror("numerical constant cannot be represented.");
     exit(EXIT_FAILURE);
   }
 }
->>>>>>> 53118222889e018997cb32662ba423aadbe42dc1
 
 //////////////////Special Instruction //////////////////////////////////////////
 /*andeq func */
@@ -221,6 +267,9 @@ int32_t andeq_func(TOKENISE_STRUCT *token_line){
 }
 
 /*lsl func */
+int32_t lsl_func(TOKENISE_STRUCT *token_line, ){
+
+}
 
 
 
