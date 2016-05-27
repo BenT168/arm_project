@@ -6,7 +6,9 @@
 #include <string.h>
 #include <ctype.h>
 
+////////////////////////////////////////////////////////////////////////////
 ////////////////////////////// EMULATE /////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 
 //////////////////// Structure of Instruction //////////////////////////////
 
@@ -131,13 +133,14 @@ typedef enum ShiftType
 
 //////////////////////////// ASSEMBLER /////////////////////////////////////
 
-#define g_pair(x) { x, #xs }
+#define f_pair(x) { x, #x },
+
 ////////////////////////// Definition of Mnemonic ////////////////////////////
 
-#define mnemonic_tostring(f) \
-        g(add) g(sub) g(rsb) g(and) g(eor) g(orr) g(mov) g(tst)
-        g(tqe) g(cmp) g(mul) g(mla) g(ldr) g(str) g(beq) g(bne)
-        g(bge) g(blt) g(bgt) g(ble) g(b)   g(lsl) g(andeq)
+#define mnemonic_toString(f) \
+        f(add) f(sub) f(rsb) f(and) f(eor) f(orr) f(mov) f(tst) \
+        f(teq) f(cmp) f(mul) f(mla) f(ldr) f(str) f(beq) f(bne) \
+        f(bge) f(blt) f(bgt) f(ble) f(b)   f(lsl) f(andeq)
 
 typedef enum Mnemonic
 {
@@ -162,73 +165,64 @@ typedef enum Mnemonic
     lsl, andeq
 } Mnemonic;
 
-struct Mnemonic_toStringStructType { /* Mnemoic_toString is implemented as */
+struct { /* Mnemoic_toString is implemented as */
   Mnemonic num;  /* name of the Mnemonic */
   char *str; /* string of the mmemonic within in */
-};
+} mnemonic_array[] = { mnemonic_toString(f_pair) };
 
-Mnemonic_array[] = { Mnemonic_toString(g_pair) };
-
-typedef struct Mnemonic_toStringStructType *Mnemonic_toString;
 
 /////////////////////////////// Opcode ///////////////////////////////////
 
-#define Opcode_toString g() \
-g(AND) g(EOR) g(SUB) g(RSB) g(ADD) g(TST) g(TEQ) g(CMP) g(ORR) g(MOV)
 
-struct Opcode_toStringStructType { /* Opcode_toString is implemented as */
+#define opcode_toString(f) \
+	f(AND) f(EOR) f(SUB) f(RSB) f(ADD) f(TST) f(TEQ) f(CMP) f(ORR) f(MOV)
+
+struct { /* Opcode_toString is implemented as */
   Opcode num;  /* name of the opcode */
   char *str; /* string where opcode within in */
-};
+} opcode_array[] = { opcode_toString(f_pair) };
 
-Opcode_array[] = { Opcode_toString(g_pair) };
-
-typedef struct Opcode_toStringStructType *Opcode_toString;
 
 //////////////////////////// Cond //////////////////////////////////////////
 
-#define Cond_toString g() \
-g(EQ) g(NE) g(GE) g(LT) g(GT) g(LE) g(AL)
 
-Struct Cond_toStringStructType { /* Cond_toString is implemented as */
+#define Cond_toString(f) \
+	f(EQ) f(NE) f(GE) f(LT) f(GT) f(LE) f(AL)
+
+struct { /* Cond_toString is implemented as */
   Cond num;  /* name of the Cond */
   char *str; /* string where the cond within in */
-};
+}cond_array[] = { cond_toString(f_pair) };
 
-Cond_array[] = { Cond_toString(g_pair) };
-
-typedef struct Cond_toStringStructType *Cond_toString;
 
 //////////////////////////// Shift Type ////////////////////////////////////
 
-#define ShiftType_toString g() \
-g(LSL) g(LSR) g(ASR) g(ROR)
 
-Struct ShiftType_toStringStructType { /* ShiftType_toString is implemented as */
+#define ShiftType_toString(f) \
+	f(LSL) f(LSR) f(ASR) f(ROR)
+
+struct { /* ShiftType_toString is implemented as */
   ShiftType num;  /* name of the shift type */
   char *str; /* string where the shift type within in */
-};
+}shiftType_array[] = { shiftType_toString(f_pair) };
 
-SHiftType_array[] = { ShiftType_toString(g_pair) };
-
-typedef struct ShiftType_toStringStructType *ShiftType_toString;
 
 /////////////////////////// String_to_Enum ////////////////////////////////////
 
 
-#define STR_TO_ENUM(a) int str_to_enum(char *buffer)     \
-{                                                        \
-  for (int x = 0 ; x < strlen(buffer) ; x++)             \
-  {                                                      \
-    buffer[x] = tolower(buffer[x]);                      \
-  }                                                      \
-  int len = sizeof(enum_array)/sizeof(enum_array[0]);    \
-  for (int i = 0; i < len; i++)                          \
-	{	                                                     \
-		char *low_x = strtolwr(enum_array[i].str);           \
-		if (strcmp(x, low_x) == 0)                           \
+#define STR_TO_ENUM(a) int str_to_##a(char *buffer)     \
+{                                                         \
+ 	int len = sizeof(a##_array)/sizeof(a##_array[0]);    \
+  	for (int i = 0; i < len; i++)                          \
+	{	        					\
+                char *low_buffer = strdup(a##_array[i].str);      \                             for ( int j = 0 ; j < strlen(low_buffer) ; j++ ) \
+                {                                                \
+			low_buffer[j] = tolower(low_buffer[j]);	\
+                }    \
+        				  \
+		if (strcmp(buffer, low_buffer) == 0)                           \
 		{                                                    \
-			return enum_array[i].num;                          \
+			return a##_array[i].num;                          \
 		}                                                    \
 	}                                                      \
 	return -1;                                             \
