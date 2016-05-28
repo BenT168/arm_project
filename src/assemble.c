@@ -7,6 +7,10 @@
 
 #include "library/arm11.h"
 
+//////////////////////////ASSEMBLER STRUCTURE /////////////////////////////////
+
+#include "library/assembler.h"
+
 ///////////////////////// STRUCTURE OF INSTRUCTION ////////////////////////////
 /////////////////////////////two-pass assembly/////////////////////////////////
 #include "library/instruction.h"
@@ -36,8 +40,12 @@
 /////// first pass//////////////////////////////////////////////////////////////
 
 char *buffer;
+<<<<<<< HEAD
 ASSEMBLER_STRUCT ass;
 
+=======
+ASSEMBLER_STRUCT *ass = NULL;
+>>>>>>> 91664415ab5875e58f2a3c1c60511669968ea6a0
 
 TOKENISE_STRUCT read_Source();
 void write_File();
@@ -57,8 +65,8 @@ TOKENISE_STRUCT read_Source(const char *sourceFile) {
     //const char s = ",";
     //char *token;
     //token = strtok(buffer, s);
-    fread(buffer, size, 1, sourceFile);
-    if(ferror(sourceFile)) {
+    fread(buffer, size, 1, file);
+    if(ferror(file)) {
       perror("Error reading from sourceFile.\n");
     }
 
@@ -81,14 +89,15 @@ TOKENISE_STRUCT read_Source(const char *sourceFile) {
 void write_File(const char *binaryFile) {
   FILE *file = fopen(binaryFile, "wb"); //w = write b = binary
 
-  int32_t *program = assembler(ass); //get code from assembler program
+   //TODO
+  //int32_t *program = assembler(ass); //get code from assembler program
 
-  int size = ass.TOTAL_line * sizeof(int32_t);
+  //int size = ass->TOTAL_line * sizeof(int32_t);
   //size of each element that will be written
 
-  fwrite(program, size, 1, binaryFile);
+  //fwrite(program, size, 1, file);
 
-  fclose(binaryFile);
+  fclose(file);
 }
 
 //////////////////////////   Core     //////////////////////////////////////////
@@ -97,6 +106,7 @@ void write_File(const char *binaryFile) {
 #define ass_data_proc_mov(*token)   { ass_data_proc(token, 0, -1, 1, 2); }
 #define ass_data_proc_cpsr(*token)  { ass_data_proc(token, 1, 1, -1, 2); }
 
+<<<<<<< HEAD
 int32_t ass_data_proc(TOKENISE_STRUCT *line, int SetCond, int Rn, int Rd, int Operand_2)
 {
 	char *Operand2 = line->tokens[Operand_2];
@@ -104,6 +114,15 @@ int32_t ass_data_proc(TOKENISE_STRUCT *line, int SetCond, int Rn, int Rd, int Op
 
 	static DataProcessingInstruct *DPInst;
 
+=======
+int32_t ass_data_proc(TOKENISE_STRUCT *line, int SetCond, idx Rn, idx Rd, idx Operand_2)
+{
+	char *Operand2 = (line*).toks[Operand_2];
+	char *mnemonic = (line*).toks[0];
+
+	DataProcessingInstruct *DPInst;
+
+>>>>>>> 91664415ab5875e58f2a3c1c60511669968ea6a0
 	DPInst->Cond	= AL;
 	DPInst->_00	= 0;
 	DPInst->ImmOp	= IS_EXPRESSION(Operand2);
@@ -196,7 +215,7 @@ static const char *const binaries[4][15] = {{"0000","0001","0010","0011","0100"\
 const int *decimal_to_binary(int number){
   int count = 1, quotient, binary;
 
-  while(number != 0){
+  while(number != 0) {
     quotient = number % 2;
     number /= 2;
     binary = quotient * count;
@@ -444,14 +463,17 @@ int main(int argc, char **argv) {
     exit(EXIT_FAILURE);
   }
 
+  //TODO allocate ASSEMBLER_STRUCT
+   //  *ass = malloc()
 
-  TOKENISE_STRUCT *lines = read_Source(argv[1]); // get each line of source code as tokens
 
-  ass = assembler(lines); //assemble lines and get output to write to file
+  //TOKENISE_STRUCT *lines = read_Source(argv[1]); // get each line of source code as tokens
+
+  //ass = assembler(lines); //assemble lines and get output to write to file
 
   write_File(argv[2]); //
 
-  free(tokenStruct.lines);
+  //free(lines);
 
   return EXIT_SUCCESS;
-CC      = gcc}
+}
