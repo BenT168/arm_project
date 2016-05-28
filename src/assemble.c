@@ -1,8 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "library/instruction.h"
-
 ////////////////////////////////ARM STRUCTURE//////////////////////////////////
 
 #include "library/arm11.h"
@@ -12,6 +10,7 @@
 #include "library/assembler.h"
 
 ///////////////////////// STRUCTURE OF INSTRUCTION ////////////////////////////
+
 /////////////////////////////two-pass assembly/////////////////////////////////
 #include "library/instruction.h"
 
@@ -21,36 +20,48 @@
 #include "library/tokens.h"
 
 
-#include "library/assembler.h"
-
 // for numerica constant it's in the form "#x" where x is a natural number
 // or in the form "=x" for ldr instr (the expr can be 32 bits after =)
 
-#define Is_Expression(token)  (token[0] == '#' || token[0] == '=')
+#define Is_Expression(tokens)  (tokens[0] == '#' || tokens[0] == '=')
 #define Is_Hexadecimal(token) (Is_Expression(token) & token[1] == '0' & token[2] == 'x')
 #define max_8bit_represented  256 // 2^8 = 256
 #define expr_to_num(expr)    (strtol(expr, NULL, 0))
-
 #define PARSE_REG(R) ((R) == -1) ? 0 \
                          : (((strcmp(line->tokens[R], "PC") == 0) ? PC \
-                                             : atoi(line->tokens[r] + 1)))
-
-///////////////////////////two-pass assembly////////////////////////////////////
-
-/////// first pass//////////////////////////////////////////////////////////////
+                                             : atoi(line->tokens[R] + 1)))
+///////////////////////////// FUNCTION PROTOTYPE //////////////////////////////
 
 char *buffer;
-<<<<<<< HEAD
-ASSEMBLER_STRUCT ass;
 
-=======
 ASSEMBLER_STRUCT *ass = NULL;
->>>>>>> 91664415ab5875e58f2a3c1c60511669968ea6a0
 
-TOKENISE_STRUCT read_Source();
-void write_File();
+TOKEN read_Source(const char *);
+void write_File(const char *);
 
-TOKENISE_STRUCT read_Source(const char *sourceFile) {
+int as_numeric_constant(int);
+int as_shifted_reg_ass(TOKEN *, int);
+
+int32_t ass_data_proc(TOKEN *, int, int, int, int);
+int32_t ass_data_proc_result(TOKEN *);
+int32_t ass_data_proc_mov(TOKEN *);
+int32_t ass_data_proc_cpsr(TOKEN *);
+
+int32_t ass_multiply(TOKEN *, int, int, int, int, int);
+int32_t ass_multiply_mul(TOKEN *);
+int32_t ass_multiply_mla(TOKEN *);
+
+int32_t ass_single_data_transfer(TOKEN *);
+int32_t SDT_num_const(int, int, char *);
+
+int32_t andeq_func(TOKEN *);
+int32_t lsl_func(TOKEN *);
+
+
+
+///////////////////////Binary file reader //////////////////////////////////////
+
+TOKEN read_Source(const char *sourceFile) {
   FILE *file = fopen(sourceFile, "rs");
 
   if (file != NULL) {
@@ -102,62 +113,139 @@ void write_File(const char *binaryFile) {
 
 //////////////////////////   Core     //////////////////////////////////////////
 
-#define ass_data_proc_result(*token){ ass_data_proc(token, 0, -1, 1, 2); }
-#define ass_data_proc_mov(*token)   { ass_data_proc(token, 0, -1, 1, 2); }
-#define ass_data_proc_cpsr(*token)  { ass_data_proc(token, 1, 1, -1, 2); }
+//TODO: CHECKKKKKK!!!!!!
+int as_numeric_constant(int value){
+  int num_bit = 0;
 
-<<<<<<< HEAD
-int32_t ass_data_proc(TOKENISE_STRUCT *line, int SetCond, int Rn, int Rd, int Operand_2)
+  while(num_bit < 32){
+    rotate_right(value, 2);
+    num_bit += 2;
+  }
+  if(value > max_8bit_represented) {
+    perror("numerical constant cannot be represented.");
+    exit(EXIT_FAILURE);
+  }
+  return num_bit;
+}
+
+// can be either <shiftname><register> or <shiftname><#expression>
+//<shiftname> can be either asr, lsl, lsr or ror
+//If operand2 is a register the 12-bit is shift(11-4)+Rm(3-0)
+  //first case integer(11-7)+shift type(6-5)+0(4)
+  //second case shiftReg RS(11-8)+0(7)+shift type(6-5)+1(4)
+//TOKEN *elem is a pointer to elems in tokenized line
+int as_shifted_reg_ass(TOKEN *token_line, int pos_of_Rm){
+  char *shift_name = token_line->tokens[1];
+  char *Operand2 = token_line->tokens[2];
+  int result = 0;
+
+  ShiftReg *shiftReg;
+  ShiftRegOptional *regOp;
+  int shiftType = str_to_ShiftType(shift_name);
+
+//in the form <shiftname><#expression>
+if(Is_Expression(Operand2)){
+  //+1 to git rid of 'r' but just getting the reg number
+
+
+  shiftReg->Rm = atoi(token_line->tokens[pos_of_Rm] + 1); //TODO: check
+  shiftReg->Flag = 0;
+  shiftReg->Type = shiftType;
+  shiftReg->Amount = atoi(Operand2);
+
+  result = *((int *) &shiftReg);
+
+} else { //in the form <shiftname><register>
+  //CHECK THE STRUC?!??!
+  regOp->Type = shiftType;
+  regOp->Flag = 0;
+
+  //regOp.Rs = atoi(token_line->tokens[pos_of_Rm] + 1) << 3; //getting the last bit of Rs
+
+  result = *((int *) &regOp);
+}
+
+return result;
+}
+
+//to check if operand2 is an expression or a register
+int check_op2(TOKEN *token_line, int pos_of_op2){
+  char *op2 = token_line->tokens[pos_of_op2 + 2];
+
+  if(Is_Expression(op2)){
+    return as_numeric_constant(atoi(op2));
+  }
+  return as_shifted_reg_ass(token_line, pos_of_op2);
+
+}
+
+///////////////////////Instructions ////////////////////////////////////////////
+
+
+int32_t ass_data_proc(TOKEN *line, int SetCond, int Rn, int Rd, int Operand_2)
 {
 	char *Operand2 = line->tokens[Operand_2];
 	char *mnemonic = line->tokens[0];
 
 	static DataProcessingInstruct *DPInst;
 
-=======
-int32_t ass_data_proc(TOKENISE_STRUCT *line, int SetCond, idx Rn, idx Rd, idx Operand_2)
-{
-	char *Operand2 = (line*).toks[Operand_2];
-	char *mnemonic = (line*).toks[0];
-
-	DataProcessingInstruct *DPInst;
-
->>>>>>> 91664415ab5875e58f2a3c1c60511669968ea6a0
 	DPInst->Cond	= AL;
 	DPInst->_00	= 0;
-	DPInst->ImmOp	= IS_EXPRESSION(Operand2);
-	DPInst->Opcode	= str_to_Opcode(Mnemonic);
+	DPInst->ImmOp	= Is_Expression(Operand2);
+	DPInst->Opcode	= str_to_Mnemonic(mnemonic);
 	DPInst->SetCond	= SetCond;
 	DPInst->Rn	= PARSE_REG(Rn);
 	DPInst->Rd	= PARSE_REG(Rd);
-	DPInst->Operand2= check_op2(*line, Operand_2);
+	DPInst->Operand2= check_op2(line, Operand_2);
 
-	return *((int32_t *) &DPInst*);
+	return *((int32_t *) &DPInst);
 }
 
-#define ass_multiply_mul(*token) { ass_multiply(token, 0, 1, 2, 3, -1);)
-#define ass_multiply_mla(*token) { ass_multiply(token, 1, 1, 2, 3,  4);}
-
-int32_t ass_multiply(TOKENISE_STRUCT *line, int Acc, int Rd, int Rm, int Rs, int Rn)
+int32_t ass_data_proc_result(TOKEN *line)
 {
-	MultiplyInstruct *MulInst;
-
-	MulInst->Cond	= AL;
-	MulInst->_000000= 0;
-	MulInst->Acc	= Acc;
-	MulInst->SetCond= 0;
-	MulInst->Rd	= PARSE_REG(Rd);
-	MulInst->Rn	= PARSE_REG(Rn);
-	MulInst->Rs	= PARSE_REG(Rs);
-	MulInst->_1001	= 9;
-	MulInst->Rm	= PARSE_REG(Rm);
-
-	return *((int32_t *) &MulInst*);
+  return ass_data_proc(line, 0, -1, 1, 2);
 }
 
-int32_t single_data_transfer(TOKENISE_STRUCT *line)
+int32_t ass_data_proc_mov(TOKEN *line)
 {
-  int Rn    = line->tokens[1];
+  return ass_data_proc(line, 0, -1, 1, 2);
+}
+
+int32_t ass_data_proc_cpsr(TOKEN *line)
+{
+  return ass_data_proc(line, 1,  1, -1, 2);
+}
+
+int32_t ass_multiply(TOKEN *line, int Acc, int Rd, int Rm, int Rs, int Rn)
+{
+	static MultiplyInstruct *MulInst;
+
+	MulInst->Cond	   = AL; //TODO
+	MulInst->_000000 = 0;
+	MulInst->Acc	   = Acc;
+	MulInst->SetCond = 0;
+	MulInst->Rd	     = PARSE_REG(Rd);
+	MulInst->Rn	     = PARSE_REG(Rn);
+	MulInst->Rs	     = PARSE_REG(Rs);
+	MulInst->_1001	 = 9; //TODO
+	MulInst->Rm	     = PARSE_REG(Rm);
+
+	return *((int32_t *) &MulInst);
+}
+
+int32_t ass_multiply_mul(TOKEN *line)
+{
+  return ass_multiply(line, 0, 1, 2, 3, -1);
+}
+
+int32_t ass_multiply_mla(TOKEN *line)
+{
+  return ass_multiply(line, 1, 1, 2, 3,  4);
+}
+
+int32_t ass_single_data_transfer(TOKEN *line)
+{
+  int *Rn    = PARSE_REG(line->tokens[1] + 1);
   char *adr = line->tokens[2];
   SDTInstruct *SDTInst = (SDTInstruct *) &line;
 
@@ -169,16 +257,16 @@ int32_t single_data_transfer(TOKENISE_STRUCT *line)
   int dataL      = SDTInst->L;
 
   if (IS_SET(dataL)) {                    // ldr: Load from memory into register
-    if (Is_Expression(*adr)) {            // In numeric form
+    if (Is_Expression(adr)) {            // In numeric form
       adr++;
-      int address = expr_to_num(*adr);
-      return SDT_num_const(Rn, address, *adr);
+      int address = expr_to_num(adr);
+      return SDT_num_const(Rn, address, adr);
     }
 
     if (IS_SET(dataP)) {                  // Pre-indexing
       int offset = 0;
-      if (Is_Expression(*adr[1])) {       //Case offset = <#expression>
-        offset = expr_to_num(*adr[1]);
+      if (Is_Expression(adr[1])) {       //Case offset = <#expression>
+        offset = expr_to_num(adr[1]);
       }
       dataRn += (IS_SET(dataU)? dataOffset : -dataOffset);
       IS_SET(dataL) ? (word = MEM_R_32bits(dataRn)) : MEM_W_32bits(dataRn, word);
@@ -231,70 +319,6 @@ const int *decimal_to_binary(int number){
 }
 */
 
-//TODO: CHECKKKKKK!!!!!!
-int as_numeric_constant(int value){
-  int num_bit = 0;
-
-  while(num_bit < 32){
-    rotate_right(value, 2);
-    num_bit += 2;
-  }
-  if(value > max_8bit_represented) {
-    perror("numerical constant cannot be represented.");
-    exit(EXIT_FAILURE);
-  }
-  return num_bit;
-}
-
-// can be either <shiftname><register> or <shiftname><#expression>
-//<shiftname> can be either asr, lsl, lsr or ror
-//If operand2 is a register the 12-bit is shift(11-4)+Rm(3-0)
-  //first case integer(11-7)+shift type(6-5)+0(4)
-  //second case shiftReg RS(11-8)+0(7)+shift type(6-5)+1(4)
-//TOKENISE_STRUCT *elem is a pointer to elems in tokenized line
-int as_shifted_reg_ass(TOKENISE_STRUCT *token_line, int pos_of_Rm){
-  char *shift_name = token_line->tokens[1];
-  char *Operand2 = token_line->tokens[2];
-  int result = 0;
-
-  ShiftReg shiftReg;
-  ShiftRegOptional regOp;
-  int shiftType = STR_TO_ENUM(shift_name);
-
-//in the form <shiftname><#expression>
-if(Is_Expression(Operand2)){
-  //+1 to git rid of 'r' but just getting the reg number
-
-  shiftReg.Rm = atoi(token_line->tokens[pos_of_Rm] + 1); //TODO: check
-  shiftReg.Flag = 0;
-  shiftReg.Type = shiftType;
-  shiftReg.Amount = atoi(Operand2);
-
-  result = (*int) &shiftReg;
-
-} else { //in the form <shiftname><register>
-  //CHECK THE STRUC?!??!
-  regOp.Type = shiftType;
-  regOp.Flag = 0;
-
-  //regOp.Rs = atoi(token_line->tokens[pos_of_Rm] + 1) << 3; //getting the last bit of Rs
-
-  result = (int) &regOp;
-}
-
-return result;
-}
-
-//to check if operand2 is an expression or a register
-int check_op2(TOKENISE_STRUCT *line, int pos_of_op2){
-  char *op2 = line->tokens[pos_of_op2 + 2];
-
-  if(Is_Expression(op2)){
-    return as_numeric_constant(atoi(op2));
-  }
-  return as_shifted_reg_ass(token_line, pos_of_op2);
-
-}
 /*data Processing */
 
 /*void data_processing(int32_t word)
@@ -438,14 +462,14 @@ int32_t SDT_PostIndexing(int Rd, char *adr) {
 //for instr that compute results, the syntax is <opcode> Rd, Rn, <Operand 2>
 //andeq is similar to and with cond set to 0000 (eq condition)
 //andeq r0, r0, r0
-//TOKENISE_STRUCT *line is to get 'andeq from the line read'
-int32_t andeq_func(TOKENISE_STRUCT *token_line){
+//TOKEN *line is to get 'andeq from the line read'
+int32_t andeq_func(TOKEN *token_line){
   return 0x00000000;
 }
 
 /*lsl func */
 //Compile lsl Rn,<#expression> as mov Rn, Rn, lsl <#expression>
-int32_t lsl_func(TOKENISE_STRUCT *token_line){ // what should be the arguements
+int32_t lsl_func(TOKEN *token_line){ // what should be the arguements
  return 0; //TODO
 }
 
@@ -467,7 +491,7 @@ int main(int argc, char **argv) {
    //  *ass = malloc()
 
 
-  //TOKENISE_STRUCT *lines = read_Source(argv[1]); // get each line of source code as tokens
+  //TOKEN *lines = read_Source(argv[1]); // get each line of source code as tokens
 
   //ass = assembler(lines); //assemble lines and get output to write to file
 

@@ -85,4 +85,4 @@ int32_t as_shifted_reg(int32_t value, int8_t setCond)
   	}
 
 		return value;
-}
+} 

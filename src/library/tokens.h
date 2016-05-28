@@ -1,16 +1,16 @@
-#ifndef TOKEN_H
-#define TOKEN_H
+#ifndef _TOKEN
+#define _TOKEN
 
 #include <stdio.h>
 #include <stdlib.h>
 
 
-typedef struct TOKENISE_STRUCT {
+typedef struct TOKEN {
   char **tokens;
   unsigned int tokenCount;
   char *line;
-} TOKENISE_STRUCT;
+} TOKEN;
 
-TOKENISE_STRUCT tokenise(char* , const char*);
+TOKEN tokenise(char* , const char*);
 
 #endif

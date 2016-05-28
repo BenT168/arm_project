@@ -4,9 +4,9 @@
 #include <string.h>
 
 
-TOKENISE_STRUCT *tokenStruct = NULL;
+TOKEN *tokenStruct = NULL;
 
-TOKENISE_STRUCT tokenise(char *str, const char *delim) {
+TOKEN tokenise(char *str, const char *delim) {
   char *token;
   int countToken = 0; // initial room for string
   size_t space = 0;
