@@ -8,9 +8,7 @@
 #include "library/arm11.h"
 
 ///////////////////////// STRUCTURE OF INSTRUCTION ////////////////////////////
-
 /////////////////////////////two-pass assembly/////////////////////////////////
-
 #include "library/instruction.h"
 
 ////////////////////////////////////MACROS/////////////////////////////////////
@@ -18,11 +16,16 @@
 #include "library/register.h"
 #include "library/tokens.h"
 // for numerica constant it's in the form "#x" where x is a natural number
+<<<<<<< HEAD
 // or in the form "=x" for ldr instr (the expr can be 32 bits after
 
+=======
+// or in the form "=x" for ldr instr (the expr can be 32 bits after =)
+>>>>>>> b336f1013c584ea2af00466f91c2955ae4e3f22f
 #define Is_Expression(token)  (token[0] == '#' || token[0] == '=')
 #define Is_Hexadecimal(token) (Is_Expression(token) & token[1] == '0' & token[2] == 'x')
 #define max_8bit_represented = 256; // 2^8 = 256
+#define expr_to_num(expr)     (strtol(expr, NULL, 0))
 
 #define PARSE_REG(R) ((R) == -1) ? 0 \
                          : (((strcmp(line->token[R], "PC") == 0) ? PC \
@@ -114,9 +117,11 @@ int32_t ass_data_proc(TOKENISE_STRUCT *line, int SetCond, idx Rn, idx Rd, idx Op
 
 
 
-int32_t single_data_transfer(int Rd, char *adr)
+int32_t single_data_transfer(TOKENISE_STRUCT *line)
 {
-  /*
+  int Rn    = line->tokens[1];
+  char *adr = line->tokens[2];
+  SDTInstruct *SDTInst = (SDTInstruct *) &line;
 
   int dataRn     = SDTInst->Rn;         // base register
   int dataOffset = SDTInst->Offset;
@@ -125,48 +130,40 @@ int32_t single_data_transfer(int Rd, char *adr)
   int dataU      = SDTInst->U;
   int dataL      = SDTInst->L;
 
-
-  int address = get_value(adr);
   if (IS_SET(dataL)) {                    // ldr: Load from memory into register
-    if (adr[0] == '=') {                  // In numeric form
-      return SDT_num_const(Rd, address, *adr);
+    if (Is_Expression(*adr)) {            // In numeric form
+      adr++;
+      int address = expr_to_num(*adr);
+      return SDT_num_const(Rn, address, *adr);
     }
 
     if (IS_SET(dataP)) {                  // Pre-indexing
-      return SDT_PreIndexing(int Rd, char *adr);
+      int offset = 0;
+      if (Is_Expression(*adr[1])) {       //Case offset = <#expression>
+        offset = expr_to_num(*adr[1]);
+      }
+      dataRn += (IS_SET(dataU)? dataOffset : -dataOffset);
+      IS_SET(dataL) ? (word = MEM_R_32bits(dataRn)) : MEM_W_32bits(dataRn, word);
+
     } else {                              // Post-indexing
-      return SDT_PsotIndexing(int Rd, char *adr);
+      int offset = expr_to_num(*adr[1]);
+      IS_SET(dataL) ? (word = MEM_R_32bits(dataRn)) : MEM_W_32bits(dataRn, word);
+      dataRn += (IS_SET(dataU)? dataOffset : -dataOffset);
     }
   }
-
 }
 
 int32_t SDT_num_const(int r0, int address, char *adr) {
-
   if (address <= 0xFF) {                  // Treat as mov Instruction
     adr[0] = '#';
     return data_processing(mov r0, adr);
 
   } else {
-    //TODO place address in four bytes
+    // use PC to calculate new address
+    register[15] += (IS_SET(dataU)? dataOffset : -dataOffset);
   }
 }
 
-int32_t SDT_PreIndexing(int Rd, char *adr) {
-  int offset = 0;
-  if ((*adr[1])[0] == '#') {              //Case offset = <#expression>
-    offset = get_value(*adr[1]);
-  }
-  dataRn += (IS_SET(dataU)? dataOffset : -dataOffset);
-  IS_SET(dataL) ? (word = MEM_R_32bits(dataRn)) : MEM_W_32bits(dataRn, word);
-}
-
-int32_t SDT_PostIndexing(int Rd, char *adr) {
-  int offset = get_value(*adr[1]);
-  IS_SET(dataL) ? (word = MEM_R_32bits(dataRn)) : MEM_W_32bits(dataRn, word);
-  dataRn += (IS_SET(dataU)? dataOffset : -dataOffset);
-*/
-}
 
 //////////////////////////Instruction //////////////////////////////////////////
 
