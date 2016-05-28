@@ -18,16 +18,15 @@
 #include "library/register.h"
 #include "library/tokens.h"
 // for numerica constant it's in the form "#x" where x is a natural number
-// or in the form "=x" for ldr instr (the expr can be 32 bits after =)
-<<<<<<< HEAD
+// or in the form "=x" for ldr instr (the expr can be 32 bits after
 
-#define Is_Expression(token)  (token[0] == '#' | token[0] == '=')
-=======
 #define Is_Expression(token)  (token[0] == '#' || token[0] == '=')
->>>>>>> 0f123e2f1282a456d12d8c92a326cae9b5413e44
 #define Is_Hexadecimal(token) (Is_Expression(token) & token[1] == '0' & token[2] == 'x')
 #define max_8bit_represented = 256; // 2^8 = 256
 
+#define PARSE_REG(R) ((R) == -1) ? 0 \
+                         : (((strcmp(line->token[R], "PC") == 0) ? PC \
+                                             : atoi(line->token[r] + 1)))
 
 ///////////////////////////two-pass assembly////////////////////////////////////
 
@@ -90,79 +89,27 @@ void write_File(const char *binaryFile) {
 
 //////////////////////////   Core     //////////////////////////////////////////
 
-void data_processing(int32_t word)
-{
-	DataProcessingInstruct *DPInst = (DataProcessingInstruct *) &word;
+#define ass_data_proc_result(token){ ass_data_proc(token, 0, -1, 1, 2); }
+#define ass_data_proc_mov(token)   { ass_data_proc(token, 0, -1, 1, 2); }
+#define ass_data_proc_cpsr(token)  { ass_data_proc(token, 1, 1, -1, 2); }
 
-	int ImmOp    = DPInst->ImmOp;        // 25
-	int OpCode   = DPInst->Opcode;   // 24-21
-	int SetCond  = DPInst->SetCond;
-	int Rn       = DPInst->Rn;
-	int Rd       = DPInst->Rd;
-	int Operand2 = DPInst->Operand2; // 11-0
+int32_t ass_data_proc(TOKENISE_STRUCT *line, int SetCond, idx Rn, idx Rd, idx Operand_2)
+{	
+	char *Operand2 = (line*).toks[Operand_2];
+	char *mnemonic = (line*).toks[0];
 
-	int Operand1 = arm_Ptr.registers[Rn];
-
-	Operand2     = IS_CLEAR(ImmOp) ? as_shifted_reg(Operand2, SetCond)
-	           		           : as_immediate_reg(Operand2);
-	int result   = 0;
-
-	// calculate result by opcode
-	switch (Mnemonic)
-	{
-		case and :
-		case eor :
-		case sub :
-		case rsb :
-		case add :
-		case orr :
-
-                    break;
-		case mov :
-
-                    break;
-		case tst :
-		case teq :
-		case cmp :
-
-                    break;
-		case RSB :
-                    result = Operand2 - Operand1;
-                    break;
-		case ADD :
-                    result = Operand1 + Operand2;
-                    break;
-		case ORR :
-                    result = Operand1 | Operand2;
-                    break;
-		case MOV :
-                    result = Operand2;
-                    break;
-		default  :
-                    result = 0;
-	}
-  	// save results if necessary
-	if(OpCode != TST || OpCode != TEQ || OpCode != CMP) {
-    REG_WRITE(Rd, result);
-  }
-
-
-	if (IS_SET(SetCond)) {
-	// set flags
-  	    CPSR_PUT(Z, (result == 0));
-            CPSR_PUT(N, BIT_GET(result, 31));
-
-            switch (OpCode)  {
-  		case 2  :
-  		case 3  :
-  		case 10 :
-        	    CPSR_PUT(C, (result >= 0));
-                    break;
-  		case 4  :
-                    CPSR_PUT(C, CPSR_GET(V));
-                    break;
-    }
-	}
+	DataProcessingInstruct *DPInst;
+	
+	DPInst->Cond	= AL;
+	DPInst->_00	= 0;
+	DPInst->ImmOp	= IS_EXPRESSION(Operand2);     
+	DPInst->Opcode	= str_to_Opcode(Mnemonic);  
+	DPInst->SetCond	= SetCond;
+	DPInst->Rn	= PARSE_REG(Rn);
+	DPInst->Rd	= PARSE_REG(Rd);
+	DPInst->Operand2= check_op2(*line, Operand_2);
+	
+	return *((int32_t *) &DPInst*);
 }
 
 
