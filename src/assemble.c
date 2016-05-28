@@ -40,12 +40,7 @@
 /////// first pass//////////////////////////////////////////////////////////////
 
 char *buffer;
-<<<<<<< HEAD
-ASSEMBLER_STRUCT ass;
-
-=======
 ASSEMBLER_STRUCT *ass = NULL;
->>>>>>> 91664415ab5875e58f2a3c1c60511669968ea6a0
 
 TOKENISE_STRUCT read_Source();
 void write_File();
@@ -114,15 +109,6 @@ int32_t ass_data_proc(TOKENISE_STRUCT *line, int SetCond, int Rn, int Rd, int Op
 
 	static DataProcessingInstruct *DPInst;
 
-=======
-int32_t ass_data_proc(TOKENISE_STRUCT *line, int SetCond, idx Rn, idx Rd, idx Operand_2)
-{
-	char *Operand2 = (line*).toks[Operand_2];
-	char *mnemonic = (line*).toks[0];
-
-	DataProcessingInstruct *DPInst;
-
->>>>>>> 91664415ab5875e58f2a3c1c60511669968ea6a0
 	DPInst->Cond	= AL;
 	DPInst->_00	= 0;
 	DPInst->ImmOp	= IS_EXPRESSION(Operand2);
