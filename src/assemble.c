@@ -7,6 +7,10 @@
 
 #include "library/arm11.h"
 
+//////////////////////////ASSEMBLER STRUCTURE /////////////////////////////////
+
+#include "library/assembler.h"
+
 ///////////////////////// STRUCTURE OF INSTRUCTION ////////////////////////////
 /////////////////////////////two-pass assembly/////////////////////////////////
 #include "library/instruction.h"
@@ -27,7 +31,7 @@
 /////// first pass//////////////////////////////////////////////////////////////
 
 char *buffer;
-ASSEMBLER_STRUCT *ass;
+ASSEMBLER_STRUCT *ass = NULL;
 
 TOKENISE_STRUCT read_Source();
 void write_File();
@@ -47,8 +51,8 @@ TOKENISE_STRUCT read_Source(const char *sourceFile) {
     //const char s = ",";
     //char *token;
     //token = strtok(buffer, s);
-    fread(buffer, size, 1, sourceFile);
-    if(ferror(sourceFile)) {
+    fread(buffer, size, 1, file);
+    if(ferror(file)) {
       perror("Error reading from sourceFile.\n");
     }
 
@@ -71,14 +75,15 @@ TOKENISE_STRUCT read_Source(const char *sourceFile) {
 void write_File(const char *binaryFile) {
   FILE *file = fopen(binaryFile, "wb"); //w = write b = binary
 
-  int32_t *program = assembler(ass); //get code from assembler program
+   //TODO
+  //int32_t *program = assembler(ass); //get code from assembler program
 
-  int size = ass.TOTAL_line * sizeof(int32_t);
+  //int size = ass->TOTAL_line * sizeof(int32_t);
   //size of each element that will be written
 
-  fwrite(program, size, 1, binaryFile);
+  //fwrite(program, size, 1, file);
 
-  fclose(binaryFile);
+  fclose(file);
 }
 
 //////////////////////////   Core     //////////////////////////////////////////
@@ -220,7 +225,7 @@ int32_t SDT_PostIndexing(int Rd, char *adr) {
 char *decimal_to_binary(int number){
   int count = 1, quotient, binary;
 
-  while(number != 0){
+  while(number != 0) {
     quotient = number % 2;
     number /= 2;
     binary = quotient * count;
@@ -284,14 +289,17 @@ int main(int argc, char **argv) {
     exit(EXIT_FAILURE);
   }
 
+  //TODO allocate ASSEMBLER_STRUCT
+   //  *ass = malloc()
 
-  TOKENISE_STRUCT *lines = read_Source(argv[1]); // get each line of source code as tokens
 
-  ass = assembler(lines); //assemble lines and get output to write to file
+  //TOKENISE_STRUCT *lines = read_Source(argv[1]); // get each line of source code as tokens
+
+  //ass = assembler(lines); //assemble lines and get output to write to file
 
   write_File(argv[2]); //
 
-  free(tokenStruct.lines);
+  //free(lines);
 
   return EXIT_SUCCESS;
 }
