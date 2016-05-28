@@ -89,7 +89,7 @@ typedef struct ShiftRegOptional
     unsigned int Amount   : 5;
     unsigned int Type     : 2;
     unsigned int Flag     : 1;
-    unsigned int Rm       : 4;
+    unsigned int Rm       : 4; //TODO: IS this Rs in the spec??
 } ShiftRegOptional;
 
 
