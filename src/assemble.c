@@ -33,10 +33,6 @@
 ///////////////////////////// FUNCTION PROTOTYPE //////////////////////////////
 
 char *buffer;
-<<<<<<< HEAD
-
-=======
->>>>>>> 9b9c555b2cedff6b2e1afcc8822237cef2724b4a
 ASSEMBLER_STRUCT *ass = NULL;
 
 TOKEN read_Source(const char *);
@@ -322,84 +318,6 @@ const int *decimal_to_binary(int number){
 }
 */
 
-/*data Processing */
-
-/*void data_processing(int32_t word)
-{
-	DataProcessingInstruct *DPInst = (DataProcessingInstruct *) &word;
-
-	int ImmOp    = DPInst->ImmOp;        // 25
-	int OpCode   = DPInst->Opcode;   // 24-21
-	int SetCond  = DPInst->SetCond;
-	int Rn       = DPInst->Rn;
-	int Rd       = DPInst->Rd;
-	int Operand2 = DPInst->Operand2; // 11-0
-
-	int Operand1 = arm_Ptr.registers[Rn];
-
-	Operand2     = IS_CLEAR(ImmOp) ? as_shifted_reg_ass(Operand2, SetCond)
-	           		           : as_immediate_reg(Operand2);
-	int result   = 0;
-
-	// calculate result by opcode
-	switch (Mnemonic)
-	{
-		case and :
-		case eor :
-		case sub :
-		case rsb :
-		case add :
-		case orr :
-
-                    break;
-		case mov :
-
-                    break;
-		case tst :
-		case teq :
-		case cmp :
-
-                    break;
-		case RSB :
-                    result = Operand2 - Operand1;
-                    break;
-		case ADD :
-                    result = Operand1 + Operand2;
-                    break;
-		case ORR :
-                    result = Operand1 | Operand2;
-                    break;
-		case MOV :
-                    result = Operand2;
-                    break;
-		default  :
-                    result = 0;
-	}
-  	// save results if necessary
-	if(OpCode != TST || OpCode != TEQ || OpCode != CMP) {
-    REG_WRITE(Rd, result);
-  }
-
-
-	if (IS_SET(SetCond)) {
-	// set flags
-  	    CPSR_PUT(Z, (result == 0));
-            CPSR_PUT(N, BIT_GET(result, 31));
-
-            switch (OpCode)  {
-  		case 2  :
-  		case 3  :
-  		case 10 :
-        	    CPSR_PUT(C, (result >= 0));
-                    break;
-  		case 4  :
-                    CPSR_PUT(C, CPSR_GET(V));
-                    break;
-    }
-	}
-}
-
-*/
 
 /*int32_t single_data_transfer(int Rd, char *adr)
 {
@@ -452,16 +370,14 @@ int32_t SDT_PostIndexing(int Rd, char *adr) {
   int offset = get_value(*adr[1]);
   IS_SET(dataL) ? (word = MEM_R_32bits(dataRn)) : MEM_W_32bits(dataRn, word);
   dataRn += (IS_SET(dataU)? dataOffset : -dataOffset);
-=======
   return as_shifted_reg(line, pos_of_op2);
 
->>>>>>> 7e0d8838410846e28e6fe3646d66985031b7c341
 }
 */
 
 //////////////////Special Instruction //////////////////////////////////////////
-/*andeq func */
 
+/*andeq func */
 //for instr that compute results, the syntax is <opcode> Rd, Rn, <Operand 2>
 //andeq is similar to and with cond set to 0000 (eq condition)
 //andeq r0, r0, r0
@@ -471,9 +387,19 @@ int32_t andeq_func(TOKEN *token_line){
 }
 
 /*lsl func */
+//note: asprintf() cal the length of the string, allocate that amount of mem and
+//write the string into it. it is an implicit malloc need to free afterward
 //Compile lsl Rn,<#expression> as mov Rn, Rn, lsl <#expression>
-int32_t lsl_func(TOKEN *token_line){ // what should be the arguements
- return 0; //TODO
+int32_t lsl_func(TOKEN *token_line){ 
+ char *new_token_line = NULL;
+ asprint(&new_token_line, "mov %s, %s, lsl %s", token_line->tokens[1],
+                                                token_line->tokens[1],
+                                                token_line->tokens[2]);
+TOKEN *new_token = tokenise(new_token_line, " ,");
+ass_data_proc_mov(new_token);
+
+free(new_token_line);
+
 }
 
 ////////////////////A factorial program ////////////////////////////////////////
