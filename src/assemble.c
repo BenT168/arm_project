@@ -33,7 +33,10 @@
 ///////////////////////////// FUNCTION PROTOTYPE //////////////////////////////
 
 char *buffer;
+<<<<<<< HEAD
 
+=======
+>>>>>>> 9b9c555b2cedff6b2e1afcc8822237cef2724b4a
 ASSEMBLER_STRUCT *ass = NULL;
 
 TOKEN read_Source(const char *);
