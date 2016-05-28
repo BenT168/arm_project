@@ -5,9 +5,13 @@ CFLAGS  = -Wall -g  -D_POSIX_SOURCE -D_BSD_SOURCE -std=c99 -Werror -pedantic
 
 .PHONY: all clean
 
-all	: 	assemble emulate emulate.o
+all	: 	assemble emulate
 
-assemble: 	assemble.o
+#To create an executable file assemble, we need sources files
+#assemble.c,library/ token.c
+#
+
+assemble: 	assemble.c library/tokens.c
 
 #To create an executable file emulate, we need sources files 
 #emulate.c,library/ bitwise.c and library/bitwise.c
