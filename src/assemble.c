@@ -99,25 +99,25 @@ void write_File(const char *binaryFile) {
 #define ass_data_proc_cpsr(*token)  { ass_data_proc(token, 1, 1, -1, 2); }
 
 int32_t ass_data_proc(TOKENISE_STRUCT *line, int SetCond, idx Rn, idx Rd, idx Operand_2)
-{	
+{
 	char *Operand2 = (line*).toks[Operand_2];
 	char *mnemonic = (line*).toks[0];
 
 	DataProcessingInstruct *DPInst;
-	
+
 	DPInst->Cond	= AL;
 	DPInst->_00	= 0;
-	DPInst->ImmOp	= IS_EXPRESSION(Operand2);     
-	DPInst->Opcode	= str_to_Opcode(Mnemonic);  
+	DPInst->ImmOp	= IS_EXPRESSION(Operand2);
+	DPInst->Opcode	= str_to_Opcode(Mnemonic);
 	DPInst->SetCond	= SetCond;
 	DPInst->Rn	= PARSE_REG(Rn);
 	DPInst->Rd	= PARSE_REG(Rd);
 	DPInst->Operand2= check_op2(*line, Operand_2);
-	
+
 	return *((int32_t *) &DPInst*);
 }
 
-#define ass_multiply_mul(*token) { ass_multiply(token, 0, 1, 2, 3, -1);) 
+#define ass_multiply_mul(*token) { ass_multiply(token, 0, 1, 2, 3, -1);)
 #define ass_multiply_mla(*token) { ass_multiply(token, 1, 1, 2, 3,  4);}
 
 int32_t ass_multiply(TOKENISE_STRUCT *line, int Acc, idx Rd, idx Rm, idx Rs, idx Rn)
@@ -315,4 +315,4 @@ int main(int argc, char **argv) {
   //free(lines);
 
   return EXIT_SUCCESS;
-CC      = gcc}
+}
