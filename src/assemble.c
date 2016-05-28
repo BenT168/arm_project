@@ -8,7 +8,9 @@
 #include "library/arm11.h"
 
 ///////////////////////// STRUCTURE OF INSTRUCTION ////////////////////////////
+
 /////////////////////////////two-pass assembly/////////////////////////////////
+
 #include "library/instruction.h"
 
 ////////////////////////////////////MACROS/////////////////////////////////////
@@ -17,7 +19,12 @@
 #include "library/tokens.h"
 // for numerica constant it's in the form "#x" where x is a natural number
 // or in the form "=x" for ldr instr (the expr can be 32 bits after =)
+<<<<<<< HEAD
+
+#define Is_Expression(token)  (token[0] == '#' | token[0] == '=')
+=======
 #define Is_Expression(token)  (token[0] == '#' || token[0] == '=')
+>>>>>>> 0f123e2f1282a456d12d8c92a326cae9b5413e44
 #define Is_Hexadecimal(token) (Is_Expression(token) & token[1] == '0' & token[2] == 'x')
 #define max_8bit_represented = 256; // 2^8 = 256
 #define expr_to_num(expr)    (strtol(expr, NULL, 0))
