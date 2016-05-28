@@ -17,16 +17,14 @@
 
 #include "library/register.h"
 #include "library/tokens.h"
+
+#include "library/assembler.h"
 // for numerica constant it's in the form "#x" where x is a natural number
 // or in the form "=x" for ldr instr (the expr can be 32 bits after =)
-<<<<<<< HEAD
 
-#define Is_Expression(token)  (token[0] == '#' | token[0] == '=')
-=======
 #define Is_Expression(token)  (token[0] == '#' || token[0] == '=')
->>>>>>> 0f123e2f1282a456d12d8c92a326cae9b5413e44
 #define Is_Hexadecimal(token) (Is_Expression(token) & token[1] == '0' & token[2] == 'x')
-#define max_8bit_represented = 256; // 2^8 = 256
+#define max_8bit_represented  256 // 2^8 = 256
 #define expr_to_num(expr)    (strtol(expr, NULL, 0))
 
 
@@ -35,7 +33,8 @@
 /////// first pass//////////////////////////////////////////////////////////////
 
 char *buffer;
-ASSEMBLER_STRUCT *ass;
+ASSEMBLER_STRUCT ass;
+
 
 TOKENISE_STRUCT read_Source();
 void write_File();
@@ -91,27 +90,29 @@ void write_File(const char *binaryFile) {
 
 //////////////////////////   Core     //////////////////////////////////////////
 //a lookup table for binary numbers
-static const char *const binaries = {"0000","0001","0010","0011","0100"\
+/*
+static const char *const binaries[4][15] = {{"0000","0001","0010","0011","0100"\
                                     ,"0101", "0110","0111","1000","1001"\
-                                    ,"1010","1011","1100"."1101","1110","1111"};
+                                    ,"1010","1011","1100","1101","1110","1111"}};
 
-const char *decimal_to_binary(int number){
+const int *decimal_to_binary(int number){
   int count = 1, quotient, binary;
 
   while(number != 0){
     quotient = number % 2;
     number /= 2;
     binary = quotient * count;
-    i *= 10;
+    count *= 10;
   }
   return binary;
 }
-
-const char *hex_to_binary(char number){
+*/
+/*const char *hex_to_binary(char number){
   if(number >= '0' & number <= '9') return binaries[number];
   if(number >= 'A' & number <= 'F') return binaries[10 + number - 'A'];
   if(number >= 'a' & number <= 'f') return binaries[10 + number - 'a'];
 }
+*/
 
 //TODO: CHECKKKKKK!!!!!!
 int as_numeric_constant(int value){
@@ -125,6 +126,7 @@ int as_numeric_constant(int value){
     perror("numerical constant cannot be represented.");
     exit(EXIT_FAILURE);
   }
+  return num_bit;
 }
 
 // can be either <shiftname><register> or <shiftname><#expression>
@@ -133,30 +135,30 @@ int as_numeric_constant(int value){
   //first case integer(11-7)+shift type(6-5)+0(4)
   //second case shiftReg RS(11-8)+0(7)+shift type(6-5)+1(4)
 //TOKENISE_STRUCT *elem is a pointer to elems in tokenized line
-int as_shifted_reg(TOKENISE_STRUCT *token_line, int pos_of_Rm){
+int as_shifted_reg_ass(TOKENISE_STRUCT *token_line, int pos_of_Rm){
   char *shift_name = token_line->tokens[1];
   char *Operand2 = token_line->tokens[2];
   int result = 0;
 
-  shiftReg shiftReg;
+  ShiftReg shiftReg;
   ShiftRegOptional regOp;
   int shiftType = STR_TO_ENUM(shift_name);
 
 //in the form <shiftname><#expression>
 if(Is_Expression(Operand2)){
   //+1 to git rid of 'r' but just getting the reg number
-  shiftReg.Rm = atoi(token_line->(tokens[pos_of_Rm] + 1)); //TODO: check
+  shiftReg.Rm = atoi(token_line->tokens[pos_of_Rm] + 1); //TODO: check
   shiftReg.Flag = 0;
   shiftReg.Type = shiftType;
   shiftReg.Amount = (int) strtol(Operand2, NULL, 0);
 
-  result = (int) &shiftReg;
+  result = (*int) &shiftReg;
 
 } else { //in the form <shiftname><register>
   //CHECK THE STRUC?!??!
   regOp.Type = shiftType;
   regOp.Flag = 0;
-  regOp.Rs = atoi(token_line->(tokens[pos_of_Rm] + 1)) << 3; //getting the last bit of Rs
+  //regOp.Rs = atoi(token_line->tokens[pos_of_Rm] + 1) << 3; //getting the last bit of Rs
 
   result = (int) &regOp;
 }
@@ -171,7 +173,7 @@ int check_op2(TOKENISE_STRUCT *token_line, int pos_of_op2){
   if(Is_Expression(op2)){
     return as_numeric_constant(atoi(op2));
   }
-  return as_shifted_reg(token_line, pos_of_op2);
+  return as_shifted_reg_ass(token_line, pos_of_op2);
 
 }
 /*data Processing */
@@ -189,7 +191,7 @@ void data_processing(int32_t word)
 
 	int Operand1 = arm_Ptr.registers[Rn];
 
-	Operand2     = IS_CLEAR(ImmOp) ? as_shifted_reg(Operand2, SetCond)
+	Operand2     = IS_CLEAR(ImmOp) ? as_shifted_reg_ass(Operand2, SetCond)
 	           		           : as_immediate_reg(Operand2);
 	int result   = 0;
 
@@ -253,9 +255,9 @@ void data_processing(int32_t word)
 
 
 
-int32_t single_data_transfer(int Rd, char *adr)
+/*int32_t single_data_transfer(int Rd, char *adr)
 {
-  /*
+
 
   int dataRn     = SDTInst->Rn;         // base register
   int dataOffset = SDTInst->Offset;
@@ -304,8 +306,8 @@ int32_t SDT_PostIndexing(int Rd, char *adr) {
   int offset = get_value(*adr[1]);
   IS_SET(dataL) ? (word = MEM_R_32bits(dataRn)) : MEM_W_32bits(dataRn, word);
   dataRn += (IS_SET(dataU)? dataOffset : -dataOffset);
-*/
 }
+*/
 
 //////////////////Special Instruction //////////////////////////////////////////
 
@@ -321,10 +323,7 @@ int32_t andeq_func(TOKENISE_STRUCT *token_line){
 /*lsl func */
 //Compile lsl Rn,<#expression> as mov Rn, Rn, lsl <#expression>
 int32_t lsl_func(TOKENISE_STRUCT *token_line){ // what should be the arguements
-
-
-
-
+ return 0; //TODO
 }
 
 ////////////////////A factorial program ////////////////////////////////////////
