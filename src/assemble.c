@@ -15,13 +15,10 @@
 
 #include "library/register.h"
 #include "library/tokens.h"
-// for numerica constant it's in the form "#x" where x is a natural number
-<<<<<<< HEAD
-// or in the form "=x" for ldr instr (the expr can be 32 bits after
 
-=======
+// for numerica constant it's in the form "#x" where x is a natural number
 // or in the form "=x" for ldr instr (the expr can be 32 bits after =)
->>>>>>> b336f1013c584ea2af00466f91c2955ae4e3f22f
+
 #define Is_Expression(token)  (token[0] == '#' || token[0] == '=')
 #define Is_Hexadecimal(token) (Is_Expression(token) & token[1] == '0' & token[2] == 'x')
 #define max_8bit_represented = 256; // 2^8 = 256
@@ -92,9 +89,9 @@ void write_File(const char *binaryFile) {
 
 //////////////////////////   Core     //////////////////////////////////////////
 
-#define ass_data_proc_result(token){ ass_data_proc(token, 0, -1, 1, 2); }
-#define ass_data_proc_mov(token)   { ass_data_proc(token, 0, -1, 1, 2); }
-#define ass_data_proc_cpsr(token)  { ass_data_proc(token, 1, 1, -1, 2); }
+#define ass_data_proc_result(*token){ ass_data_proc(token, 0, -1, 1, 2); }
+#define ass_data_proc_mov(*token)   { ass_data_proc(token, 0, -1, 1, 2); }
+#define ass_data_proc_cpsr(*token)  { ass_data_proc(token, 1, 1, -1, 2); }
 
 int32_t ass_data_proc(TOKENISE_STRUCT *line, int SetCond, idx Rn, idx Rd, idx Operand_2)
 {	
@@ -115,7 +112,25 @@ int32_t ass_data_proc(TOKENISE_STRUCT *line, int SetCond, idx Rn, idx Rd, idx Op
 	return *((int32_t *) &DPInst*);
 }
 
+#define ass_multiply_mul(*token) { ass_multiply(token, 0, 1, 2, 3, -1);) 
+#define ass_multiply_mla(*token) { ass_multiply(token, 1, 1, 2, 3,  4);}
 
+int32_t ass_multiply(TOKENISE_STRUCT *line, int Acc, idx Rd, idx Rm, idx Rs, idx Rn)
+{
+	MultiplyInst *MulInst;
+
+	MulInst->Cond	= AL;
+	MulInst->_000000= 0;
+	MulInst->Acc	= Acc;
+	MulInst->SetCond= 0;
+	MulInst->Rd	= PARSE_REG(Rd);
+	MulInst->Rn	= PARSE_REG(Rn);
+	MulInst->Rs	= PARSE_REG(Rs);
+	MulInst->_1001	= 9;
+	MulInst->Rm	= PARSE_REG(Rm);
+
+	return *((int32_t *) &MulInst*);
+}
 
 int32_t single_data_transfer(TOKENISE_STRUCT *line)
 {
@@ -292,4 +307,4 @@ int main(int argc, char **argv) {
   free(tokenStruct.lines);
 
   return EXIT_SUCCESS;
-}
+CC      = gcc}
