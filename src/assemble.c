@@ -212,29 +212,8 @@ void funcArray(void) {
 
 
 
-/////////////////////// Assemble Instructions //////////////////////////////////
+///////////////////////Instructions ////////////////////////////////////////////
 
-///////* Data Processing *////////
-
-/* Data processing can be broken down into three main types:
-*   1. instructions that compute results
-*   2. single operand assignment
-*   3. instructions that dont compute results but set the CPSR flags
-*
-* The syntax for the three main 'types' of data processing instructions is:
-*   <opcode>   - Is the instruction mnemonic associated with an integer OpCode
-*   Rd, Rn, Rm - Represent registers (r0, r1, PC, ...)
-*   <Operand2> - Represents an operand. It can be interpreted as a numeric
-*                constant <#expression> or a shifted register <shift>
-*
-* The parameters that the function take into account:
-* line     - Contains the tokens forming this instruction
-* SetCond  - Consider the case where the CPRS flags are to be set
-* Rn       - Is the position of the Rn token in the line->tokens array
-* Rs       - same as Rn
-* Operand2 - same as Rn
-*
-*/
 
 int32_t ass_data_proc(TOKEN *line, int SetCond, int Rn, int Rd, int Operand_2)
 {
@@ -255,142 +234,47 @@ int32_t ass_data_proc(TOKEN *line, int SetCond, int Rn, int Rd, int Operand_2)
 	return *((int32_t *) &DPInst);
 }
 
-/* 1. instructions that compute results: and, eor, sub, rsb, add,  orr
-*     Syntax : <opcode> Rd Rn <Operand2>
-*
-*     CPRS flags are not set, hence SetCond is clear or SetCond = 0.
-*     Positions of tokens Rd, Rn and Operand2 are 1, 2, and 3 respectively.
-*/
-
 int32_t ass_data_proc_result(TOKEN *line)
 {
-  int CPSR_SET    = 1;
-  int POS_OF_RD   = 1;
-  int POS_OF_RN   = 2;
-  int POS_OF_OP2  = 3;
-
-  return ass_data_proc(line, CPSR_SET, POS_OF_RN, POS_OF_RD, POS_OF_OP2);
+  return ass_data_proc(line, 0, -1, 1, 2);
 }
-
-/* 2. single operand assignment: mov
-      Syntax : mov Rd, <Operand2>
-*
-*     CPRS flags are not set, hence SetCond is clear or SetCond = 0.
-*     Positions of tokens Rd and Operand2 are 1 and 2 respectively.
-*     Rn is ignored therefore -1 is passed as the 'position' of token Rn.
-*/
 
 int32_t ass_data_proc_mov(TOKEN *line)
 {
-  int CPSR_CLEAR =  0;
-  int POS_OF_RD  =  1;
-  int RN_IGNORED = -1;
-  int POS_OF_OP2 =  2;
-
-  return ass_data_proc(line, CPSR_CLEAR, RN_IGNORED, POS_OF_RD, POS_OF_OP2);
+  return ass_data_proc(line, 0, -1, 1, 2);
 }
-
-/* 3. instructions that dont compute result but set CPSR flags: tst, teq, cmp
-*     Syntax : <opcode> Rn, <Operand_2>
-*
-*     CPRS flags ARE set, hence a SetCond is set or SetCond = 1.
-*     Positions of tokens Rn and Operand2 are 1 and 2 respectively.
-*     Rd is ignored therefore -1 is passed as the 'position' of token Rd.
-*/
 
 int32_t ass_data_proc_cpsr(TOKEN *line)
 {
-<<<<<<< HEAD
-  int CPSR_SET   =  1;
-  int RD_IGNORED = -1;
-  int POS_OF_RN  =  1;
-  int POS_OF_OP2 =  2;
-
-  return ass_data_proc(line, CPSR_SET, POS_OF_RN, RD_IGNORED, POS_OF_OP2);
-=======
   return ass_data_proc(line, 1, 1, -1, 2);
->>>>>>> 647afb3eaaa4a3510c9d2a0c404e3fa66f2b1163
 }
-
-
-
-////////* Multiply *////////
-
-/* Multiply instructions can be broken down into two types:
-*   1. multiply with syntax
-*   2. multiply with accummulate, with syntax
-*
-* The syntax for the multiply instructions is:
-* Rd, Rs, Rn, Rm - Represent registers (r0, r1, PC, ...)
-*
-* The parameters that the function take into account:
-* line     - Contains the tokens forming this instruction
-* Acc      - Consider the case where the instruction has an accumulate
-* Rn       - Is the position of the Rn token in the line->tokens array
-* Rs       - same as Rn
-* Operand2 - same as Rn
-*
-*/
-
 
 int32_t ass_multiply(TOKEN *line, int Acc, int Rd, int Rm, int Rs, int Rn)
 {
 	static MultiplyInstruct *MulInst;
 
 	MulInst->Cond	   = AL;
-	MulInst->_000000 = 0;
+	MulInst->_000000   = 0;
 	MulInst->Acc	   = Acc;
-	MulInst->SetCond = 0;
-	MulInst->Rd	     = PARSE_REG(Rd);
-	MulInst->Rn	     = PARSE_REG(Rn);
-	MulInst->Rs	     = PARSE_REG(Rs);
-	MulInst->_1001	 = 9;
-	MulInst->Rm	     = PARSE_REG(Rm);
+	MulInst->SetCond   = 0;
+	MulInst->Rd	   = PARSE_REG(Rd);
+	MulInst->Rn	   = PARSE_REG(Rn);
+	MulInst->Rs	   = PARSE_REG(Rs);
+	MulInst->_1001	   = 0;
+	MulInst->Rm	   = PARSE_REG(Rm);
 
 	return *((int32_t *) &MulInst);
 }
 
-/* 1. multiply with syntax: mul Rd, Rm, Rs
-*
-*     Instruction doesnt have an accumulate, hence Acc = 0.
-*     Positions of tokens Rd, Rm and Rs are 1, 2, and 3 respectively.
-*     Rn is ignored therefore -1 is passed as the 'position' of token Rn.
-*/
-
 int32_t ass_multiply_mul(TOKEN *line)
 {
-  int N_ACC       =  0;
-  int POS_OF_RD   =  1;
-  int POS_OF_RM   =  2;
-  int POS_OF_RS   =  3;
-  int RN_IGNORED  = -1;
-
-  return ass_multiply(line, N_ACC, POS_OF_RD, POS_OF_RM, POS_OF_RS, RN_IGNORED);
+  return ass_multiply(line, 0, 1, 2, 3, -1);
 }
-
-/* 2. multiply with accumulate and with syntax: mla Rd, Rm, Rs, Rn
-*
-*     Instruction have an accumulate, hence Acc = 1.
-*     Positions of tokens Rd, Rm ,Rs and Rn are 1, 2, 3 and 4 respectively.
-*/
 
 int32_t ass_multiply_mla(TOKEN *line)
 {
-<<<<<<< HEAD
-  int _ACC        = 1;
-  int POS_OF_RD   = 1;
-  int POS_OF_RM   = 2;
-  int POS_OF_RS   = 3;
-  int POS_OF_RN   = 4;
-
-  return ass_multiply(line, _ACC, POS_OF_RD, POS_OF_RM, POS_OF_RS, POS_OF_RN);
-
-=======
   return ass_multiply(line, 1, 1, 2, 3, 4);
->>>>>>> 647afb3eaaa4a3510c9d2a0c404e3fa66f2b1163
 }
-
-////////* Single Data Transfer *////////
 
 int32_t ass_single_data_transfer(TOKEN *line, int Rd, char *address)
 {
@@ -411,36 +295,35 @@ int32_t ass_single_data_transfer(TOKEN *line, int Rd, char *address)
 
   TOKEN *newline = tokenlise(adr, "[], "); // get arguements from expression
 
-  if (Pre_index) {                        // Pre-indexing
-    if (newline->tokenCount == 1) {       // Case [Rn]
-      offset = 0;
-    } else {                              // Case [Rn, <#expression>]
-      char *expr = newline->tokens[2];
-      offset     = expr_to_num(expr++);
-    }
 
-    static SDTInstruct *SDTinstr;
+  if (newline->tokenCount == 1) {       // Case [Rn]
+    offset = 0;
+  } else {                              // Case [Rn, <#expression>]
+    char *expr = newline->tokens[2];
+    offset     = expr_to_num(expr++);
+  }
 
-    SDTinstr->Cond   = AL;
-    SDTinstr->_01	   = 1;
-    SDTinstr->P	     = Pre_index;
-    SDTinstr->I	     = I;
-    SDTinstr->U	     = U;
-    SDTinstr->_00	   = 0;
-    SDTinstr->L	     = (mnem == "ldr")? 1 : 0;  //ldr --> L is set
-    SDTinstr->Rn     = PARSE_REG(2);
-    SDTSDTinstr->Rd	 = PARSE_REG(1);
-    SDTinstr->Offset = offset;
+  static SDTInstruct *SDTinstr;
 
-    return *(int32_t *) &SDTinstr;
-    }
+  SDTinstr->Cond   = AL;
+  SDTinstr->_01	   = 1;
+  SDTinstr->P	     = Pre_index;
+  SDTinstr->I	     = I;
+  SDTinstr->U	     = U;
+  SDTinstr->_00	   = 0;
+  SDTinstr->L	     = (mnem == "ldr")? 1 : 0;  //ldr --> L is set
+  SDTinstr->Rn     = PARSE_REG(2);
+  SDTSDTinstr->Rd	 = PARSE_REG(1);
+  SDTinstr->Offset = offset;
+
+  return *(int32_t *) &SDTinstr;
 
 }
 
 int32_t SDT_num_const(TOKEN *line, int Rd, char *address) {
   char *Rd = line->tokens[1];
   char *adr = line->tokens[2];
-  int new_address = expr_to_num(adr++);
+  int address = expr_to_num(adr++);
 
   if (address <= 0xFF) {                  // Treat as mov Instruction
     adr[0] = '#';
@@ -448,7 +331,12 @@ int32_t SDT_num_const(TOKEN *line, int Rd, char *address) {
 
   } else {
     // use PC to calculate new address
-    register[15] += (IS_SET(dataU)? offset : -offset);
+    int offset = address - current_address - 8;  // off-by-8 bytes effect
+    //generate ldr r0,[PC, offset]
+    char *newline;
+    asprintf(&newline, "ldr %s, [15, #%d]", Rd, offset); // PC =15
+    TOKEN *newtoken = tokenlise(newline, ", ");
+      return ass_SDT(newtoken);
   }
 }
 
@@ -464,7 +352,7 @@ int32_t ass_branch(TOKEN *line, int Cond, char *expr) {
 	char *label   = line->tokens[1];
 	char *address = PARSE_REG(*expr);
 
-	int Offset = (label - address + 8) >> 2;  // compute offet
+	int Offset = (current_address - address + 8) >> 2;  // compute offet
 
 	BranchInstr *Branchinstr;
 
