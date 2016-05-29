@@ -1,12 +1,34 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "tokens.h"
 #include <string.h>
-
+#include "tokens.h"
 
 TOKEN *tokenStruct = NULL;
 
-TOKEN tokenise(char *str, const char *delim) {
+////////////////////////////////////////////////////////////////////////////
+
+void tokens_free(TOKEN *tokens) 
+{
+	for (int i = 0 ; i < tokens->tokenCount; i++)
+	{
+		free(tokens->tokens[i]);
+	}
+	free(tokens->tokens);
+	free(tokens->line);
+	free(tokens);
+}
+
+void tokens_print(TOKEN *tokens) 
+{	
+	printf("Printing %d tokens:\n", tokens->tokenCount);
+	for (int i = 0; i < tokens->tokenCount; i++)
+	{
+		printf("%s\n", tokens->tokens[i]);
+	}
+}
+
+TOKEN tokenise(char *str, const char *delim) 
+{
   char *token;
   int countToken = 0; // initial room for string
   size_t space = 0;
@@ -46,4 +68,18 @@ TOKEN tokenise(char *str, const char *delim) {
 
   free((*tokenStruct).tokens);
   return *tokenStruct;
+}
+
+void tokens_iter(TOKEN *tokens, tokens_func func)
+{
+	for (int i = 0; i < tokens->tokenCount; i++)
+	{
+		func(tokens->tokens[i]);
+	}
+}
+
+char tokens_endc(TOKEN *tokens)
+{
+	return tokens->tokens[tokens->tokenCount-1]
+		[strlen(tokens->tokens[tokens->tokenCount-1])-1];
 }

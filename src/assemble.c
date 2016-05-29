@@ -1,42 +1,35 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <stdint.h>
+#include <assert.h>
 
-////////////////////////////////ARM STRUCTURE//////////////////////////////////
+//////////////////////////////////STRUCTURE//////////////////////////////////
 
 #include "library/arm11.h"
-
-//////////////////////////ASSEMBLER STRUCTURE /////////////////////////////////
-
 #include "library/assembler.h"
-
-///////////////////////// STRUCTURE OF INSTRUCTION ////////////////////////////
-
-/////////////////////////////two-pass assembly/////////////////////////////////
 #include "library/instruction.h"
 
 ////////////////////////////////////MACROS/////////////////////////////////////
 
 #include "library/register.h"
 #include "library/tokens.h"
+#include "library/bitwise.h"
 
+/* Parsing Macro */
 
 // for numerica constant it's in the form "#x" where x is a natural number
 // or in the form "=x" for ldr instr (the expr can be 32 bits after =)
 
-#define Is_Expression(tokens)  (tokens[0] == '#' || tokens[0] == '=')
 #define Is_Hexadecimal(token) (Is_Expression(token) & token[1] == '0' & token[2] == 'x')
 #define max_8bit_represented  256 // 2^8 = 256
 #define expr_to_num(expr)    (strtol(expr, NULL, 0))
-#define PARSE_REG(R) ((R) == -1) ? 0 \
-                         : (((strcmp(line->tokens[R], "PC") == 0) ? PC \
-                                             : atoi(line->tokens[R] + 1)))
+
 ///////////////////////////// FUNCTION PROTOTYPE //////////////////////////////
 
-char *buffer;
-<<<<<<< HEAD
 
-=======
->>>>>>> 9b9c555b2cedff6b2e1afcc8822237cef2724b4a
+char *buffer;
+
 ASSEMBLER_STRUCT *ass = NULL;
 
 TOKEN read_Source(const char *);
@@ -137,38 +130,41 @@ int as_numeric_constant(int value){
   //first case integer(11-7)+shift type(6-5)+0(4)
   //second case shiftReg RS(11-8)+0(7)+shift type(6-5)+1(4)
 //TOKEN *elem is a pointer to elems in tokenized line
-int as_shifted_reg_ass(TOKEN *token_line, int pos_of_Rm){
-  char *shift_name = token_line->tokens[1];
-  char *Operand2 = token_line->tokens[2];
-  int result = 0;
+int as_shifted_reg_ass(TOKEN *line, int pos_of_Rm)
+{
+  	char *shift_name = line->tokens[pos_of_Rm + 1];
+  	char *Operand2 = line->tokens[pos_of_Rm + 2];
+  	int  result = 0;
 
-  ShiftReg *shiftReg;
-  ShiftRegOptional *regOp;
-  int shiftType = str_to_ShiftType(shift_name);
+	ShiftReg 	 shiftReg;
+  	ShiftRegOptional regOp;
+  	int shiftType = str_to_shift(shift_name);
 
-//in the form <shiftname><#expression>
-if(Is_Expression(Operand2)){
-  //+1 to git rid of 'r' but just getting the reg number
+	//in the form <shiftname><#expression>
+	if(Is_Expression(Operand2))
+	{
+  	//+1 to git rid of 'r' but just getting the reg number
+ 		shiftReg.Rm = PARSE_REG(pos_of_Rm - 1); 
+  		shiftReg.Flag = 0;
+  		shiftReg.Type = shiftType;
+  		shiftReg.Amount = atoi(Operand2);
 
+  		result = *((int *) &shiftReg);
 
-  shiftReg->Rm = atoi(token_line->tokens[pos_of_Rm] + 1); //TODO: check
-  shiftReg->Flag = 0;
-  shiftReg->Type = shiftType;
-  shiftReg->Amount = atoi(Operand2);
-
-  result = *((int *) &shiftReg);
-
-} else { //in the form <shiftname><register>
-  //CHECK THE STRUC?!??!
-  regOp->Type = shiftType;
-  regOp->Flag = 0;
+	} else { //in the form <shiftname><register>
+	  //CHECK THE STRUC?!??!
+  		regOp.Rm = PARSE_REG(pos_of_Rm + 2);
+  		regOp.Flag1 = 0;
+  		regOp.Type = shiftType;
+		regOp.Flag2 = 0;
+  		regOp.Rs = PARSE_REG(pos_of_Rm) | (1 << 4);
 
   //regOp.Rs = atoi(token_line->tokens[pos_of_Rm] + 1) << 3; //getting the last bit of Rs
 
-  result = *((int *) &regOp);
-}
+  		result = *((int *) &regOp);
+	}	
 
-return result;
+	return result;
 }
 
 //to check if operand2 is an expression or a register
@@ -195,7 +191,7 @@ int32_t ass_data_proc(TOKEN *line, int SetCond, int Rn, int Rd, int Operand_2)
 	DPInst->Cond	= AL;
 	DPInst->_00	= 0;
 	DPInst->ImmOp	= Is_Expression(Operand2);
-	DPInst->Opcode	= str_to_Mnemonic(mnemonic);
+	DPInst->Opcode	= str_to_mnemonic(mnemonic);
 	DPInst->SetCond	= SetCond;
 	DPInst->Rn	= PARSE_REG(Rn);
 	DPInst->Rd	= PARSE_REG(Rd);
@@ -223,15 +219,15 @@ int32_t ass_multiply(TOKEN *line, int Acc, int Rd, int Rm, int Rs, int Rn)
 {
 	static MultiplyInstruct *MulInst;
 
-	MulInst->Cond	   = AL; //TODO
-	MulInst->_000000 = 0;
+	MulInst->Cond	   = AL; 
+	MulInst->_000000   = 0;
 	MulInst->Acc	   = Acc;
-	MulInst->SetCond = 0;
-	MulInst->Rd	     = PARSE_REG(Rd);
-	MulInst->Rn	     = PARSE_REG(Rn);
-	MulInst->Rs	     = PARSE_REG(Rs);
-	MulInst->_1001	 = 9; //TODO
-	MulInst->Rm	     = PARSE_REG(Rm);
+	MulInst->SetCond   = 0;
+	MulInst->Rd	   = PARSE_REG(Rd);
+	MulInst->Rn	   = PARSE_REG(Rn);
+	MulInst->Rs	   = PARSE_REG(Rs);
+	MulInst->_1001	   = 0;
+	MulInst->Rm	   = PARSE_REG(Rm);
 
 	return *((int32_t *) &MulInst);
 }

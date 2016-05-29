@@ -89,7 +89,7 @@ typedef struct ShiftRegOptional
     unsigned int Rm       : 4;
     unsigned int Flag1    : 1;
     unsigned int Type     : 2;
-    unsigned int Flag2     : 1;
+    unsigned int Flag2    : 1;
     unsigned int Rs       : 4;
 } ShiftRegOptional;
 
@@ -139,7 +139,7 @@ typedef enum ShiftType
 
 ////////////////////////// Definition of Mnemonic ////////////////////////////
 
-#define Mnemonic_toString(f) \
+#define mnemonic_toString(f) \
         f(add) f(sub) f(rsb) f(and) f(eor) f(orr) f(mov) f(tst) \
         f(teq) f(cmp) f(mul) f(mla) f(ldr) f(str) f(beq) f(bne) \
         f(bge) f(blt) f(bgt) f(ble) f(b)   f(lsl) f(andeq)
@@ -170,43 +170,43 @@ typedef enum Mnemonic
 struct { /* Mnemoic_toString is implemented as */
   Mnemonic num;  /* name of the Mnemonic */
   char *str; /* string of the mmemonic within in */
-} Mnemonic_array[] = { Mnemonic_toString(f_pair) };
+} mnemonic_array[] = { mnemonic_toString(f_pair) };
 
 
 /////////////////////////////// Opcode ///////////////////////////////////
 
 
-#define Opcode_toString(f) \
+#define opcode_toString(f) \
 	f(AND) f(EOR) f(SUB) f(RSB) f(ADD) f(TST) f(TEQ) f(CMP) f(ORR) f(MOV)
 
 struct { /* Opcode_toString is implemented as */
   Opcode num;  /* name of the opcode */
   char *str; /* string where opcode within in */
-} Opcode_array[] = { Opcode_toString(f_pair) };
+} opcode_array[] = { opcode_toString(f_pair) };
 
 
 //////////////////////////// Cond //////////////////////////////////////////
 
 
-#define Cond_toString(f) \
+#define cond_toString(f) \
 	f(EQ) f(NE) f(GE) f(LT) f(GT) f(LE) f(AL)
 
 struct { /* Cond_toString is implemented as */
   Cond num;  /* name of the Cond */
   char *str; /* string where the cond within in */
-} Cond_array[] = { Cond_toString(f_pair) };
+} cond_array[] = { cond_toString(f_pair) };
 
 
 //////////////////////////// Shift Type ////////////////////////////////////
 
 
-#define ShiftType_toString(f) \
+#define shift_toString(f) \
 	f(LSL) f(LSR) f(ASR) f(ROR)
 
 struct { /* ShiftType_toString is implemented as */
   ShiftType num;  /* name of the shift type */
   char *str; /* string where the shift type within in */
-} ShiftType_array[] = { ShiftType_toString(f_pair) };
+} shift_array[] = { shift_toString(f_pair) };
 
 
 /////////////////////////// String_to_Enum ////////////////////////////////////
@@ -232,10 +232,10 @@ struct { /* ShiftType_toString is implemented as */
 }\
 \
 \
-STR_TO_ENUM(Mnemonic)	\
-STR_TO_ENUM(Opcode) 	\
-STR_TO_ENUM(Cond)	\
-STR_TO_ENUM(ShiftType)	\
+STR_TO_ENUM(mnemonic)	\
+STR_TO_ENUM(opcode) 	\
+STR_TO_ENUM(cond)	\
+STR_TO_ENUM(shift)	\
 
 
 #endif
