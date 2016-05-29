@@ -230,12 +230,11 @@ struct { /* ShiftType_toString is implemented as */
 	}                                                      \
 	return -1;                                             \
 }\
-\
-\
-STR_TO_ENUM(mnemonic)	\
-STR_TO_ENUM(opcode) 	\
-STR_TO_ENUM(cond)	\
-STR_TO_ENUM(shift)	\
+
+STR_TO_ENUM(mnemonic)
+STR_TO_ENUM(opcode)
+STR_TO_ENUM(cond)
+STR_TO_ENUM(shift)
 
 
 #endif
