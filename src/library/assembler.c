@@ -33,7 +33,7 @@ ASSEMBLER_STRUCT* assemble(TOKEN *lines, function_assPtr func, const char *delim
       }
     }
     free(current_Line);
-    //TODO free token using token_free
+    tokens_free(token);
   }
 
   free(symbol);
@@ -62,7 +62,7 @@ ASSEMBLER_STRUCT* assemble(TOKEN *lines, function_assPtr func, const char *delim
     assemble_write(ass, word);
    }
    free(current_Line);
-   //TODO token_free(token);
+   tokens_free(token);
   }
   return ass;
 }
