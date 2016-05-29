@@ -30,11 +30,10 @@ int expr_to_num(char *expr)
 
 ///////////////////////////// FUNCTION PROTOTYPE //////////////////////////////
 
-
-char *buffer;
 ASSEMBLER_STRUCT *ass = NULL;
+char *buffer;
 
-TOKEN read_Source(const char *);
+TOKEN* read_Source(const char *);
 void write_File(const char *);
 
 int as_numeric_constant(char *);
@@ -54,7 +53,7 @@ int32_t ass_multiply_mla(TOKEN *);
 
 /* Single Data Transfer */
 int32_t ass_single_data_transfer(TOKEN *, int, char *);
-int32_t SDT_num_const(int, int, char *);
+int32_t SDT_num_const(TOKEN *, int, char *);
 int32_t ass_SDT(TOKEN *);
 
 /* Branch */
@@ -68,33 +67,56 @@ int32_t lsl_func(TOKEN *);
 
 ///////////////////////Binary file reader //////////////////////////////////////
 
-TOKEN read_Source(const char *sourceFile) {
+TOKEN* read_Source(const char *sourceFile) {
   FILE *file = fopen(sourceFile, "rs");
 
+  printf("a1\n");
   //if (file != NULL) {
     fseek(file, 0, SEEK_END);
+    printf("a2\n");
+
     long size = ftell(file); //Size of file in bytes
+    printf("a3\n");
+
     fseek(file, 0, SEEK_SET); //go back to start
 
+      printf("a4\n");
+
     buffer = (char *) malloc(size * sizeof(char));
+
+      printf("a5\n");
     if(buffer == NULL) {
+        printf("a6\n");
       perror("Malloc failed.");
     } else {
+        printf("a7\n");
     fread(buffer, size, 1, file);
+      printf("a8\n");
     if(ferror(file)) {
       perror("Error reading from sourceFile.\n");
     }
 
+      printf("a9\n");
+
+
     int sizeBuffer = sizeof(buffer);
+
+      printf("b1\n");
 
     buffer[sizeBuffer - 1]= '\0';
 
+    printf("b2\n");
+
+
    return tokenise(buffer, ",");
+
+   printf("b3\n");
 
   }
 
   TOKEN *result = NULL;
-  return *result;
+  printf("b4\n");
+  return result;
 
 }
 
@@ -211,6 +233,8 @@ void funcArray(void) {
 
 
 
+
+
 /////////////////////// Assemble Instructions //////////////////////////////////
 
 ///////* Data Processing *////////
@@ -235,6 +259,7 @@ void funcArray(void) {
 *
 */
 
+
 static int32_t ass_data_proc(TOKEN *line, int SetCond, int Rn, int Rd, int Operand_2)
 {
 	char *Operand2 = line->tokens[Operand_2];
@@ -254,48 +279,15 @@ static int32_t ass_data_proc(TOKEN *line, int SetCond, int Rn, int Rd, int Opera
 	return *((int32_t *) &DPInst);
 }
 
-/* 1. instructions that compute results: and, eor, sub, rsb, add,  orr
-*     Syntax : <opcode> Rd Rn <Operand2>
-*
-*     CPRS flags are not set, hence SetCond is clear or SetCond = 0.
-*     Positions of tokens Rd, Rn and Operand2 are 1, 2, and 3 respectively.
-*/
-
 int32_t ass_data_proc_result(TOKEN *line)
 {
-  int CPSR_SET    = 1;
-  int POS_OF_RD   = 1;
-  int POS_OF_RN   = 2;
-  int POS_OF_OP2  = 3;
-
-  return ass_data_proc(line, CPSR_SET, POS_OF_RN, POS_OF_RD, POS_OF_OP2);
+  return ass_data_proc(line, 0, -1, 1, 2);
 }
-
-/* 2. single operand assignment: mov
-      Syntax : mov Rd, <Operand2>
-*
-*     CPRS flags are not set, hence SetCond is clear or SetCond = 0.
-*     Positions of tokens Rd and Operand2 are 1 and 2 respectively.
-*     Rn is ignored therefore -1 is passed as the 'position' of token Rn.
-*/
 
 int32_t ass_data_proc_mov(TOKEN *line)
 {
-  int CPSR_CLEAR =  0;
-  int POS_OF_RD  =  1;
-  int RN_IGNORED = -1;
-  int POS_OF_OP2 =  2;
-
-  return ass_data_proc(line, CPSR_CLEAR, RN_IGNORED, POS_OF_RD, POS_OF_OP2);
+  return ass_data_proc(line, 0, -1, 1, 2);
 }
-
-/* 3. instructions that dont compute result but set CPSR flags: tst, teq, cmp
-*     Syntax : <opcode> Rn, <Operand_2>
-*
-*     CPRS flags ARE set, hence a SetCond is set or SetCond = 1.
-*     Positions of tokens Rn and Operand2 are 1 and 2 respectively.
-*     Rd is ignored therefore -1 is passed as the 'position' of token Rd.
-*/
 
 int32_t ass_data_proc_cpsr(TOKEN *line)
 {
@@ -333,7 +325,7 @@ static int32_t ass_multiply(TOKEN *line, int Acc, int Rd, int Rm, int Rs, int Rn
 	static MultiplyInstruct *MulInst;
 
 	MulInst->Cond	   = AL;
-	MulInst->_000000 = 0;
+	MulInst->_000000   = 0;
 	MulInst->Acc	   = Acc;
 	MulInst->SetCond = 0;
 	MulInst->Rd	     = PARSE_REG(Rd);
@@ -344,13 +336,6 @@ static int32_t ass_multiply(TOKEN *line, int Acc, int Rd, int Rm, int Rs, int Rn
 
 	return *((int32_t *) &MulInst);
 }
-
-/* 1. multiply with syntax: mul Rd, Rm, Rs
-*
-*     Instruction doesnt have an accumulate, hence Acc = 0.
-*     Positions of tokens Rd, Rm and Rs are 1, 2, and 3 respectively.
-*     Rn is ignored therefore -1 is passed as the 'position' of token Rn.
-*/
 
 int32_t ass_multiply_mul(TOKEN *line)
 {
@@ -363,12 +348,6 @@ int32_t ass_multiply_mul(TOKEN *line)
   return ass_multiply(line, N_ACC, POS_OF_RD, POS_OF_RM, POS_OF_RS, RN_IGNORED);
 }
 
-/* 2. multiply with accumulate and with syntax: mla Rd, Rm, Rs, Rn
-*
-*     Instruction have an accumulate, hence Acc = 1.
-*     Positions of tokens Rd, Rm ,Rs and Rn are 1, 2, 3 and 4 respectively.
-*/
-
 int32_t ass_multiply_mla(TOKEN *line)
 {
   int _ACC        = 1;
@@ -380,16 +359,37 @@ int32_t ass_multiply_mla(TOKEN *line)
   return ass_multiply(line, _ACC, POS_OF_RD, POS_OF_RM, POS_OF_RS, POS_OF_RN);
 }
 
-////////* Single Data Transfer *////////
+
+int32_t SDT_num_const(TOKEN *line, int Rd, char *address) {
+  char *Regd = line->tokens[1];
+  char *adr = line->tokens[2];
+  int newAddress = expr_to_num(adr++);
+
+  if (newAddress <= 0xFF) {                  // Treat as mov Instruction
+    adr[0] = '#';
+    return ass_data_proc_mov(line);
+
+  } else {
+    // use PC to calculate new address
+    int offset = newAddress - ass->current_address - 8;  // off-by-8 bytes effect
+    //generate ldr r0,[PC, offset]
+    char *newline = (char*)malloc(MAX_CHAR_inLINE * sizeof(char));
+
+    sprintf(newline, "ldr %s, [15, #%d]", Regd, offset); // PC =15
+    TOKEN *newtoken = malloc(sizeof(TOKEN));
+    newtoken = tokenise(newline, ", ");
+      return ass_SDT(newtoken);
+  }
+}
 
 int32_t ass_single_data_transfer(TOKEN *line, int Rd, char *address)
 {
-  int Rn     = PARSE_REG(expr_to_num(line->tokens[1] + 1));
+//  int Rn     = PARSE_REG(expr_to_num(line->tokens[1] + 1));
   char *adr  = line->tokens[2];
   char *mnem = line->tokens[0];
 
   //It's Pre-indexed address if the expression ends with ']'
-  int Pre_index = (string_endc(adr) == ']') 1 : 0;
+  int Pre_index = (string_endc(adr) == ']') ? 1 : 0;
   //initialise I, U, Offset
   int Imm    = 0;
   int Up     = 1;
@@ -399,46 +399,32 @@ int32_t ass_single_data_transfer(TOKEN *line, int Rd, char *address)
     return SDT_num_const(line, Rd, address);
   }
 
-  TOKEN *newline = tokenlise(adr, "[], "); // get arguements from expression
+  TOKEN *newline = malloc(sizeof(TOKEN));
+  newline = tokenise(adr, "[], "); // get arguements from expression
 
-  if (Pre_index) {                        // Pre-indexing
-    if (newline->tokenCount == 1) {       // Case [Rn]
-      offset = 0;
-    } else {                              // Case [Rn, <#expression>]
-      char *expr = newline->tokens[2];
-      offset     = expr_to_num(expr++);
-    }
 
-    static SDTInstruct *SDTinstr;
-
-    SDTinstr->Cond   = AL;
-    SDTinstr->_01	   = 1;
-    SDTinstr->P	     = Pre_index;
-    SDTinstr->I	     = I;
-    SDTinstr->U	     = U;
-    SDTinstr->_00	   = 0;
-    SDTinstr->L	     = (mnem == "ldr")? 1 : 0;  //ldr --> L is set
-    SDTinstr->Rn     = PARSE_REG(2);
-    SDTSDTinstr->Rd	 = PARSE_REG(1);
-    SDTinstr->Offset = offset;
-
-    return *(int32_t *) &SDTinstr;
-    }
-
-}
-
-int32_t SDT_num_const(TOKEN *line, int Rd, char *address) {
-  char *Rd = line->tokens[1];
-  char *adr = line->tokens[2];
-  int new_address = expr_to_num(adr++);
-
-  if (address <= 0xFF) {                  // Treat as mov Instruction
-    adr[0] = '#';
-    return ass_data_proc_mov(line);
-
-  } else {
-    // use PC to calculate new address
+  if (newline->tokenCount == 1) {       // Case [Rn]
+    offset = 0;
+  } else {                              // Case [Rn, <#expression>]
+    char *expr = newline->tokens[2];
+    offset     = expr_to_num(expr++);
   }
+
+  static SDTInstruct *SDTinstr;
+
+  SDTinstr->Cond   = AL;
+  SDTinstr->_01	   = 1;
+  SDTinstr->P	     = Pre_index;
+  SDTinstr->I	     = Imm;
+  SDTinstr->U	     = Up;
+  SDTinstr->_00	   = 0;
+  SDTinstr->L	     = (strcmp(mnem, "ldr") == 0) ? 1 : 0;  //ldr --> L is set
+  SDTinstr->Rn     = PARSE_REG(2);
+  SDTinstr->Rd	   = PARSE_REG(1);
+  SDTinstr->Offset = offset;
+
+  return *(int32_t *) &SDTinstr;
+
 }
 
 int32_t ass_SDT(TOKEN *line) {
@@ -446,21 +432,18 @@ int32_t ass_SDT(TOKEN *line) {
 }
 
 int32_t ass_branch(TOKEN *line, int Cond, char *expr) {
-	char *suffix = "AL";              // initialise suffix
-	if (line->tokens[0] == "b") {     // b<Cond>
-	  *suffix = (line->tokens[0] + 1);
-	}
-	char *label   = line->tokens[1];
-	char *address = PARSE_REG(*expr);
+	char *suffix = (strcmp(line->tokens[0], "b") == 0) ? "al" : (line->tokens[0] + 1);
 
-	int Offset = (label - address + 8) >> 2;  // compute offet
+	int address   = expr_to_num(line->tokens[1]);
+ //	char *address = PARSE_REG(expr_to_num(label));
 
-	BranchInstr *Branchinstr;
+	int offset = (ass->current_address  - address + 8) >> 2;  // compute offet
 
-	Branchinstr->Cond   = suffix;
-	Branchinstr->_101   = 101;
+	BranchInstruct *Branchinstr;
+	Branchinstr->Cond   = str_to_cond(suffix);
+	Branchinstr->_101   = 5 % (1 << sizeof(char));
 	Branchinstr->_0     = 0;
-	Branchinstr->Offset = Offset;
+	Branchinstr->Offset = offset;
 
 	return *(int32_t *) &Branchinstr;
 }
@@ -485,12 +468,12 @@ int32_t andeq_func(TOKEN *line){
 //write the string into it. it is an implicit malloc need to free afterward
 //Compile lsl Rn,<#expression> as mov Rn, Rn, lsl <#expression>
 int32_t lsl_func(TOKEN *token_line){
- char *new_token_line = (char* )malloc(511 * sizeof(char));
+ char *new_token_line = (char* )malloc(MAX_CHAR_inLINE * sizeof(char));
  sprintf(new_token_line, "mov %s, %s, lsl %s", token_line->tokens[1],
                                                 token_line->tokens[1],
                                                 token_line->tokens[2]);
 TOKEN *new_token = (TOKEN*) malloc(sizeof(TOKEN));
-*new_token = tokenise(new_token_line, " ,");
+new_token = tokenise(new_token_line, " ,");
 return ass_data_proc_mov(new_token);
 
 //free(new_token_line); TODO: Remeber to free
@@ -512,20 +495,34 @@ int main(int argc, char **argv)
     exit(EXIT_FAILURE);
   }
 
+  printf("before function_Array\n");
   funcArray();
+  printf("after funcArray\n");
 
   TOKEN *lines = (TOKEN*) malloc(sizeof(TOKEN));
-  *lines = read_Source(argv[1]);
+  printf("after token\n");
+
+  lines = read_Source(argv[1]);
+  printf("after read_source main\n");
+  tokens_print(lines);
+
   //get lines of assembly codes
 
-  *ass = assemble(lines, &assembler_func, ",");
+  ass = assemble(lines, &assembler_func, ",");
+  printf("after ass main\n");
+
    //assemble lines using assembler and get output to write to file
 
-  write_File(argv[2]); //
+  write_File(argv[2]);
+  printf("after write main\n");
 
-  //TODO token_free(lines);
+
+  tokens_free(lines);
+  printf("after token_free main\n");
 
   assemble_free(ass);
+  printf("after ass_free main\n");
+
 
   return EXIT_SUCCESS;
 }

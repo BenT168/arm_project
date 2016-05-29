@@ -18,56 +18,81 @@ void tokens_free(TOKEN *tokens)
 	free(tokens);
 }
 
-void tokens_print(TOKEN *tokens)
+void tokens_print(TOKEN *lines)
 {
-	printf("Printing %d tokens:\n", tokens->tokenCount);
-	for (int i = 0; i < tokens->tokenCount; i++)
+	printf("Printing %d tokens:\n", lines->tokenCount);
+	for (int i = 0; i < lines->tokenCount; i++)
 	{
-		printf("%s\n", tokens->tokens[i]);
+		printf("%s\n", lines->tokens[i]);
 	}
 }
 
-TOKEN tokenise(char *str, const char *delim)
+TOKEN* tokenise(char *str, const char *delim)
 {
+
+	tokenStruct = malloc(sizeof(TOKEN));
+	printf("c1\n");
   char *token;
   int countToken = 0; // initial room for string
   size_t space = 0;
 
-  (*tokenStruct).tokens = (char**) malloc(sizeof(char *) * space);
+  printf("c2\n");
+   tokenStruct->tokens = (char**) malloc(sizeof(char *) * space);
+	printf("c3\n");
    // allocate space for tokens
    // tokens are added to this array;
-   if(!((*tokenStruct).tokens)) {
+  if(!(tokenStruct->tokens)) {
      perror("Malloc failed for tokens."); //check if allocated properly
-   }
+  }
 
-   (*tokenStruct).tokens[0] = (char*) malloc(sizeof(char) * space * countToken);
-   //alloca first part of tokens
-   if((*tokenStruct).tokens[0]) {
-     perror("Malloc failed for token[0]."); // check if allocated properly
-   }
+   tokenStruct->tokens[0] = (char*) malloc(sizeof(char) * space * countToken);
+	 printf("c4\n");
+   //allocate first part of tokens
+   if(!(tokenStruct->tokens[0])) {
+    perror("Malloc failed for token[0]."); // check if allocated properly
+  }
 
-  (*tokenStruct).line = (char*) malloc(sizeof(char) * strlen((*tokenStruct).line));
-  if(!((*tokenStruct).line)) {
+  //tokenStruct->line = strdup(str);
+	tokenStruct->line = (char*)malloc(sizeof(char) * MAX_CHAR_inLINE);
+	printf("c4a\n");
+
+	if(!(tokenStruct->line)) {
   perror("Malloc failed for line."); //check if allocated properly
-}
-
-  //(*tokenStruct).line = strdup(str);
-  (*tokenStruct).line = str;
+  }
+  tokenStruct->line = str;
+	printf("c5\n");
   //pointer to new string which is dupliate of string
+	printf("c14\n");
 
   token = strtok(str, delim); // get the first token
+	printf("c6\n");
 
   while(token != NULL) {
+		printf("c7\n");
     if(*token != '\0') { // stop when end of string is reached
-      space = sizeof(char *) * (countToken + 1);
-      (*tokenStruct).tokens[countToken++] = token;
+    //  space = sizeof(char *) * (countToken + 1);
+		printf("c8\n");
+      tokenStruct->tokens[countToken++] = token;
+			printf("c9\n");
       token = strtok(0, delim);
+			printf("c10\n");
+
     }
   }
-  (*tokenStruct).tokenCount = countToken;
 
-  free((*tokenStruct).tokens);
-  return *tokenStruct;
+
+  tokenStruct->tokenCount = countToken;
+	printf("c11\n");
+
+  free(tokenStruct->tokens);
+	printf("c12\n");
+
+	free(tokenStruct->line);
+	//free(tokenStruct);
+	printf("c13\n");
+
+  return tokenStruct;
+
 }
 
 void tokens_iter(TOKEN *tokens, tokens_func func)
@@ -85,5 +110,15 @@ char tokens_endc(TOKEN *lines)
 }
 
 char string_endc(char* str) {
-	return str[srlen - 1]; 
+	return str[strlen(str) - 1];
+}
+
+void *mem_chk(void *p)
+{
+	if (p == NULL)
+	{
+		perror("INSUFFICIENT MEMORY");
+		exit(EXIT_FAILURE);
+	}
+	return p;
 }

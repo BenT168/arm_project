@@ -24,7 +24,7 @@ typedef struct ASSEMBLER_STRUCT
 //Function that takes token and assembler and returns an int
 typedef int32_t (*function_assPtr)(TOKEN *);
 
-ASSEMBLER_STRUCT assemble(TOKEN *, function_assPtr, const char *);
+ASSEMBLER_STRUCT* assemble(TOKEN *, function_assPtr, const char *);
 
 void assemble_free(ASSEMBLER_STRUCT *);
 

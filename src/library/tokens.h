@@ -26,11 +26,16 @@ void tokens_free(TOKEN *);
 
 void tokens_print(TOKEN *);
 
-TOKEN tokenise(char* , const char*);
+TOKEN* tokenise(char* , const char*);
 
 void tokens_iter(TOKEN *, tokens_func);
 
 char tokens_endc(TOKEN *);
+
+char string_endc(char* );
+
+void *mem_chk(void *p);
+
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -43,5 +48,5 @@ char tokens_endc(TOKEN *);
            ((R == -1) ? 0 \
 		          : ((strcmp(line->tokens[R], "PC") == 0) ? PC \
 					    : atoi(line->tokens[R] + 1)))
-
+#define MAX_CHAR_inLINE 511
 #endif

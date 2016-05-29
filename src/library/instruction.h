@@ -212,24 +212,24 @@ struct { /* ShiftType_toString is implemented as */
 /////////////////////////// String_to_Enum ////////////////////////////////////
 
 
-#define STR_TO_ENUM(a) int str_to_##a(char *buffer)     \
-{                                                         \
- 	int len = sizeof(a##_array)/sizeof(a##_array[0]);    \
+#define STR_TO_ENUM(a) int str_to_##a(char *buffer)        \
+{                                                          \
+ 	int len = sizeof(a##_array)/sizeof(a##_array[0]);        \
   	for (int i = 0; i < len; i++)                          \
-	{	        					\
-      char *low_buffer = strdup(a##_array[i].str);      \
-          for ( int j = 0 ; j < strlen(low_buffer) ; j++ ) \
+	{	        					                                     \
+      char *low_buffer = strdup(a##_array[i].str);         \
+          for (int j = 0 ; j < strlen(low_buffer) ; j++ ) \
           {                                                \
-			        low_buffer[j] = tolower(low_buffer[j]);	\
-          }    \
-        				  \
-		if (strcmp(buffer, low_buffer) == 0)                           \
-		{                                                    \
-			return a##_array[i].num;                          \
-		}                                                    \
-	}                                                      \
-	return -1;                                             \
-}\
+			        low_buffer[j] = tolower(low_buffer[j]);	     \
+          }                                                \
+        				                                           \
+		if (strcmp(buffer, low_buffer) == 0)                   \
+		{                                                      \
+			return a##_array[i].num;                             \
+		}                                                      \
+	}                                                        \
+	return -1;                                               \
+}                                                          
 
 STR_TO_ENUM(mnemonic)
 STR_TO_ENUM(opcode)
