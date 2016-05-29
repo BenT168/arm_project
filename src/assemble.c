@@ -16,14 +16,17 @@
 #include "library/tokens.h"
 #include "library/bitwise.h"
 
-/* Parsing Macro */
+
 
 // for numerica constant it's in the form "#x" where x is a natural number
 // or in the form "=x" for ldr instr (the expr can be 32 bits after =)
 
-#define Is_Hexadecimal(token) (Is_Expression(token) & token[1] == '0' & token[2] == 'x')
 #define max_8bit_represented  256 // 2^8 = 256
-#define expr_to_num(expr)    ((int_strtol(expr, NULL, 0))
+
+int expr_to_num(char *expr)
+{
+  return (int32_t) strtol(expr, NULL, 0);
+}
 
 ///////////////////////////// FUNCTION PROTOTYPE //////////////////////////////
 
@@ -34,7 +37,7 @@ ASSEMBLER_STRUCT *ass = NULL;
 TOKEN read_Source(const char *);
 void write_File(const char *);
 
-int as_numeric_constant(int);
+int as_numeric_constant(char *);
 int as_shifted_reg_ass(TOKEN *, int);
 
 void funcArray(void);
@@ -49,7 +52,7 @@ int32_t ass_multiply(TOKEN *, int, int, int, int, int);
 int32_t ass_multiply_mul(TOKEN *);
 int32_t ass_multiply_mla(TOKEN *);
 
-int32_t ass_single_data_transfer(TOKEN *);
+int32_t ass_single_data_transfer(TOKEN *, int, char *);
 int32_t SDT_num_const(int, int, char *);
 
 int32_t andeq_func(TOKEN *);
@@ -116,9 +119,9 @@ void write_File(const char *binaryFile) {
 //////////////////////////   Core     //////////////////////////////////////////
 
 //TODO: CHECKKKKKK!!!!!!
-int32_t as_numeric_constant(int value){
+int as_numeric_constant(char *value){
   //int num_bit = 0;
-  int32_t to_num = expr_to_num(value);
+  int to_num = expr_to_num(value);
   /*while(num_bit < 32){
     rotate_right(value, 2);
     num_bit += 2;
@@ -137,21 +140,21 @@ int32_t as_numeric_constant(int value){
   //first case integer(11-7)+shift type(6-5)+0(4)
   //second case shiftReg RS(11-8)+0(7)+shift type(6-5)+1(4)
 //TOKEN *elem is a pointer to elems in tokenized line
-int as_shifted_reg_ass(TOKEN *line, int pos_of_Rm)
+int as_shifted_reg_ass(TOKEN *line, int Rm)
 {
-  	char *shift_name = line->tokens[pos_of_Rm + 1];
-  	char *Operand2 = line->tokens[pos_of_Rm + 2];
+  	char *shift_name = line->tokens[Rm + 1];
+  	char *Operand2 = line->tokens[Rm + 2];
   	int  result = 0;
 
 	ShiftReg 	 shiftReg;
   	ShiftRegOptional regOp;
-  	int shiftType = str_to_shift(shift_name);
+  	int shiftType = expr_to_num(shift_name);
 
 	//in the form <shiftname><#expression>
 	if(Is_Expression(Operand2))
 	{
   	//+1 to git rid of 'r' but just getting the reg number
- 		shiftReg.Rm = PARSE_REG(pos_of_Rm - 1);
+ 		  shiftReg.Rm = PARSE_REG(Rm - 1);
   		shiftReg.Flag = 0;
   		shiftReg.Type = shiftType;
   		shiftReg.Amount = atoi(Operand2);
@@ -160,13 +163,13 @@ int as_shifted_reg_ass(TOKEN *line, int pos_of_Rm)
 
 	} else { //in the form <shiftname><register>
 	  //CHECK THE STRUC?!??!
-  		regOp.Rm = PARSE_REG(pos_of_Rm + 2);
+  		regOp.Rm = PARSE_REG(Rm + 2);
   		regOp.Flag1 = 0;
   		regOp.Type = shiftType;
 		regOp.Flag2 = 0;
-  		regOp.Rs = PARSE_REG(pos_of_Rm) | (1 << 4);
+  		regOp.Rs = PARSE_REG(Rm) | (1 << 4);
 
-  //regOp.Rs = atoi(token_line->tokens[pos_of_Rm] + 1) << 3; //getting the last bit of Rs
+  //regOp.Rs = atoi(line->tokens[Rm] + 1) << 3; //getting the last bit of Rs
 
   		result = *((int *) &regOp);
 	}
@@ -175,13 +178,13 @@ int as_shifted_reg_ass(TOKEN *line, int pos_of_Rm)
 }
 
 //to check if operand2 is an expression or a register
-int check_op2(TOKEN *token_line, int pos_of_op2){
-  char *op2 = token_line->tokens[pos_of_op2 + 2];
+int check_op2(TOKEN *line, int op2){
+  char *operand2 = line->tokens[op2 + 2];
 
-  if(Is_Expression(op2)){
-    return as_numeric_constant(atoi(op2));
+  if(Is_Expression(operand2)){
+    return as_numeric_constant(operand2);
   }
-  return as_shifted_reg_ass(token_line, pos_of_op2);
+  return as_shifted_reg_ass(line, op2);
 
 }
 
@@ -190,7 +193,7 @@ function_assPtr function_Array[9];
 
 int32_t assembler_func(TOKEN *line) {
   char *mnemonic = line->tokens[0];
-  int i = str_to_Mnemonic(mnemonic);
+  int i = str_to_mnemonic(mnemonic);
   return function_Array[i](line);
 }
 
@@ -201,7 +204,7 @@ void funcArray(void) {
   function_Array[3] = ass_multiply_mul;
   function_Array[4] = ass_multiply_mla;
   //function_Array[5] = ass_branch;
-  function_Array[6] = ass_single_data_transfer;
+  //function_Array[6] = ass_single_data_transfer;
   function_Array[7] = lsl_func;
   function_Array[8] = andeq_func;
 
@@ -275,7 +278,7 @@ int32_t ass_multiply_mla(TOKEN *line)
 
 int32_t ass_single_data_transfer(TOKEN *line, int Rd, char *address)
 {
-  int *Rn    = PARSE_REG(line->tokens[1] + 1);
+  int *Rn    = PARSE_REG(expr_to_num(line->tokens[1] + 1));
   char *adr  = line->tokens[2];
   char *mnem = line->tokens[0];
 
@@ -347,91 +350,6 @@ int32_t ass_branch(TOKEN *line, int Cond, char *expr) {
 }
 
 
-//////////////////////////Instruction //////////////////////////////////////////
-
-/////////////////////// Data Processing ////////////////////////////////////////
-//a lookup table for binary numbers
-/*
-static const char *const binaries[4][15] = {{"0000","0001","0010","0011","0100"\
-                                    ,"0101", "0110","0111","1000","1001"\
-                                    ,"1010","1011","1100","1101","1110","1111"}};
-
-const int *decimal_to_binary(int number){
-  int count = 1, quotient, binary;
-
-  while(number != 0) {
-    quotient = number % 2;
-    number /= 2;
-    binary = quotient * count;
-    count *= 10;
-  }
-  return binary;
-}
-*/
-/*const char *hex_to_binary(char number){
-  if(number >= '0' & number <= '9') return binaries[number];
-  if(number >= 'A' & number <= 'F') return binaries[10 + number - 'A'];
-  if(number >= 'a' & number <= 'f') return binaries[10 + number - 'a'];
-}
-*/
-
-
-/*int32_t single_data_transfer(int Rd, char *adr)
-{
-
-
-  int dataRn     = SDTInst->Rn;         // base register
-  int dataOffset = SDTInst->Offset;
-  int dataI      = SDTInst->I;
-  int dataP      = SDTInst->P;
-  int dataU      = SDTInst->U;
-  int dataL      = SDTInst->L;
-
-
-  int address = get_value(adr);
-  if (IS_SET(dataL)) {                    // ldr: Load from memory into register
-    if (adr[0] == '=') {                  // In numeric form
-      return SDT_num_const(Rd, address, *adr);
-    }
-
-    if (IS_SET(dataP)) {                  // Pre-indexing
-      return SDT_PreIndexing(int Rd, char *adr);
-    } else {                              // Post-indexing
-      return SDT_PsotIndexing(int Rd, char *adr);
-    }
-  }
-
-}
-
-int32_t SDT_num_const(int r0, int address, char *adr) {
-
-  if (address <= 0xFF) {                  // Treat as mov Instruction
-    adr[0] = '#'; //TODO: can use Is_Expression here :)
-    return data_processing(mov r0, adr);
-
-  } else {
-    //TODO place address in four bytes
-  }
-}
-
-int32_t SDT_PreIndexing(int Rd, char *adr) {
-  int offset = 0;
-  if ((*adr[1])[0] == '#') {              //Case offset = <#expression>
-    offset = get_value(*adr[1]);
-  }
-  dataRn += (IS_SET(dataU)? dataOffset : -dataOffset);
-  IS_SET(dataL) ? (word = MEM_R_32bits(dataRn)) : MEM_W_32bits(dataRn, word);
-}
-
-int32_t SDT_PostIndexing(int Rd, char *adr) {
-  int offset = get_value(*adr[1]);
-  IS_SET(dataL) ? (word = MEM_R_32bits(dataRn)) : MEM_W_32bits(dataRn, word);
-  dataRn += (IS_SET(dataU)? dataOffset : -dataOffset);
-  return as_shifted_reg(line, pos_of_op2);
-
-}
-*/
-
 //////////////////Special Instruction //////////////////////////////////////////
 
 /*andeq func */
@@ -439,7 +357,7 @@ int32_t SDT_PostIndexing(int Rd, char *adr) {
 //andeq is similar to and with cond set to 0000 (eq condition)
 //andeq r0, r0, r0
 //TOKEN *line is to get 'andeq from the line read'
-int32_t andeq_func(TOKEN *token_line){
+int32_t andeq_func(TOKEN *line){
   return 0x00000000;
 }
 
@@ -448,14 +366,15 @@ int32_t andeq_func(TOKEN *token_line){
 //write the string into it. it is an implicit malloc need to free afterward
 //Compile lsl Rn,<#expression> as mov Rn, Rn, lsl <#expression>
 int32_t lsl_func(TOKEN *token_line){
- char *new_token_line = NULL;
- asprint(&new_token_line, "mov %s, %s, lsl %s", token_line->tokens[1],
+ char *new_token_line = (char* )malloc(511 * sizeof(char));
+ sprintf(new_token_line, "mov %s, %s, lsl %s", token_line->tokens[1],
                                                 token_line->tokens[1],
                                                 token_line->tokens[2]);
-TOKEN *new_token = tokenise(new_token_line, " ,");
-ass_data_proc_mov(new_token);
+TOKEN *new_token = (TOKEN*) malloc(sizeof(TOKEN));
+*new_token = tokenise(new_token_line, " ,");
+return ass_data_proc_mov(new_token);
 
-free(new_token_line);
+//free(new_token_line); TODO: Remeber to free
 
 }
 
@@ -464,7 +383,8 @@ free(new_token_line);
 
 
 ///////////////////////// Main /////////////////////////////////////////////////
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
 
   if(argc < 3) { // Need two files (+ executer)
     printf("Incomplete number of arguments in input!\n");

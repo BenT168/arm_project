@@ -8,8 +8,8 @@
 #include "tokens.h"
 #include "bitwise.h"
 
-ASSEMBLER_STRUCT* assemble(TOKEN *lines, function_assPtr func, const char *delim) {
-
+ASSEMBLER_STRUCT* assemble(TOKEN *lines, function_assPtr func, const char *delim)
+{
   char *line_after_delim = NULL;
   int label_count = 0;
   char **symbol = malloc(sizeof(line_after_delim));
@@ -69,13 +69,16 @@ ASSEMBLER_STRUCT* assemble(TOKEN *lines, function_assPtr func, const char *delim
 
 
 
-void assemble_free(ASSEMBLER_STRUCT *ass) {
-  for(int i = 0; i < ass->TOTAL_line; i++) {
+void assemble_free(ASSEMBLER_STRUCT *ass)
+ {
+  for(int i = 0; i < ass->TOTAL_line; i++)
+  {
     free(ass->instr[i]);
   }
   free(ass->instr);
 
-  for(int i = 0; i < sizeof(sizeof(ass->symbolTable)); i++) {
+  for(int i = 0; i < sizeof(sizeof(ass->symbolTable)); i++)
+  {
     free(ass->symbolTable[i]);
   }
   free(ass->symbolTable);
@@ -83,7 +86,8 @@ void assemble_free(ASSEMBLER_STRUCT *ass) {
 }
 
 
-void assemble_write(ASSEMBLER_STRUCT *ass, int32_t word) {
+void assemble_write(ASSEMBLER_STRUCT *ass, int32_t word)
+{
   printf("%080x", p->current_address);
   print_bits(word);
 
@@ -96,8 +100,10 @@ void assemble_write(ASSEMBLER_STRUCT *ass, int32_t word) {
 }
 
 
-void assemble_print(ASSEMBLER_STRUCT *ass) {
-  for(int i = 0; i < ass->TOTAL_line; i++) {
+void assemble_print(ASSEMBLER_STRUCT *ass)
+{
+  for(int i = 0; i < ass->TOTAL_line; i++)
+  {
     uint8_t first = ass->instr[i]->word_address;
     int32_t word = ass->instr[i]->binary_word;
     printf("%07x", first);
@@ -106,15 +112,18 @@ void assemble_print(ASSEMBLER_STRUCT *ass) {
 }
 
 
-int32_t* assemble_generate_bin(ASSEMBLER_STRUCT *ass) {
+int32_t* assemble_generate_bin(ASSEMBLER_STRUCT *ass)
+{
   int32_t* words = (int32_t*) malloc(sizeof(int32_t) * ass->TOTAL_line);
-  for(int i = 0; i < ass->TOTAL_line; i++) {
+  for(int i = 0; i < ass->TOTAL_line; i++)
+  {
     words[i] = ass->instr[i]->binary_word;
   }
   return words;
 }
 
-char* delstr(char *str) {
+char* delstr(char *str)
+{
   char* result[strlen(str)];
   strcpy(result, str);
  	str++;
