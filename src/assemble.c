@@ -16,6 +16,7 @@
 #include "library/tokens.h"
 #include "library/bitwise.h"
 
+
 /* Parsing Macro */
 
 // for numerica constant it's in the form "#x" where x is a natural number
@@ -23,7 +24,12 @@
 
 #define Is_Hexadecimal(token) (Is_Expression(token) & token[1] == '0' & token[2] == 'x')
 #define max_8bit_represented  256 // 2^8 = 256
-#define expr_to_num(expr)    (strtol(expr, NULL, 0))
+//#define expr_to_num(expr)    (strtol(expr, NULL, 0))
+
+int expr_to_num(char *expr)
+{
+  return (int32_t) strtol(expr, NULL, 0);
+}
 
 ///////////////////////////// FUNCTION PROTOTYPE //////////////////////////////
 
@@ -34,7 +40,7 @@ ASSEMBLER_STRUCT *ass = NULL;
 TOKEN read_Source(const char *);
 void write_File(const char *);
 
-int as_numeric_constant(int);
+int as_numeric_constant(char *);
 int as_shifted_reg_ass(TOKEN *, int);
 
 void funcArray(void);
@@ -116,9 +122,9 @@ void write_File(const char *binaryFile) {
 //////////////////////////   Core     //////////////////////////////////////////
 
 //TODO: CHECKKKKKK!!!!!!
-int32_t as_numeric_constant(int value){
+int as_numeric_constant(char *value){
   //int num_bit = 0;
-  int32_t to_num = expr_to_num(value);
+  int to_num = expr_to_num(value);
   /*while(num_bit < 32){
     rotate_right(value, 2);
     num_bit += 2;
@@ -145,7 +151,7 @@ int as_shifted_reg_ass(TOKEN *line, int pos_of_Rm)
 
 	ShiftReg 	 shiftReg;
   	ShiftRegOptional regOp;
-  	int shiftType = str_to_shift(shift_name);
+  	int shiftType = expr_to_num(shift_name);
 
 	//in the form <shiftname><#expression>
 	if(Is_Expression(Operand2))
@@ -179,7 +185,7 @@ int check_op2(TOKEN *token_line, int pos_of_op2){
   char *op2 = token_line->tokens[pos_of_op2 + 2];
 
   if(Is_Expression(op2)){
-    return as_numeric_constant(atoi(op2));
+    return as_numeric_constant(op2);
   }
   return as_shifted_reg_ass(token_line, pos_of_op2);
 
@@ -422,14 +428,15 @@ int32_t andeq_func(TOKEN *token_line){
 //write the string into it. it is an implicit malloc need to free afterward
 //Compile lsl Rn,<#expression> as mov Rn, Rn, lsl <#expression>
 int32_t lsl_func(TOKEN *token_line){
- char *new_token_line = NULL;
- asprint(&new_token_line, "mov %s, %s, lsl %s", token_line->tokens[1],
+ char *new_token_line = (char* )malloc(511 * sizeof(char));
+ sprintf(new_token_line, "mov %s, %s, lsl %s", token_line->tokens[1],
                                                 token_line->tokens[1],
                                                 token_line->tokens[2]);
-TOKEN *new_token = tokenise(new_token_line, " ,");
-ass_data_proc_mov(new_token);
+TOKEN *new_token = (TOKEN*) malloc(sizeof(TOKEN));
+*new_token = tokenise(new_token_line, " ,");
+return ass_data_proc_mov(new_token);
 
-free(new_token_line);
+//free(new_token_line); TODO: Remeber to free
 
 }
 
