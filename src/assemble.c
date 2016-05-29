@@ -43,18 +43,24 @@ int as_shifted_reg_ass(TOKEN *, int);
 void funcArray(void);
 int32_t assembler_func(TOKEN *line);
 
-int32_t ass_data_proc(TOKEN *, int, int, int, int);
+/* Data Processing */
 int32_t ass_data_proc_result(TOKEN *);
 int32_t ass_data_proc_mov(TOKEN *);
 int32_t ass_data_proc_cpsr(TOKEN *);
 
-int32_t ass_multiply(TOKEN *, int, int, int, int, int);
+/* Multiply */
 int32_t ass_multiply_mul(TOKEN *);
 int32_t ass_multiply_mla(TOKEN *);
 
+/* Single Data Transfer */
 int32_t ass_single_data_transfer(TOKEN *, int, char *);
 int32_t SDT_num_const(int, int, char *);
 
+/* Branch */
+int32_t ass_branch(TOKEN *, int , char *);
+int32_t ass_BRCH(TOKEN *);
+
+/* Special */
 int32_t andeq_func(TOKEN *);
 int32_t lsl_func(TOKEN *);
 
@@ -179,10 +185,10 @@ int as_shifted_reg_ass(TOKEN *line, int Rm)
 
 //to check if operand2 is an expression or a register
 int check_op2(TOKEN *line, int op2){
-  char *op2 = line->tokens[op2 + 2];
+  char *operand2 = line->tokens[op2 + 2];
 
-  if(Is_Expression(op2)){
-    return as_numeric_constant(op2);
+  if(Is_Expression(operand2)){
+    return as_numeric_constant(operand2);
   }
   return as_shifted_reg_ass(line, op2);
 
@@ -203,7 +209,7 @@ void funcArray(void) {
   function_Array[2] = ass_data_proc_mov;
   function_Array[3] = ass_multiply_mul;
   function_Array[4] = ass_multiply_mla;
-  //function_Array[5] = ass_branch;
+  function_Array[5] = ass_branch;
   function_Array[6] = ass_single_data_transfer;
   function_Array[7] = lsl_func;
   function_Array[8] = andeq_func;
@@ -212,24 +218,50 @@ void funcArray(void) {
 
 
 
+
 ///////////////////////Instructions ////////////////////////////////////////////
 
+=======
+/////////////////////// Assemble Instructions //////////////////////////////////
 
-int32_t ass_data_proc(TOKEN *line, int SetCond, int Rn, int Rd, int Operand_2)
+///////* Data Processing *////////
+
+/* Data processing can be broken down into three main types:
+*   1. instructions that compute results
+*   2. single operand assignment
+*   3. instructions that dont compute results but set the CPSR flags
+*
+* The syntax for the three main 'types' of data processing instructions is:
+*   <opcode>   - Is the instruction mnemonic associated with an integer OpCode
+*   Rd, Rn, Rm - Represent registers (r0, r1, PC, ...)
+*   <Operand2> - Represents an operand. It can be interpreted as a numeric
+*                constant <#expression> or a shifted register <shift>
+*
+* The parameters that the function takes into account:
+* line     - Contains the tokens forming this instruction
+* SetCond  - Consider the case where the CPRS flags are to be set
+* Rn       - Is the position of the Rn token in the line->tokens array
+* Rs       - same as Rn
+* Operand2 - same as Rn
+*
+*/
+
+
+static int32_t ass_data_proc(TOKEN *line, int SetCond, int Rn, int Rd, int Operand_2)
 {
 	char *Operand2 = line->tokens[Operand_2];
 	char *mnemonic = line->tokens[0];
 
 	static DataProcessingInstruct *DPInst;
 
-	DPInst->Cond	= AL;
-	DPInst->_00	= 0;
-	DPInst->ImmOp	= Is_Expression(Operand2);
-	DPInst->Opcode	= str_to_mnemonic(mnemonic);
-	DPInst->SetCond	= SetCond;
-	DPInst->Rn	= PARSE_REG(Rn);
-	DPInst->Rd	= PARSE_REG(Rd);
-	DPInst->Operand2= check_op2(line, Operand_2);
+	DPInst->Cond	   = AL;
+	DPInst->_00	     = 0;
+	DPInst->ImmOp	   = Is_Expression(Operand2);
+	DPInst->Opcode	 = str_to_mnemonic(mnemonic);
+	DPInst->SetCond	 = SetCond;
+	DPInst->Rn       = PARSE_REG(Rn);
+	DPInst->Rd	     = PARSE_REG(Rd);
+	DPInst->Operand2 = check_op2(line, Operand_2);
 
 	return *((int32_t *) &DPInst);
 }
@@ -246,10 +278,42 @@ int32_t ass_data_proc_mov(TOKEN *line)
 
 int32_t ass_data_proc_cpsr(TOKEN *line)
 {
+<<<<<<< HEAD
   return ass_data_proc(line, 1, 1, -1, 2);
 }
 
 int32_t ass_multiply(TOKEN *line, int Acc, int Rd, int Rm, int Rs, int Rn)
+=======
+  int CPSR_SET   =  1;
+  int RD_IGNORED = -1;
+  int POS_OF_RN  =  1;
+  int POS_OF_OP2 =  2;
+
+  return ass_data_proc(line, CPSR_SET, POS_OF_RN, RD_IGNORED, POS_OF_OP2);
+}
+
+
+
+////////* Multiply *////////
+
+/* Multiply instructions can be broken down into two types:
+*   1. multiply with syntax
+*   2. multiply with accummulate, with syntax
+*
+* The syntax for the multiply instructions is:
+* Rd, Rs, Rn, Rm - Represent registers (r0, r1, PC, ...)
+*
+* The parameters that the function take into account:
+* line     - Contains the tokens forming this instruction
+* Acc      - Consider the case where the instruction has an accumulate
+* Rn       - Is the position of the Rn token in the line->tokens array
+* Rs       - same as Rn
+* Operand2 - same as Rn
+*
+*/
+
+
+static int32_t ass_multiply(TOKEN *line, int Acc, int Rd, int Rm, int Rs, int Rn)
 {
 	static MultiplyInstruct *MulInst;
 
@@ -268,16 +332,50 @@ int32_t ass_multiply(TOKEN *line, int Acc, int Rd, int Rm, int Rs, int Rn)
 
 int32_t ass_multiply_mul(TOKEN *line)
 {
-  return ass_multiply(line, 0, 1, 2, 3, -1);
+  int N_ACC       =  0;
+  int POS_OF_RD   =  1;
+  int POS_OF_RM   =  2;
+  int POS_OF_RS   =  3;
+  int RN_IGNORED  = -1;
+
+  return ass_multiply(line, N_ACC, POS_OF_RD, POS_OF_RM, POS_OF_RS, RN_IGNORED);
 }
 
 int32_t ass_multiply_mla(TOKEN *line)
 {
-  return ass_multiply(line, 1, 1, 2, 3, 4);
+  int _ACC        = 1;
+  int POS_OF_RD   = 1;
+  int POS_OF_RM   = 2;
+  int POS_OF_RS   = 3;
+  int POS_OF_RN   = 4;
+
+  return ass_multiply(line, _ACC, POS_OF_RD, POS_OF_RM, POS_OF_RS, POS_OF_RN);
+}
+
+
+int32_t SDT_num_const(TOKEN *line, int Rd, char *address) {
+  char *Rd = line->tokens[1];
+  char *adr = line->tokens[2];
+  int address = expr_to_num(adr++);
+
+  if (address <= 0xFF) {                  // Treat as mov Instruction
+    adr[0] = '#';
+    return ass_data_proc_mov(line);
+
+  } else {
+    // use PC to calculate new address
+    int offset = address - current_address - 8;  // off-by-8 bytes effect
+    //generate ldr r0,[PC, offset]
+    char *newline;
+    asprintf(&newline, "ldr %s, [15, #%d]", Rd, offset); // PC =15
+    TOKEN *newtoken = tokenlise(newline, ", ");
+      return ass_SDT(newtoken);
+  }
 }
 
 int32_t ass_single_data_transfer(TOKEN *line, int Rd, char *address)
 {
+  int *Rn    = PARSE_REG(expr_to_num(line->tokens[1] + 1));
   int *Rd    = PARSE_REG(line->tokens[1] + 1);
   char *adr  = line->tokens[2];
   char *mnem = line->tokens[0];
@@ -318,26 +416,6 @@ int32_t ass_single_data_transfer(TOKEN *line, int Rd, char *address)
 
   return *(int32_t *) &SDTinstr;
 
-}
-
-int32_t SDT_num_const(TOKEN *line, int Rd, char *address) {
-  char *Rd = line->tokens[1];
-  char *adr = line->tokens[2];
-  int address = expr_to_num(adr++);
-
-  if (address <= 0xFF) {                  // Treat as mov Instruction
-    adr[0] = '#';
-    return ass_data_proc_mov(line);
-
-  } else {
-    // use PC to calculate new address
-    int offset = address - current_address - 8;  // off-by-8 bytes effect
-    //generate ldr r0,[PC, offset]
-    char *newline;
-    asprintf(&newline, "ldr %s, [15, #%d]", Rd, offset); // PC =15
-    TOKEN *newtoken = tokenlise(newline, ", ");
-      return ass_SDT(newtoken);
-  }
 }
 
 int32_t ass_SDT(TOKEN *line) {
