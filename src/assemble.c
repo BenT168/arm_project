@@ -29,10 +29,6 @@
 
 
 char *buffer;
-<<<<<<< HEAD
-
-=======
->>>>>>> 060be51292c285b7561429446774c8980d409fd8
 ASSEMBLER_STRUCT *ass = NULL;
 
 TOKEN read_Source(const char *);
@@ -120,18 +116,19 @@ void write_File(const char *binaryFile) {
 //////////////////////////   Core     //////////////////////////////////////////
 
 //TODO: CHECKKKKKK!!!!!!
-int as_numeric_constant(int value){
-  int num_bit = 0;
-
-  while(num_bit < 32){
+int32_t as_numeric_constant(int value){
+  //int num_bit = 0;
+  int32_t to_num = expr_to_num(value);
+  /*while(num_bit < 32){
     rotate_right(value, 2);
     num_bit += 2;
   }
-  if(value > max_8bit_represented) {
+  */
+  if(to_num > max_8bit_represented) {
     perror("numerical constant cannot be represented.");
     exit(EXIT_FAILURE);
   }
-  return num_bit;
+  return to_num;
 }
 
 // can be either <shiftname><register> or <shiftname><#expression>
@@ -154,7 +151,7 @@ int as_shifted_reg_ass(TOKEN *line, int pos_of_Rm)
 	if(Is_Expression(Operand2))
 	{
   	//+1 to git rid of 'r' but just getting the reg number
- 		shiftReg.Rm = PARSE_REG(pos_of_Rm - 1); 
+ 		shiftReg.Rm = PARSE_REG(pos_of_Rm - 1);
   		shiftReg.Flag = 0;
   		shiftReg.Type = shiftType;
   		shiftReg.Amount = atoi(Operand2);
@@ -172,7 +169,7 @@ int as_shifted_reg_ass(TOKEN *line, int pos_of_Rm)
   //regOp.Rs = atoi(token_line->tokens[pos_of_Rm] + 1) << 3; //getting the last bit of Rs
 
   		result = *((int *) &regOp);
-	}	
+	}
 
 	return result;
 }
@@ -253,7 +250,7 @@ int32_t ass_multiply(TOKEN *line, int Acc, int Rd, int Rm, int Rs, int Rn)
 {
 	static MultiplyInstruct *MulInst;
 
-	MulInst->Cond	   = AL; 
+	MulInst->Cond	   = AL;
 	MulInst->_000000   = 0;
 	MulInst->Acc	   = Acc;
 	MulInst->SetCond   = 0;
