@@ -8,7 +8,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 
-typedef struct TOKEN {
+typedef struct TOKEN
+{
   char **tokens;
   unsigned int tokenCount;
   char *line;
