@@ -41,6 +41,9 @@ void write_File(const char *);
 int as_numeric_constant(int);
 int as_shifted_reg_ass(TOKEN *, int);
 
+void funcArray(void);
+int32_t assembler_func(TOKEN *line);
+
 int32_t ass_data_proc(TOKEN *, int, int, int, int);
 int32_t ass_data_proc_result(TOKEN *);
 int32_t ass_data_proc_mov(TOKEN *);
@@ -57,13 +60,12 @@ int32_t andeq_func(TOKEN *);
 int32_t lsl_func(TOKEN *);
 
 
-
 ///////////////////////Binary file reader //////////////////////////////////////
 
 TOKEN read_Source(const char *sourceFile) {
   FILE *file = fopen(sourceFile, "rs");
 
-  if (file != NULL) {
+  //if (file != NULL) {
     fseek(file, 0, SEEK_END);
     long size = ftell(file); //Size of file in bytes
     fseek(file, 0, SEEK_SET); //go back to start
@@ -72,9 +74,6 @@ TOKEN read_Source(const char *sourceFile) {
     if(buffer == NULL) {
       perror("Malloc failed.");
     } else {
-    //const char s = ",";
-    //char *token;
-    //token = strtok(buffer, s);
     fread(buffer, size, 1, file);
     if(ferror(file)) {
       perror("Error reading from sourceFile.\n");
@@ -84,30 +83,38 @@ TOKEN read_Source(const char *sourceFile) {
 
     buffer[sizeBuffer - 1]= '\0';
 
-    return tokenise(buffer, ",");
+   return tokenise(buffer, ",");
 
   }
 
-  free(buffer);
+  TOKEN *result = NULL;
+  return *result;
 
-} else {
-  perror("Error opening the file.");
+
+//  free(buffer);
+
+//}
+//else {
+  //perror("Error opening the file.");
+//}
+// return NULL;
 }
 
-}
 
 void write_File(const char *binaryFile) {
   FILE *file = fopen(binaryFile, "wb"); //w = write b = binary
 
-   //TODO
-  //int32_t *program = assembler(ass); //get code from assembler program
+  int32_t *program = (int32_t*) assemble_generate_bin(ass);
+  //get binary code from assembler program
 
-  //int size = ass->TOTAL_line * sizeof(int32_t);
+  int size = ass->TOTAL_line * sizeof(int32_t);
   //size of each element that will be written
 
-  //fwrite(program, size, 1, file);
+  fwrite(program, size, 1, file);
 
   fclose(file);
+
+  free(program);
 }
 
 //////////////////////////   Core     //////////////////////////////////////////
@@ -177,6 +184,30 @@ int check_op2(TOKEN *token_line, int pos_of_op2){
   return as_shifted_reg_ass(token_line, pos_of_op2);
 
 }
+
+
+function_assPtr function_Array[9];
+
+int32_t assembler_func(TOKEN *line) {
+  char *mnemonic = line->tokens[0];
+  int i = str_to_Mnemonic(mnemonic);
+  return function_Array[i](line);
+}
+
+void funcArray(void) {
+  function_Array[0] = ass_data_proc_result;
+  function_Array[1] = ass_data_proc_cpsr;
+  function_Array[2] = ass_data_proc_mov;
+  function_Array[3] = ass_multiply_mul;
+  function_Array[4] = ass_multiply_mla;
+  //function_Array[5] = ass_branch;
+  function_Array[6] = ass_single_data_transfer;
+  function_Array[7] = lsl_func;
+  function_Array[8] = andeq_func;
+
+}
+
+
 
 ///////////////////////Instructions ////////////////////////////////////////////
 
@@ -390,7 +421,7 @@ int32_t andeq_func(TOKEN *token_line){
 //note: asprintf() cal the length of the string, allocate that amount of mem and
 //write the string into it. it is an implicit malloc need to free afterward
 //Compile lsl Rn,<#expression> as mov Rn, Rn, lsl <#expression>
-int32_t lsl_func(TOKEN *token_line){ 
+int32_t lsl_func(TOKEN *token_line){
  char *new_token_line = NULL;
  asprint(&new_token_line, "mov %s, %s, lsl %s", token_line->tokens[1],
                                                 token_line->tokens[1],
@@ -409,24 +440,27 @@ free(new_token_line);
 ///////////////////////// Main /////////////////////////////////////////////////
 int main(int argc, char **argv) {
 
-  if(argc < 2) { // Need two files
+  if(argc < 3) { // Need two files (+ executer)
     printf("Incomplete number of arguments in input!\n");
     printf("Please type in as first argument : ARM source file\n");
     printf("And as aecond argument : an output ARM binary code file\n");
     exit(EXIT_FAILURE);
   }
 
-  //TODO allocate ASSEMBLER_STRUCT
-   //  *ass = malloc()
+  funcArray();
 
+  TOKEN *lines = (TOKEN*) malloc(sizeof(TOKEN));
+  *lines = read_Source(argv[1]);
+  //get lines of assembly codes
 
-  //TOKEN *lines = read_Source(argv[1]); // get each line of source code as tokens
-
-  //ass = assembler(lines); //assemble lines and get output to write to file
+  *ass = assemble(lines, &assembler_func, ",");
+   //assemble lines using assembler and get output to write to file
 
   write_File(argv[2]); //
 
-  //free(lines);
+  //TODO token_free(lines);
+
+  assemble_free(ass);
 
   return EXIT_SUCCESS;
 }

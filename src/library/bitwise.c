@@ -22,6 +22,18 @@ void print_bits(int32_t x)
 }
 
 
+/*Prints Bits in Big Endian */
+void print_bits_inBE(int32_t i) {
+  print_bits(((i>>24)&0xff) |
+  //byte 3 to 0
+  ((i<<8)&0xff0000) |
+  // byte 1 to 2
+  ((i>>8)&0xff00) |
+  //  byte 2 to 1
+  ((i<<24)&0xff000000));
+  // byte 0 to 3
+}
+
 /* Get Bits Function */
 int32_t get_bits(int32_t i, int start, int end)
 {

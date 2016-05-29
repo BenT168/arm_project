@@ -144,7 +144,7 @@ typedef enum ShiftType
         f(teq) f(cmp) f(mul) f(mla) f(ldr) f(str) f(beq) f(bne) \
         f(bge) f(blt) f(bgt) f(ble) f(b)   f(lsl) f(andeq)
 
-typedef enum Mnemonic
+enum Mnemonic
 {
     //Data Processing
     add =  4,
@@ -168,7 +168,7 @@ typedef enum Mnemonic
 } Mnemonic;
 
 struct { /* Mnemoic_toString is implemented as */
-  Mnemonic num;  /* name of the Mnemonic */
+  enum Mnemonic num;  /* name of the Mnemonic */
   char *str; /* string of the mmemonic within in */
 } Mnemonic_array[] = { Mnemonic_toString(f_pair) };
 
