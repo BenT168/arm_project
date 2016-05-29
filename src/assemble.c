@@ -209,8 +209,8 @@ void funcArray(void) {
   function_Array[2] = ass_data_proc_mov;
   function_Array[3] = ass_multiply_mul;
   function_Array[4] = ass_multiply_mla;
-  //function_Array[5] = ass_branch;
-  //function_Array[6] = ass_single_data_transfer;
+  function_Array[5] = ass_branch;
+  function_Array[6] = ass_single_data_transfer;
   function_Array[7] = lsl_func;
   function_Array[8] = andeq_func;
 
@@ -385,10 +385,6 @@ int32_t ass_multiply_mla(TOKEN *line)
   int POS_OF_RN   = 4;
 
   return ass_multiply(line, _ACC, POS_OF_RD, POS_OF_RM, POS_OF_RS, POS_OF_RN);
-<<<<<<< HEAD
-
-=======
->>>>>>> b200cab7d6272eda27b756be7d073ce705c45a7b
 }
 
 ////////* Single Data Transfer *////////
