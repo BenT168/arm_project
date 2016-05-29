@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "arm11.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -40,8 +41,8 @@ char tokens_endc(TOKEN *);
 #define Is_Hexadecimal(token) (Is_Expression(token) & token[1] == '0' & token[2] == 'x')
 #define expr_to_num(expr)    (strtol(expr, NULL, 0))
 #define PARSE_REG(R)		\
-           (((R) == (-1)) ? 0 \
+           ((R == -1) ? 0 \
 		          : ((strcmp(line->tokens[R], "PC") == 0) ? PC \
-					: atoi(line->tokens[R] + 1)))
+					    : atoi(line->tokens[R] + 1)))
 
 #endif

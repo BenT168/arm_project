@@ -185,10 +185,10 @@ int as_shifted_reg_ass(TOKEN *line, int Rm)
 
 //to check if operand2 is an expression or a register
 int check_op2(TOKEN *line, int op2){
-  char *op2 = line->tokens[op2 + 2];
+  char *operand2 = line->tokens[op2 + 2];
 
-  if(Is_Expression(op2)){
-    return as_numeric_constant(op2);
+  if(Is_Expression(operand2)){
+    return as_numeric_constant(operand2);
   }
   return as_shifted_reg_ass(line, op2);
 
@@ -210,7 +210,7 @@ void funcArray(void) {
   function_Array[3] = ass_multiply_mul;
   function_Array[4] = ass_multiply_mla;
   //function_Array[5] = ass_branch;
-  function_Array[6] = ass_single_data_transfer;
+  //function_Array[6] = ass_single_data_transfer;
   function_Array[7] = lsl_func;
   function_Array[8] = andeq_func;
 
@@ -385,13 +385,17 @@ int32_t ass_multiply_mla(TOKEN *line)
   int POS_OF_RN   = 4;
 
   return ass_multiply(line, _ACC, POS_OF_RD, POS_OF_RM, POS_OF_RS, POS_OF_RN);
+<<<<<<< HEAD
 
+=======
+>>>>>>> b200cab7d6272eda27b756be7d073ce705c45a7b
 }
 
 ////////* Single Data Transfer *////////
 
 int32_t ass_single_data_transfer(TOKEN *line, int Rd, char *address)
 {
+  int *Rn    = PARSE_REG(expr_to_num(line->tokens[1] + 1));
   int *Rd    = PARSE_REG(line->tokens[1] + 1);
   char *adr  = line->tokens[2];
   char *mnem = line->tokens[0];
