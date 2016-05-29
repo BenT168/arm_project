@@ -5,13 +5,15 @@
 #include "tokens.h"
 
 
-typedef struct binary_instruct {
+typedef struct binary_instruct
+{
   int32_t binary_word;
   uint16_t word_address;
 } binary_instruct;
 
 
-typedef struct ASSEMBLER_STRUCT {
+typedef struct ASSEMBLER_STRUCT
+{
   binary_instruct **instr; // Binary Instruction Array
   char **symbolTable; //array of symbol table
   int TOTAL_line;   // total of the line

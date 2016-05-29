@@ -23,7 +23,8 @@ void print_bits(int32_t x)
 
 
 /*Prints Bits in Big Endian */
-void print_bits_inBE(int32_t i) {
+void print_bits_inBE(int32_t i)
+{
   print_bits(((i>>24)&0xff) |
   //byte 3 to 0
   ((i<<8)&0xff0000) |
