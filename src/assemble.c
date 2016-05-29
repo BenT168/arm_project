@@ -206,8 +206,29 @@ void funcArray(void) {
 
 
 
-///////////////////////Instructions ////////////////////////////////////////////
+/////////////////////// Assemble Instructions //////////////////////////////////
 
+///////* Data Processing *////////
+
+/* Data processing can be broken down into three main types:
+*   1. instructions that compute results
+*   2. single operand assignment
+*   3. instructions that dont compute results but set the CPSR flags
+*
+* The syntax for the three main 'types' of data processing instructions is:
+*   <opcode>   - Is the instruction mnemonic associated with an integer OpCode
+*   Rd, Rn, Rm - Represent registers (r0, r1, PC, ...)
+*   <Operand2> - Represents an operand. It can be interpreted as a numeric
+*                constant <#expression> or a shifted register <shift>
+*
+* The parameters that the function take into account:
+* line     - Contains the tokens forming this instruction
+* SetCond  - Consider the case where the CPRS flags are to be set
+* Rn       - Is the position of the Rn token in the line->tokens array
+* Rs       - same as Rn
+* Operand2 - same as Rn
+*
+*/
 
 int32_t ass_data_proc(TOKEN *line, int SetCond, int Rn, int Rd, int Operand_2)
 {
@@ -228,47 +249,134 @@ int32_t ass_data_proc(TOKEN *line, int SetCond, int Rn, int Rd, int Operand_2)
 	return *((int32_t *) &DPInst);
 }
 
+/* 1. instructions that compute results: and, eor, sub, rsb, add,  orr
+*     Syntax : <opcode> Rd Rn <Operand2>
+*
+*     CPRS flags are not set, hence SetCond is clear or SetCond = 0.
+*     Positions of tokens Rd, Rn and Operand2 are 1, 2, and 3 respectively.
+*/
+
 int32_t ass_data_proc_result(TOKEN *line)
 {
-  return ass_data_proc(line, 0, -1, 1, 2);
+  int CPSR_SET    = 1;
+  int POS_OF_RD   = 1;
+  int POS_OF_RN   = 2;
+  int POS_OF_OP2  = 3;
+
+  return ass_data_proc(line, CPSR_SET, POS_OF_RN, POS_OF_RD, POS_OF_OP2);
 }
+
+/* 2. single operand assignment: mov
+      Syntax : mov Rd, <Operand2>
+*
+*     CPRS flags are not set, hence SetCond is clear or SetCond = 0.
+*     Positions of tokens Rd and Operand2 are 1 and 2 respectively.
+*     Rn is ignored therefore -1 is passed as the 'position' of token Rn.
+*/
 
 int32_t ass_data_proc_mov(TOKEN *line)
 {
-  return ass_data_proc(line, 0, -1, 1, 2);
+  int CPSR_CLEAR =  0;
+  int POS_OF_RD  =  1;
+  int RN_IGNORED = -1;
+  int POS_OF_OP2 =  2;
+
+  return ass_data_proc(line, CPSR_CLEAR, RN_IGNORED, POS_OF_RD, POS_OF_OP2);
 }
+
+/* 3. instructions that dont compute result but set CPSR flags: tst, teq, cmp
+*     Syntax : <opcode> Rn, <Operand_2>
+*
+*     CPRS flags ARE set, hence a SetCond is set or SetCond = 1.
+*     Positions of tokens Rn and Operand2 are 1 and 2 respectively.
+*     Rd is ignored therefore -1 is passed as the 'position' of token Rd.
+*/
 
 int32_t ass_data_proc_cpsr(TOKEN *line)
 {
-  return ass_data_proc(line, 1,  1, -1, 2);
+  int CPSR_SET   =  1;
+  int RD_IGNORED = -1;
+  int POS_OF_RN  =  1;
+  int POS_OF_OP2 =  2;
+
+  return ass_data_proc(line, CPSR_SET, POS_OF_RN, RD_IGNORED, POS_OF_OP2);
 }
+
+
+
+////////* Multiply *////////
+
+/* Multiply instructions can be broken down into two types:
+*   1. multiply with syntax
+*   2. multiply with accummulate, with syntax
+*
+* The syntax for the multiply instructions is:
+* Rd, Rs, Rn, Rm - Represent registers (r0, r1, PC, ...)
+*
+* The parameters that the function take into account:
+* line     - Contains the tokens forming this instruction
+* Acc      - Consider the case where the instruction has an accumulate
+* Rn       - Is the position of the Rn token in the line->tokens array
+* Rs       - same as Rn
+* Operand2 - same as Rn
+*
+*/
+
 
 int32_t ass_multiply(TOKEN *line, int Acc, int Rd, int Rm, int Rs, int Rn)
 {
 	static MultiplyInstruct *MulInst;
 
 	MulInst->Cond	   = AL;
-	MulInst->_000000   = 0;
+	MulInst->_000000 = 0;
 	MulInst->Acc	   = Acc;
-	MulInst->SetCond   = 0;
-	MulInst->Rd	   = PARSE_REG(Rd);
-	MulInst->Rn	   = PARSE_REG(Rn);
-	MulInst->Rs	   = PARSE_REG(Rs);
-	MulInst->_1001	   = 0;
-	MulInst->Rm	   = PARSE_REG(Rm);
+	MulInst->SetCond = 0;
+	MulInst->Rd	     = PARSE_REG(Rd);
+	MulInst->Rn	     = PARSE_REG(Rn);
+	MulInst->Rs	     = PARSE_REG(Rs);
+	MulInst->_1001	 = 9;
+	MulInst->Rm	     = PARSE_REG(Rm);
 
 	return *((int32_t *) &MulInst);
 }
 
+/* 1. multiply with syntax: mul Rd, Rm, Rs
+*
+*     Instruction doesnt have an accumulate, hence Acc = 0.
+*     Positions of tokens Rd, Rm and Rs are 1, 2, and 3 respectively.
+*     Rn is ignored therefore -1 is passed as the 'position' of token Rn.
+*/
+
 int32_t ass_multiply_mul(TOKEN *line)
 {
-  return ass_multiply(line, 0, 1, 2, 3, -1);
+  int N_ACC       =  0;
+  int POS_OF_RD   =  1;
+  int POS_OF_RM   =  2;
+  int POS_OF_RS   =  3;
+  int RN_IGNORED  = -1;
+
+  return ass_multiply(line, N_ACC, POS_OF_RD, POS_OF_RM, POS_OF_RS, RN_IGNORED);
 }
+
+/* 2. multiply with accumulate and with syntax: mla Rd, Rm, Rs, Rn
+*
+*     Instruction have an accumulate, hence Acc = 1.
+*     Positions of tokens Rd, Rm ,Rs and Rn are 1, 2, 3 and 4 respectively.
+*/
 
 int32_t ass_multiply_mla(TOKEN *line)
 {
-  return ass_multiply(line, 1, 1, 2, 3,  4);
+  int _ACC        = 1;
+  int POS_OF_RD   = 1;
+  int POS_OF_RM   = 2;
+  int POS_OF_RS   = 3;
+  int POS_OF_RN   = 4;
+
+  return ass_multiply(line, _ACC, POS_OF_RD, POS_OF_RM, POS_OF_RS, POS_OF_RN);
+
 }
+
+////////* Single Data Transfer *////////
 
 int32_t ass_single_data_transfer(TOKEN *line, int Rd, char *address)
 {
