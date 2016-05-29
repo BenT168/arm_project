@@ -7,7 +7,7 @@ TOKEN *tokenStruct = NULL;
 
 ////////////////////////////////////////////////////////////////////////////
 
-void tokens_free(TOKEN *tokens) 
+void tokens_free(TOKEN *tokens)
 {
 	for (int i = 0 ; i < tokens->tokenCount; i++)
 	{
@@ -18,8 +18,8 @@ void tokens_free(TOKEN *tokens)
 	free(tokens);
 }
 
-void tokens_print(TOKEN *tokens) 
-{	
+void tokens_print(TOKEN *tokens)
+{
 	printf("Printing %d tokens:\n", tokens->tokenCount);
 	for (int i = 0; i < tokens->tokenCount; i++)
 	{
@@ -27,7 +27,7 @@ void tokens_print(TOKEN *tokens)
 	}
 }
 
-TOKEN tokenise(char *str, const char *delim) 
+TOKEN tokenise(char *str, const char *delim)
 {
   char *token;
   int countToken = 0; // initial room for string
@@ -78,8 +78,12 @@ void tokens_iter(TOKEN *tokens, tokens_func func)
 	}
 }
 
-char tokens_endc(TOKEN *tokens)
+char tokens_endc(TOKEN *lines)
 {
-	return tokens->tokens[tokens->tokenCount-1]
-		[strlen(tokens->tokens[tokens->tokenCount-1])-1];
+	return lines->tokens[lines->tokenCount-1]
+		[strlen(lines->tokens[lines->tokenCount-1])-1];
+}
+
+char string_endc(char* str) {
+	return str[srlen - 1]; 
 }

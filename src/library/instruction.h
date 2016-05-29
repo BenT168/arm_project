@@ -173,10 +173,7 @@ struct { /* Mnemoic_toString is implemented as */
 } mnemonic_array[] = { mnemonic_toString(f_pair) };
 
 
-/////////////////////////////// Opcode ////
-
-typedef enum ShiftType
-{///////////////////////////////
+/////////////////////////////// Opcode /////////////////////////////////////////
 
 
 #define opcode_toString(f) \
