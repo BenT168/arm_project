@@ -55,6 +55,9 @@ int32_t ass_multiply_mla(TOKEN *);
 int32_t ass_single_data_transfer(TOKEN *, int, char *);
 int32_t SDT_num_const(int, int, char *);
 
+int32_t ass_BRCH(TOKEN *);
+int32_t ass_SDT(TOKEN *);
+
 int32_t andeq_func(TOKEN *);
 int32_t lsl_func(TOKEN *);
 
@@ -203,8 +206,8 @@ void funcArray(void) {
   function_Array[2] = ass_data_proc_mov;
   function_Array[3] = ass_multiply_mul;
   function_Array[4] = ass_multiply_mla;
-  //function_Array[5] = ass_branch;
-  //function_Array[6] = ass_single_data_transfer;
+  function_Array[5] = ass_BRCH;
+  function_Array[6] = ass_SDT;
   function_Array[7] = lsl_func;
   function_Array[8] = andeq_func;
 
@@ -340,7 +343,7 @@ int32_t ass_multiply(TOKEN *line, int Acc, int Rd, int Rm, int Rs, int Rn)
 	MulInst->Rd	     = PARSE_REG(Rd);
 	MulInst->Rn	     = PARSE_REG(Rn);
 	MulInst->Rs	     = PARSE_REG(Rs);
-	MulInst->_1001	 = 9;
+	MulInst->_1001	 = 9 % (1 << sizeof(char));
 	MulInst->Rm	     = PARSE_REG(Rm);
 
 	return *((int32_t *) &MulInst);
@@ -386,7 +389,6 @@ int32_t ass_multiply_mla(TOKEN *line)
 int32_t ass_single_data_transfer(TOKEN *line, int Rd, char *address)
 {
   int *Rn    = PARSE_REG(expr_to_num(line->tokens[1] + 1));
-  int *Rd    = PARSE_REG(line->tokens[1] + 1);
   char *adr  = line->tokens[2];
   char *mnem = line->tokens[0];
 
@@ -440,12 +442,11 @@ int32_t SDT_num_const(TOKEN *line, int Rd, char *address) {
 
   } else {
     // use PC to calculate new address
-    register[15] += (IS_SET(dataU)? offset : -offset);
   }
 }
 
 int32_t ass_SDT(TOKEN *line) {
-  ass_single_data_transfer(line, 1, 0);
+  return ass_single_data_transfer(line, 1, 0);
 }
 
 int32_t ass_branch(TOKEN *line, int Cond, char *expr) {
@@ -469,7 +470,7 @@ int32_t ass_branch(TOKEN *line, int Cond, char *expr) {
 }
 
 int32_t ass_BRCH(TOKEN *line) {
-  ass_branch(line, 1, 0);
+  return ass_branch(line, 1, 0);
 }
 
 //////////////////Special Instruction //////////////////////////////////////////
