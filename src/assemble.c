@@ -273,24 +273,29 @@ int32_t ass_multiply_mla(TOKEN *line)
   return ass_multiply(line, 1, 1, 2, 3,  4);
 }
 
-int32_t ass_single_data_transfer(TOKEN *line)
+int32_t ass_single_data_transfer(TOKEN *line, int Rd, char *address)
 {
   int *Rn    = PARSE_REG(line->tokens[1] + 1);
-  char *adr = line->tokens[2];
-  SDTInstruct *SDTInst = (SDTInstruct *) &line;
+  char *adr  = line->tokens[2];
+  char *mnem = line->tokens[0];
 
-  int dataRn     = SDTInst->Rn;         // base register
-  int dataOffset = SDTInst->Offset;
-  int dataI      = SDTInst->I;
-  int dataP      = SDTInst->P;
-  int dataU      = SDTInst->U;
-  int dataL      = SDTInst->L;
+  instr.Cond   = AL;
+  instr._01	   = 1;
+  instr.I	   = I;
+  instr.P	   = P;
+  instr.U	   = U;
+  instr._00	   = 0;
+  instr.L	   = (mnemonic == "ldr")? 0 : 1;
+  instr.Rn     = PARSE_REG(2);
+  instr.Rd	   = PARSE_REG(1);
+  instr.Offset = Offset;
+
 
   if (IS_SET(dataL)) {                    // ldr: Load from memory into register
     if (Is_Expression(adr)) {            // In numeric form
       adr++;
       int address = expr_to_num(adr);
-      return SDT_num_const(Rn, address, adr);
+      return SDT_num_const(line, Rd, address);
     }
 
     if (IS_SET(dataP)) {                  // Pre-indexing
@@ -309,15 +314,36 @@ int32_t ass_single_data_transfer(TOKEN *line)
   }
 }
 
-int32_t SDT_num_const(int r0, int address, char *adr) {
+int32_t SDT_num_const(TOKEN *line, int Rd, char *address) {
   if (address <= 0xFF) {                  // Treat as mov Instruction
     adr[0] = '#';
-    return data_processing(mov r0, adr);
+    return ass_data_proc_mov(line);
 
   } else {
     // use PC to calculate new address
     register[15] += (IS_SET(dataU)? dataOffset : -dataOffset);
   }
+}
+
+
+int32_t ass_branch(TOKEN *line, int Cond, char *expr) {
+	char *suffix = "AL";
+	if (line->tokens[0] == "b") {
+	  *suffix = (line->tokens[0] + 1);
+	}
+	char *label  = line->tokens[1];
+	char *address = PARSE_REG(*expr);
+
+	int Offset = (curr_addr - address + 8) >> 2;  //shift right by 2
+
+	BranchInstr instr;
+
+	instr.Cond   = suffix;
+	instr._101   = 101;
+	instr._0     = 0;
+	instr.Offset = Offset;
+
+	return *(int32_t *) &instr;
 }
 
 
