@@ -23,7 +23,7 @@
 
 #define Is_Hexadecimal(token) (Is_Expression(token) & token[1] == '0' & token[2] == 'x')
 #define max_8bit_represented  256 // 2^8 = 256
-#define expr_to_num(expr)    (strtol(expr, NULL, 0))
+#define expr_to_num(expr)    ((int_strtol(expr, NULL, 0))
 
 ///////////////////////////// FUNCTION PROTOTYPE //////////////////////////////
 
