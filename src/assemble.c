@@ -43,18 +43,24 @@ int as_shifted_reg_ass(TOKEN *, int);
 void funcArray(void);
 int32_t assembler_func(TOKEN *line);
 
-int32_t ass_data_proc(TOKEN *, int, int, int, int);
+/* Data Processing */
 int32_t ass_data_proc_result(TOKEN *);
 int32_t ass_data_proc_mov(TOKEN *);
 int32_t ass_data_proc_cpsr(TOKEN *);
 
-int32_t ass_multiply(TOKEN *, int, int, int, int, int);
+/* Multiply */
 int32_t ass_multiply_mul(TOKEN *);
 int32_t ass_multiply_mla(TOKEN *);
 
+/* Single Data Transfer */
 int32_t ass_single_data_transfer(TOKEN *, int, char *);
 int32_t SDT_num_const(int, int, char *);
 
+/* Branch */
+int32_t ass_branch(TOKEN *, int , char *);
+int32_t ass_BRCH(TOKEN *);
+
+/* Special */
 int32_t andeq_func(TOKEN *);
 int32_t lsl_func(TOKEN *);
 
@@ -227,7 +233,7 @@ void funcArray(void) {
 *   <Operand2> - Represents an operand. It can be interpreted as a numeric
 *                constant <#expression> or a shifted register <shift>
 *
-* The parameters that the function take into account:
+* The parameters that the function takes into account:
 * line     - Contains the tokens forming this instruction
 * SetCond  - Consider the case where the CPRS flags are to be set
 * Rn       - Is the position of the Rn token in the line->tokens array
@@ -236,21 +242,21 @@ void funcArray(void) {
 *
 */
 
-int32_t ass_data_proc(TOKEN *line, int SetCond, int Rn, int Rd, int Operand_2)
+static int32_t ass_data_proc(TOKEN *line, int SetCond, int Rn, int Rd, int Operand_2)
 {
 	char *Operand2 = line->tokens[Operand_2];
 	char *mnemonic = line->tokens[0];
 
 	static DataProcessingInstruct *DPInst;
 
-	DPInst->Cond	= AL;
-	DPInst->_00	= 0;
-	DPInst->ImmOp	= Is_Expression(Operand2);
-	DPInst->Opcode	= str_to_mnemonic(mnemonic);
-	DPInst->SetCond	= SetCond;
-	DPInst->Rn	= PARSE_REG(Rn);
-	DPInst->Rd	= PARSE_REG(Rd);
-	DPInst->Operand2= check_op2(line, Operand_2);
+	DPInst->Cond	   = AL;
+	DPInst->_00	     = 0;
+	DPInst->ImmOp	   = Is_Expression(Operand2);
+	DPInst->Opcode	 = str_to_mnemonic(mnemonic);
+	DPInst->SetCond	 = SetCond;
+	DPInst->Rn       = PARSE_REG(Rn);
+	DPInst->Rd	     = PARSE_REG(Rd);
+	DPInst->Operand2 = check_op2(line, Operand_2);
 
 	return *((int32_t *) &DPInst);
 }
@@ -300,16 +306,12 @@ int32_t ass_data_proc_mov(TOKEN *line)
 
 int32_t ass_data_proc_cpsr(TOKEN *line)
 {
-<<<<<<< HEAD
   int CPSR_SET   =  1;
   int RD_IGNORED = -1;
   int POS_OF_RN  =  1;
   int POS_OF_OP2 =  2;
 
   return ass_data_proc(line, CPSR_SET, POS_OF_RN, RD_IGNORED, POS_OF_OP2);
-=======
-  return ass_data_proc(line, 1, 1, -1, 2);
->>>>>>> 647afb3eaaa4a3510c9d2a0c404e3fa66f2b1163
 }
 
 
@@ -333,7 +335,7 @@ int32_t ass_data_proc_cpsr(TOKEN *line)
 */
 
 
-int32_t ass_multiply(TOKEN *line, int Acc, int Rd, int Rm, int Rs, int Rn)
+static int32_t ass_multiply(TOKEN *line, int Acc, int Rd, int Rm, int Rs, int Rn)
 {
 	static MultiplyInstruct *MulInst;
 
@@ -376,7 +378,6 @@ int32_t ass_multiply_mul(TOKEN *line)
 
 int32_t ass_multiply_mla(TOKEN *line)
 {
-<<<<<<< HEAD
   int _ACC        = 1;
   int POS_OF_RD   = 1;
   int POS_OF_RM   = 2;
@@ -385,9 +386,6 @@ int32_t ass_multiply_mla(TOKEN *line)
 
   return ass_multiply(line, _ACC, POS_OF_RD, POS_OF_RM, POS_OF_RS, POS_OF_RN);
 
-=======
-  return ass_multiply(line, 1, 1, 2, 3, 4);
->>>>>>> 647afb3eaaa4a3510c9d2a0c404e3fa66f2b1163
 }
 
 ////////* Single Data Transfer *////////
