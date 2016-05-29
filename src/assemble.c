@@ -390,7 +390,7 @@ int32_t andeq_func(TOKEN *token_line){
 //note: asprintf() cal the length of the string, allocate that amount of mem and
 //write the string into it. it is an implicit malloc need to free afterward
 //Compile lsl Rn,<#expression> as mov Rn, Rn, lsl <#expression>
-int32_t lsl_func(TOKEN *token_line){ 
+int32_t lsl_func(TOKEN *token_line){
  char *new_token_line = NULL;
  asprint(&new_token_line, "mov %s, %s, lsl %s", token_line->tokens[1],
                                                 token_line->tokens[1],
