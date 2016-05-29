@@ -17,10 +17,16 @@
 #include "library/bitwise.h"
 
 
+
 // for numerica constant it's in the form "#x" where x is a natural number
 // or in the form "=x" for ldr instr (the expr can be 32 bits after =)
 
 #define max_8bit_represented  256 // 2^8 = 256
+
+int expr_to_num(char *expr)
+{
+  return (int32_t) strtol(expr, NULL, 0);
+}
 
 ///////////////////////////// FUNCTION PROTOTYPE //////////////////////////////
 
@@ -31,7 +37,7 @@ ASSEMBLER_STRUCT *ass = NULL;
 TOKEN read_Source(const char *);
 void write_File(const char *);
 
-int as_numeric_constant(int);
+int as_numeric_constant(char *);
 int as_shifted_reg_ass(TOKEN *, int);
 
 void funcArray(void);
@@ -113,9 +119,9 @@ void write_File(const char *binaryFile) {
 //////////////////////////   Core     //////////////////////////////////////////
 
 //TODO: CHECKKKKKK!!!!!!
-int32_t as_numeric_constant(int value){
+int as_numeric_constant(char *value){
   //int num_bit = 0;
-  int32_t to_num = expr_to_num(value);
+  int to_num = expr_to_num(value);
   /*while(num_bit < 32){
     rotate_right(value, 2);
     num_bit += 2;
@@ -142,7 +148,7 @@ int as_shifted_reg_ass(TOKEN *line, int Rm)
 
 	ShiftReg 	 shiftReg;
   	ShiftRegOptional regOp;
-  	int shiftType = str_to_shift(shift_name);
+  	int shiftType = expr_to_num(shift_name);
 
 	//in the form <shiftname><#expression>
 	if(Is_Expression(Operand2))
@@ -176,7 +182,7 @@ int check_op2(TOKEN *line, int op2){
   char *op2 = line->tokens[op2 + 2];
 
   if(Is_Expression(op2)){
-    return as_numeric_constant(atoi(op2));
+    return as_numeric_constant(op2);
   }
   return as_shifted_reg_ass(line, op2);
 
@@ -294,12 +300,16 @@ int32_t ass_data_proc_mov(TOKEN *line)
 
 int32_t ass_data_proc_cpsr(TOKEN *line)
 {
+<<<<<<< HEAD
   int CPSR_SET   =  1;
   int RD_IGNORED = -1;
   int POS_OF_RN  =  1;
   int POS_OF_OP2 =  2;
 
   return ass_data_proc(line, CPSR_SET, POS_OF_RN, RD_IGNORED, POS_OF_OP2);
+=======
+  return ass_data_proc(line, 1, 1, -1, 2);
+>>>>>>> 647afb3eaaa4a3510c9d2a0c404e3fa66f2b1163
 }
 
 
@@ -366,6 +376,7 @@ int32_t ass_multiply_mul(TOKEN *line)
 
 int32_t ass_multiply_mla(TOKEN *line)
 {
+<<<<<<< HEAD
   int _ACC        = 1;
   int POS_OF_RD   = 1;
   int POS_OF_RM   = 2;
@@ -374,83 +385,100 @@ int32_t ass_multiply_mla(TOKEN *line)
 
   return ass_multiply(line, _ACC, POS_OF_RD, POS_OF_RM, POS_OF_RS, POS_OF_RN);
 
+=======
+  return ass_multiply(line, 1, 1, 2, 3, 4);
+>>>>>>> 647afb3eaaa4a3510c9d2a0c404e3fa66f2b1163
 }
 
 ////////* Single Data Transfer *////////
 
 int32_t ass_single_data_transfer(TOKEN *line, int Rd, char *address)
 {
-  int *Rn    = PARSE_REG(line->tokens[1] + 1);
+  int *Rd    = PARSE_REG(line->tokens[1] + 1);
   char *adr  = line->tokens[2];
   char *mnem = line->tokens[0];
 
-  instr.Cond   = AL;
-  instr._01	   = 1;
-  instr.I	   = I;
-  instr.P	   = P;
-  instr.U	   = U;
-  instr._00	   = 0;
-  instr.L	   = (mnemonic == "ldr")? 0 : 1;
-  instr.Rn     = PARSE_REG(2);
-  instr.Rd	   = PARSE_REG(1);
-  instr.Offset = Offset;
+  //It's Pre-indexed address if the expression ends with ']'
+  int Pre_index = (tokens_endc(adr) == ']') 1 : 0;
+  //initialise I, U, Offset
+  int Imm    = 0;
+  int Up     = 1;
+  int offset = 0;
 
-
-  if (IS_SET(dataL)) {                    // ldr: Load from memory into register
-    if (Is_Expression(adr)) {            // In numeric form
-      adr++;
-      int address = expr_to_num(adr);
-      return SDT_num_const(line, Rd, address);
-    }
-
-    if (IS_SET(dataP)) {                  // Pre-indexing
-      int offset = 0;
-      if (Is_Expression(adr[1])) {       //Case offset = <#expression>
-        offset = expr_to_num(adr[1]);
-      }
-      dataRn += (IS_SET(dataU)? dataOffset : -dataOffset);
-      IS_SET(dataL) ? (word = MEM_R_32bits(dataRn)) : MEM_W_32bits(dataRn, word);
-
-    } else {                              // Post-indexing
-      int offset = expr_to_num(*adr[1]);
-      IS_SET(dataL) ? (word = MEM_R_32bits(dataRn)) : MEM_W_32bits(dataRn, word);
-      dataRn += (IS_SET(dataU)? dataOffset : -dataOffset);
-    }
+  if (Is_Expression(adr)) {               // In <=expression> form
+    return SDT_num_const(line, Rd, address);
   }
+
+  TOKEN *newline = tokenlise(adr, "[], "); // get arguements from expression
+
+  if (Pre_index) {                        // Pre-indexing
+    if (newline->tokenCount == 1) {       // Case [Rn]
+      offset = 0;
+    } else {                              // Case [Rn, <#expression>]
+      char *expr = newline->tokens[2];
+      offset     = expr_to_num(expr++);
+    }
+
+    static SDTInstruct *SDTinstr;
+
+    SDTinstr->Cond   = AL;
+    SDTinstr->_01	   = 1;
+    SDTinstr->P	     = Pre_index;
+    SDTinstr->I	     = I;
+    SDTinstr->U	     = U;
+    SDTinstr->_00	   = 0;
+    SDTinstr->L	     = (mnem == "ldr")? 1 : 0;  //ldr --> L is set
+    SDTinstr->Rn     = PARSE_REG(2);
+    SDTSDTinstr->Rd	 = PARSE_REG(1);
+    SDTinstr->Offset = offset;
+
+    return *(int32_t *) &SDTinstr;
+    }
+
 }
 
 int32_t SDT_num_const(TOKEN *line, int Rd, char *address) {
+  char *Rd = line->tokens[1];
+  char *adr = line->tokens[2];
+  int new_address = expr_to_num(adr++);
+
   if (address <= 0xFF) {                  // Treat as mov Instruction
     adr[0] = '#';
     return ass_data_proc_mov(line);
 
   } else {
     // use PC to calculate new address
-    register[15] += (IS_SET(dataU)? dataOffset : -dataOffset);
+    register[15] += (IS_SET(dataU)? offset : -offset);
   }
 }
 
-
-int32_t ass_branch(TOKEN *line, int Cond, char *expr) {
-	char *suffix = "AL";
-	if (line->tokens[0] == "b") {
-	  *suffix = (line->tokens[0] + 1);
-	}
-	char *label  = line->tokens[1];
-	char *address = PARSE_REG(*expr);
-
-	int Offset = (curr_addr - address + 8) >> 2;  //shift right by 2
-
-	BranchInstr instr;
-
-	instr.Cond   = suffix;
-	instr._101   = 101;
-	instr._0     = 0;
-	instr.Offset = Offset;
-
-	return *(int32_t *) &instr;
+int32_t ass_SDT(TOKEN *line) {
+  ass_single_data_transfer(line, 1, 0);
 }
 
+int32_t ass_branch(TOKEN *line, int Cond, char *expr) {
+	char *suffix = "AL";              // initialise suffix
+	if (line->tokens[0] == "b") {     // b<Cond>
+	  *suffix = (line->tokens[0] + 1);
+	}
+	char *label   = line->tokens[1];
+	char *address = PARSE_REG(*expr);
+
+	int Offset = (label - address + 8) >> 2;  // compute offet
+
+	BranchInstr *Branchinstr;
+
+	Branchinstr->Cond   = suffix;
+	Branchinstr->_101   = 101;
+	Branchinstr->_0     = 0;
+	Branchinstr->Offset = Offset;
+
+	return *(int32_t *) &Branchinstr;
+}
+
+int32_t ass_BRCH(TOKEN *line) {
+  ass_branch(line, 1, 0);
+}
 
 //////////////////Special Instruction //////////////////////////////////////////
 
@@ -467,15 +495,16 @@ int32_t andeq_func(TOKEN *line){
 //note: asprintf() cal the length of the string, allocate that amount of mem and
 //write the string into it. it is an implicit malloc need to free afterward
 //Compile lsl Rn,<#expression> as mov Rn, Rn, lsl <#expression>
-int32_t lsl_func(TOKEN *line){
- char *new_line = NULL;
- asprint(&new_line, "mov %s, %s, lsl %s", line->tokens[1],
-                                                line->tokens[1],
-                                                line->tokens[2]);
-TOKEN *new_token = tokenise(new_line, " ,");
-ass_data_proc_mov(new_token);
+int32_t lsl_func(TOKEN *token_line){
+ char *new_token_line = (char* )malloc(511 * sizeof(char));
+ sprintf(new_token_line, "mov %s, %s, lsl %s", token_line->tokens[1],
+                                                token_line->tokens[1],
+                                                token_line->tokens[2]);
+TOKEN *new_token = (TOKEN*) malloc(sizeof(TOKEN));
+*new_token = tokenise(new_token_line, " ,");
+return ass_data_proc_mov(new_token);
 
-free(new_line);
+//free(new_token_line); TODO: Remeber to free
 
 }
 
