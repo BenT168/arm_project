@@ -16,14 +16,11 @@
 #include "library/tokens.h"
 #include "library/bitwise.h"
 
-/* Parsing Macro */
 
 // for numerica constant it's in the form "#x" where x is a natural number
 // or in the form "=x" for ldr instr (the expr can be 32 bits after =)
 
-#define Is_Hexadecimal(token) (Is_Expression(token) & token[1] == '0' & token[2] == 'x')
 #define max_8bit_represented  256 // 2^8 = 256
-#define expr_to_num(expr)    (strtol(expr, NULL, 0))
 
 ///////////////////////////// FUNCTION PROTOTYPE //////////////////////////////
 
@@ -151,7 +148,7 @@ int as_shifted_reg_ass(TOKEN *line, int pos_of_Rm)
 	if(Is_Expression(Operand2))
 	{
   	//+1 to git rid of 'r' but just getting the reg number
- 		shiftReg.Rm = PARSE_REG(pos_of_Rm - 1);
+ 		  shiftReg.Rm = PARSE_REG(pos_of_Rm - 1);
   		shiftReg.Flag = 0;
   		shiftReg.Type = shiftType;
   		shiftReg.Amount = atoi(Operand2);
@@ -190,7 +187,7 @@ function_assPtr function_Array[9];
 
 int32_t assembler_func(TOKEN *line) {
   char *mnemonic = line->tokens[0];
-  int i = str_to_Mnemonic(mnemonic);
+  int i = str_to_mnemonic(mnemonic);
   return function_Array[i](line);
 }
 
