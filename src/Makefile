@@ -8,15 +8,14 @@ CFLAGS  = -Wall -g -D_POSIX_SOURCE -D_BSD_SOURCE -D_GNU_SOURCE -std=c99 -Werror 
 all	: 	assemble emulate
 
 #To create an executable file assemble, we need sources files
-#assemble.c,library/ token.c and library/assembler.c
+#assemble.c,library/token.c, library/bitwise.c and library/assembler.c
 #
-
-assemble: 	assemble.c library/tokens.c library/assembler.c
+assemble: 	assemble.c library/tokens.c library/bitwise.c library/assembler.c
 
 #To create an executable file emulate, we need sources files
 #emulate.c,library/ bitwise.c and library/bitwise.c
 #
-emulate : 	emulate.c library/bitwise.c library/register.c
+emulate : 	emulate.c library/bitwise.c
 
 
 
