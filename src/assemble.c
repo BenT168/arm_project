@@ -279,15 +279,48 @@ static int32_t ass_data_proc(TOKEN *line, int SetCond, int Rn, int Rd, int Opera
 	return *((int32_t *) &DPInst);
 }
 
+/* 1. instructions that compute results: and, eor, sub, rsb, add,  orr
+*     Syntax : <opcode> Rd Rn <Operand2>
+*
+*     CPRS flags are not set, hence SetCond is clear or SetCond = 0.
+*     Positions of tokens Rd, Rn and Operand2 are 1, 2, and 3 respectively.
+*/
+
 int32_t ass_data_proc_result(TOKEN *line)
 {
-  return ass_data_proc(line, 0, -1, 1, 2);
+  int CPSR_SET    = 1;
+  int POS_OF_RD   = 1;
+  int POS_OF_RN   = 2;
+  int POS_OF_OP2  = 3;
+
+  return ass_data_proc(line, CPSR_SET, POS_OF_RN, POS_OF_RD, POS_OF_OP2);
 }
+
+/* 2. single operand assignment: mov
+      Syntax : mov Rd, <Operand2>
+*
+*     CPRS flags are not set, hence SetCond is clear or SetCond = 0.
+*     Positions of tokens Rd and Operand2 are 1 and 2 respectively.
+*     Rn is ignored therefore -1 is passed as the 'position' of token Rn.
+*/
 
 int32_t ass_data_proc_mov(TOKEN *line)
 {
-  return ass_data_proc(line, 0, -1, 1, 2);
+  int CPSR_CLEAR =  0;
+  int POS_OF_RD  =  1;
+  int RN_IGNORED = -1;
+  int POS_OF_OP2 =  2;
+
+  return ass_data_proc(line, CPSR_CLEAR, RN_IGNORED, POS_OF_RD, POS_OF_OP2);
 }
+
+/* 3. instructions that dont compute result but set CPSR flags: tst, teq, cmp
+*     Syntax : <opcode> Rn, <Operand_2>
+*
+*     CPRS flags ARE set, hence a SetCond is set or SetCond = 1.
+*     Positions of tokens Rn and Operand2 are 1 and 2 respectively.
+*     Rd is ignored therefore -1 is passed as the 'position' of token Rd.
+*/
 
 int32_t ass_data_proc_cpsr(TOKEN *line)
 {
