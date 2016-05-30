@@ -15,10 +15,7 @@ int32_t rotate_right(int32_t i, int n);
 /*Rotate Right Function*/
 int32_t rotate_reft(int32_t i, int n);
 /*Rotate Left Function*/
-FILE *output;
-/*Output file */
-FILE *input;
-/*Input file containing program */
+
 
 /* Set/Clear/Get/Flip/Put the bit n pos of int i where 0 is rightmost bit */
 

@@ -45,7 +45,7 @@ void *mem_chk(void *p);
 #define Is_Expression(token)	(token[0] == '#' || token[0] == '=')
 #define Is_Hexadecimal(token) (Is_Expression(token) & token[1] == '0' & token[2] == 'x')
 #define PARSE_REG(R)		\
-           ((R == -1) ? 0 \
+           ((R == (-1)) ? 0 \
 		          : ((strcmp(line->tokens[R], "PC") == 0) ? PC \
 					    : atoi(line->tokens[R] + 1)))
 #define MAX_CHAR_inLINE 511

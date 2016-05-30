@@ -146,25 +146,22 @@ typedef enum ShiftType
 
 enum Mnemonic
 {
-    //Data Processing
-    add =  4,
-    sub =  2,
-    rsb =  3,
-    and =  0,
-    eor =  1,
-    orr = 12,
-    mov = 13,
-    tst =  8,
-    teq =  9,
-    cmp = 10,
-    //Multiply
-    mul, mla,
+    //Data Processing_RESULT
+    and = 0, eor = 0, sub = 0, rsb = 0, add = 0, orr = 0,
+    //Data_Processing_MOV
+    mov = 1,
+    //Data_Processing_CPSR
+    tst = 2, teq = 2, cmp = 2,
+    //Multiply_MUL
+    mul = 3,
+    //Multiply_MLA
+    mla = 4,
     //Single Data Transfer
-    ldr, str,
+    ldr = 5, str = 5,
     //Branch
-    beq, bne, bge, blt, bgt, ble, b,
+    beq  = 6, bne = 6, bge = 6, blt = 6, bgt = 6, ble = 6, b = 6,
     //Special
-    lsl, andeq
+    lsl = 7, andeq = 8,
 } Mnemonic;
 
 struct { /* Mnemoic_toString is implemented as */
@@ -217,19 +214,25 @@ struct { /* ShiftType_toString is implemented as */
  	int len = sizeof(a##_array)/sizeof(a##_array[0]);        \
   	for (int i = 0; i < len; i++)                          \
 	{	        					                                     \
-      char *low_buffer = strdup(a##_array[i].str);         \
-          for (int j = 0 ; j < strlen(low_buffer) ; j++ ) \
-          {                                                \
-			        low_buffer[j] = tolower(low_buffer[j]);	     \
-          }                                                \
-        				                                           \
+    char *low_buffer = strdup(a##_array[i].str);           \
+          for (int j = 0 ; j < strlen(low_buffer) ; j++ )  \
+          {                                                 \
+            if ( low_buffer[j] > 'z' || low_buffer[j] < 'a') { \
+              low_buffer[j] = tolower(low_buffer[j]);           \
+            }                                                  \
+          }                                                     \
+    printf("%s\n",buffer);                                     \
+    printf("%s\n",low_buffer ); \
+                           \
+                             \
 		if (strcmp(buffer, low_buffer) == 0)                   \
 		{                                                      \
-			return a##_array[i].num;                             \
+      printf("inside if of str_to_enum\n");                \
+      return a##_array[i].num;                             \
 		}                                                      \
 	}                                                        \
 	return -1;                                               \
-}                                                          
+}
 
 STR_TO_ENUM(mnemonic)
 STR_TO_ENUM(opcode)
