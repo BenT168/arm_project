@@ -187,7 +187,7 @@ int as_shifted_reg_ass(TOKEN *line, int Rm)
   		regOp.Rm = PARSE_REG(Rm + 2);
   		regOp.Flag1 = 0;
   		regOp.Type = shiftType;
-		regOp.Flag2 = 0;
+	  	regOp.Flag2 = 0;
   		regOp.Rs = PARSE_REG(Rm) | (1 << 4);
 
   //regOp.Rs = atoi(line->tokens[Rm] + 1) << 3; //getting the last bit of Rs
@@ -395,20 +395,30 @@ int32_t ass_single_data_transfer(TOKEN *line, int Rd, char *address)
   int Up     = 1;
   int offset = 0;
 
-  if (Is_Expression(adr)) {               // In <=expression> form
+  if (Is_Expression(adr)) {                   // In <=expression> form
     return SDT_num_const(line, Rd, address);
   }
 
   TOKEN *newline = malloc(sizeof(TOKEN));
-  newline = tokenise(adr, "[], "); // get arguements from expression
+  newline = tokenise(adr, "[], ");           // get arguements from <address>
+  char *expr = newline->tokens[1];
 
-
-  if (newline->tokenCount == 1) {       // Case [Rn]
+  if (newline->tokenCount == 1) {            // Case [Rn]
     offset = 0;
-  } else {                              // Case [Rn, <#expression>]
-    char *expr = newline->tokens[2];
-    offset     = expr_to_num(expr++);
-  }
+
+  } else if (Is_Expression(expr)) {          // Case [Rn, <#expression>]
+    offset = expr_to_num(expr++);
+
+  } else {
+    if (expr[0] == '+' || expr[0] == '+') {  // Check if there is sign
+      Up = (expr[0] == '+') ? 1 : 0;         // If U is set then + else -
+      expr++;                                // Remove the sign
+    }
+    int Rm = expr_to_num(expr);
+	  offset = as_shifted_reg_ass(newline, Rm);
+
+    Imm = 1;                                 // As shifted register
+}
 
   static SDTInstruct *SDTinstr;
 
