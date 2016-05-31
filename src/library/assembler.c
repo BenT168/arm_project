@@ -198,6 +198,7 @@ void assemble_write(ASSEMBLER_STRUCT *ass, int32_t word)
 
   binary_instruct *instr = malloc(sizeof(binary_instruct));
   instr->binary_word = word;
+  printf("%i\n", instr->binary_word);
   instr->word_address = ass->current_address;
   int current_instruct = ass->current_address / sizeof(int32_t);
   ass->instr[current_instruct] = instr;
@@ -220,14 +221,17 @@ void assemble_print(ASSEMBLER_STRUCT *ass)
 int32_t *assemble_generate_bin(ASSEMBLER_STRUCT *ass)
 {
   printf("pls generate bin\n");
-  int32_t *words = malloc(sizeof(int32_t) * ass->TOTAL_line);
+  assemble_print(ass);//TODO:delete
+  int32_t *words = malloc(sizeof(int32_t) * (ass->TOTAL_line));
   printf("pls\n");
   for(int i = 0; i < (ass->TOTAL_line); i++)
   {
     printf("yo\n");
-    printf("%i\n", words[i] );
-    printf("ass->instr[i] %c\n", ass->instr[i]->binary_word);
+    printf("%i\n", words[ass->TOTAL_line] );
+    printf("ass->instr[i]->word_address%c\n", (ass->instr[i])->word_address); //TODO: delete this line (just for testing)
+    printf("ass->instr[i]->binary_word %c\n", (ass->instr[i])->binary_word);
     words[i] = (ass->instr[i])->binary_word;
+    printf("words[i] after writing....%i\n",words[i]);
     printf("ya\n");
   }
   return words;

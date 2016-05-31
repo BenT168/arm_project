@@ -75,7 +75,7 @@ char* writeBuffer(char* buffer) {
 }
 
 
-TOKEN *read_Source(const char *sourceFile) 
+TOKEN *read_Source(const char *sourceFile)
 {
   FILE *file = fopen(sourceFile, "rt");
 
@@ -98,11 +98,11 @@ TOKEN *read_Source(const char *sourceFile)
 
 
 
-void write_File(ASSEMBLER_STRUCT *ass, const char *binaryFile) 
-{ 
+void write_File(ASSEMBLER_STRUCT *ass, const char *binaryFile)
+{
   printf("writefile\n");
   FILE *file = fopen(binaryFile, "wb"); //w = write b = binary
-  
+
   printf("ooo\n");
   int32_t *program = assemble_generate_bin(ass);
   //get binary code from assembler program
@@ -111,7 +111,7 @@ void write_File(ASSEMBLER_STRUCT *ass, const char *binaryFile)
   //size of each element that will be written
   printf("nonono\n");
   assert(fwrite(program, 1, size, file) == size);
-  
+
   printf("ppp\n");
   fclose(file);
 
@@ -154,8 +154,8 @@ int as_numeric_constant(int value){
   //second case shiftReg RS(11-8)+0(7)+shift type(6-5)+1(4)
 //TOKEN *elem is a pointer to elems in tokenized line
 int as_shifted_reg_ass(TOKEN *line, int Rm)
-{       
-        if(line->tokenCount == Rm + 1) 
+{
+        if(line->tokenCount == Rm + 1)
         {
               return PARSE_REG(Rm);
         }
@@ -291,7 +291,7 @@ static int32_t ass_data_proc(TOKEN *line, int SetCond, int Rn, int Rd, int Opera
 	DPInst.Rd	     = PARSE_REG(Rd);
     printf("parse reg rd\n");
 	DPInst.Operand2 = check_op2(line, Operand_2);
-  printf("%c\n", DPInst.Operand2);
+  printf("data processing op2: %c\n", DPInst.Operand2);
     printf("op2\n");
 
 	return *((int32_t *) &DPInst);
@@ -503,14 +503,14 @@ int32_t ass_single_data_transfer(TOKEN *line, ASSEMBLER_STRUCT *ass)
 
 
 
-int32_t ass_branch(TOKEN *line, ASSEMBLER_STRUCT *ass) 
+int32_t ass_branch(TOKEN *line, ASSEMBLER_STRUCT *ass)
 {
 	char *suffix = (strcmp(line->tokens[0], "b") == 0) ? "al" : (line->tokens[0] + 1);
 
 	char *lbl   = line->tokens[1];
  //	char *address = PARSE_REG(expr_to_num(label));
         uint16_t lbl_address = *(uint16_t *) map_get(ass->symbolTable,lbl);
-        
+
         int sign   = (lbl_address < ass->current_address) ? -1 : 1;
 	int offset = ((ass->current_address  - lbl_address + 8) * sign )  >> 2;  // compute offet
 
