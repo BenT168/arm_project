@@ -213,7 +213,6 @@ int32_t assembler_func(TOKEN *line, ASSEMBLER_STRUCT *ass) {
   printf("in between assembler func\n");
   int i = str_to_mnemonic(mnemonic);
   printf("mnemonic: %i\n", i);
-  printf("hello world\n");
   return function_Array[i](line, ass);
 }
 
@@ -265,34 +264,34 @@ void funcArray(void) {
 
 static int32_t ass_data_proc(TOKEN *line, int SetCond, int Rn, int Rd, int Operand_2)
 {
+  printf("start of data proccessing\n");
 	char *Operand2 = line->tokens[Operand_2];
   printf("operand_2: %i\n", Operand_2);
   printf("Operand2 is....%s\n",Operand2);
   printf("operand\n");
 	char *mnemonic = line->tokens[0];
-  printf("mnemonic\n");
   printf("%s\n", mnemonic);
   printf("%s\n", line->tokens[1]);
 
- DataProcessingInstruct DPInst;
+  DataProcessingInstruct DPInst;
 
-	DPInst.Cond	   = AL;
+	DPInst.Cond	    = AL;
   printf("cond\n");
-	DPInst._00	     = 0;
+	DPInst._00	    = 0;
   printf("00\n");
   printf("%s\n", Operand2 );
-	DPInst.ImmOp	   = Is_Expression(Operand2);
+	DPInst.ImmOp	  = Is_Expression(Operand2);
   printf("imop\n");
-	DPInst.Opcode	 = str_to_mnemonic(mnemonic);
+	DPInst.Opcode	  = str_to_mnemonic(mnemonic);
   printf("opcode\n");
-	DPInst.SetCond	 = SetCond;
+	DPInst.SetCond  = SetCond;
 	DPInst.Rn       = PARSE_REG(Rn);
-    printf("parse reg rn\n");
-	DPInst.Rd	     = PARSE_REG(Rd);
-    printf("parse reg rd\n");
+  printf("parse reg rn\n");
+	DPInst.Rd	      = PARSE_REG(Rd);
+  printf("parse reg rd\n");
 	DPInst.Operand2 = check_op2(line, Operand_2);
   printf("data processing op2: %c\n", DPInst.Operand2);
-    printf("op2\n");
+  printf("op2\n");
 
 	return *((int32_t *) &DPInst);
 }
@@ -496,7 +495,7 @@ int32_t ass_single_data_transfer(TOKEN *line, ASSEMBLER_STRUCT *ass)
   SDTinstr.Rd	   = PARSE_REG(1);
   SDTinstr.Offset = offset;
 
-  tokens_free(line);
+  //tokens_free(line);
 
   return *((int32_t *) &SDTinstr);
 
@@ -506,15 +505,18 @@ int32_t ass_single_data_transfer(TOKEN *line, ASSEMBLER_STRUCT *ass)
 
 int32_t ass_branch(TOKEN *line, ASSEMBLER_STRUCT *ass)
 {
-	char *suffix = (line->tokens[0][0] != 'b') ? "al" : (line->tokens[0] + 1);
+
+  char first_letter_token = line->tokens[0][0];
+  char *suffix = (first_letter_token != 'b') ? "AL" : (line->tokens[0] +  1);
+
 	char *lbl    = line->tokens[1];
-  printf("lable is: %s\n", lbl);
 
   uint16_t lbl_address = *(uint16_t *) map_get(ass->symbolTable, lbl);
 
   int sign   = (lbl_address > ass->current_address) ? -1 : 1;
   // compute offet
 	int offset = ((ass->current_address - lbl_address + 8) * sign ) >> 2;
+
 
 	BranchInstruct Branchinstr;
 	Branchinstr.Cond   = str_to_cond(suffix);
@@ -591,7 +593,7 @@ int main(int argc, char **argv)
   tokens_free(lines);
   printf("after token_free main\n");
 
-  assemble_free(ass);
+  free(ass);
   printf("after ass_free main\n");
 
 

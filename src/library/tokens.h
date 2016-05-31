@@ -26,7 +26,7 @@ void tokens_free(TOKEN *);
 
 void tokens_print(TOKEN *);
 
-TOKEN *tokenise(char * , const char *);
+TOKEN *tokenise(char *, const char *);
 
 void tokens_iter(TOKEN *, tokens_func);
 

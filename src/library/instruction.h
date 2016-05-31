@@ -146,21 +146,21 @@ typedef enum ShiftType
 enum Mnemonic
 {
     //Data Processing_RESULT
-    and, eor = 0, sub = 0, rsb = 0, add = 0, orr = 0,
+    and = 0, eor = 0, sub = 0, rsb = 0, add = 0, orr = 0,
     //Data_Processing_MOV
-    mov,
+    mov = 1,
     //Data_Processing_CPSR
-    tst, teq = 2, cmp = 2,
+    tst = 2, teq = 2, cmp = 2,
     //Multiply_MUL
-    mul,
+    mul = 3,
     //Multiply_MLA
-    mla,
+    mla = 4,
     //Single Data Transfer
-    ldr, str = 5,
+    ldr = 5, str = 5,
     //Branch
-    beq, bne = 6, bge = 6, blt = 6, bgt = 6, ble = 6, b = 6,
+    beq = 6, bne = 6, bge = 6, blt = 6, bgt = 6, ble = 6, b = 6,
     //Special
-    lsl, andeq,
+    lsl = 7, andeq = 8,
 } Mnemonic;
 
 struct { /* Mnemoic_toString is implemented as */

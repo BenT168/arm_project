@@ -7,13 +7,14 @@ TOKEN *tokenStruct = NULL;
 
 ////////////////////////////////////////////////////////////////////////////
 
+
 void tokens_free(TOKEN *lines)
 {
-	for (int i = 0 ; i < lines->tokenCount; i++)
+	for (int i = 0; i < lines->tokenCount; i++)
 	{
 		free(lines->tokens[i]);
 	}
-	free(lines->tokens);
+//	free(lines->tokens);
 	free(lines->line);
 	free(lines);
 }
@@ -164,5 +165,3 @@ char tokens_endc(TOKEN *lines)
 	return lines->tokens[lines->tokenCount-1]
 		[strlen(lines->tokens[lines->tokenCount-1])-1];
 }
-
-

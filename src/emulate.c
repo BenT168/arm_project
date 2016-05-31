@@ -462,7 +462,7 @@ void single_data_transfer(int32_t word)
     int dataU      = SDTInst->U;
     int dataL      = SDTInst->L;
 
-	//Check if I is setbranchOffset
+	//Check if I is set
   if (IS_SET(dataI))
   {
     dataOffset = as_shifted_reg(dataOffset, 1);

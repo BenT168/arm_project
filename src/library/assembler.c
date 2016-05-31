@@ -159,13 +159,13 @@ void assemble_free(ASSEMBLER_STRUCT *ass)
   {
     free(ass->instr[i]);
   }
-  free(ass->instr);
 
+  free(ass->instr);
 //  for(int i = 0; i < sizeof(sizeof(ass->symbolTable)); i++)
   //{
     //map_free(ass->symbolTable[i]);
   //}
-  map_free(ass->symbolTable, MAP_FREE_VAL | MAP_FREE_KEY);
+  //map_free(ass->symbolTable, MAP_FREE_VAL | MAP_FREE_KEY);
   free(ass);
 }
 
@@ -176,15 +176,15 @@ static void realloc_instrs(ASSEMBLER_STRUCT *ass)
 
 uint16_t assemble_append(ASSEMBLER_STRUCT *ass, int32_t word)
 {
-        ass->TOTAL_line++;
+  ass->TOTAL_line++;
 	realloc_instrs(ass);
 
-	uint16_t address = (ass->TOTAL_line-1) * sizeof(int32_t);
+	uint16_t address       = (ass->TOTAL_line-1) * sizeof(int32_t);
 	binary_instruct *instr = malloc(sizeof(binary_instruct));
-	instr->binary_word  = word;
-	instr->word_address = address;
+	instr->binary_word     = word;
+	instr->word_address    = address;
 
-	int current_instruct = address / sizeof(int32_t);
+	int current_instruct         = address / sizeof(int32_t);
 	ass->instr[current_instruct] = instr;
 
 	return address;
@@ -197,10 +197,10 @@ void assemble_write(ASSEMBLER_STRUCT *ass, int32_t word)
   print_bits_inBE(word);
 
   binary_instruct *instr = malloc(sizeof(binary_instruct));
-  instr->binary_word = word;
+  instr->binary_word     = word;
   printf("%i\n", instr->binary_word);
-  instr->word_address = ass->current_address;
-  int current_instruct = ass->current_address / sizeof(int32_t);
+  instr->word_address    = ass->current_address;
+  int current_instruct   = ass->current_address / sizeof(int32_t);
   ass->instr[current_instruct] = instr;
   ass->current_address += sizeof(int32_t);
 }
@@ -221,14 +221,14 @@ void assemble_print(ASSEMBLER_STRUCT *ass)
 int32_t *assemble_generate_bin(ASSEMBLER_STRUCT *ass)
 {
   printf("pls generate bin\n");
-  assemble_print(ass);//TODO:delete
+  printf("printing the assemble.....\n");
+  //assemble_print(ass);//TODO:delete
   int32_t *words = malloc(sizeof(int32_t) * (ass->TOTAL_line));
   printf("pls\n");
   for(int i = 0; i < (ass->TOTAL_line); i++)
   {
     printf("yo\n");
     printf("%i\n", words[ass->TOTAL_line] );
-    printf("ass->instr[i]->word_address%c\n", (ass->instr[i])->word_address); //TODO: delete this line (just for testing)
     printf("ass->instr[i]->binary_word %c\n", (ass->instr[i])->binary_word);
     words[i] = (ass->instr[i])->binary_word;
     printf("words[i] after writing....%i\n",words[i]);
@@ -239,13 +239,13 @@ int32_t *assemble_generate_bin(ASSEMBLER_STRUCT *ass)
 
 char *strdelchr(char *buffer, char chr)
 {
-    char *str = strdup(buffer);
-    char* c;
+  char *str = strdup(buffer);
+  char* c;
 
 	if ((c = index(str, chr)) != NULL)
 	{
-	    //size_t left = sizeof(str) - (c + 1 - str);
-	    strcpy(c, c+1);//memmove(c, c + 1, left);
+	  //size_t left = sizeof(str) - (c + 1 - str);
+	  strcpy(c, c+1);//memmove(c, c + 1, left);
 	}
 
 	return str;
@@ -259,48 +259,47 @@ uint16_t *heap_uint16_t(uint16_t i)
 }
 
 
-ASSEMBLER_STRUCT *assemble(TOKEN *lines,  function_assPtr func, const char *delim)
+ASSEMBLER_STRUCT *assemble(TOKEN *lines, function_assPtr func, const char *delim)
 {
   printf("Hello assemble\n");
   // Pass #1
-	map   *symtbl  = map_new(&map_cmp_str);
-	uint16_t  address = 0;
-	int       labelc  = 0;
+	map *symtbl      = map_new(&map_cmp_str);
+	uint16_t address = 0;
+	int labelc       = 0;
   printf("before inner for loop in assemble\n");
 	for (int i = 0; i < lines->tokenCount; i++)
 	{
-		char   *currl = strdup(lines->tokens[i]);
-		TOKEN *line  = tokenise(currl, delim);
-		char   *label = line->tokens[0];
+		char *currl = strdup(lines->tokens[i]);
+		TOKEN *line = tokenise(currl, delim);
+		char *label = line->tokens[0];
     printf("before if in assemble\n");
 		if (strchr(label, ':')) // Label encountered
 		{
 			labelc++;
 			map_put(symtbl, strdelchr(label, ':'), heap_uint16_t(address));
-            tokens_free(line);
+      tokens_free(line);
 			continue;
 		}
     printf("right after if in assemble\n");
 		address += sizeof(int32_t);
-
 		tokens_free(line);
 	}
-printf("after for loop in assemble\n");
+  printf("after for loop in assemble\n");
   // Initialize Assembly Program
-	int line_tot      = lines->tokenCount - labelc;
-	ASSEMBLER_STRUCT *p  = malloc(sizeof(ASSEMBLER_STRUCT));
-	p->instr         = malloc(sizeof(0));
+	int line_tot        = lines->tokenCount - labelc;
+	ASSEMBLER_STRUCT *p = malloc(sizeof(ASSEMBLER_STRUCT));
+	p->instr            = malloc(sizeof(0));
 	p->TOTAL_line       = line_tot;
-	p->symbolTable        = symtbl;
-	p->current_address      = 0;
+	p->symbolTable      = symtbl;
+	p->current_address  = 0;
 	//realloc_instrs(p);
 
 	// Pass #2
 	for (int i = 0; i < lines->tokenCount; i++)
 	{
-		char  *currl = strdup(lines->tokens[i]);
+		char *currl = strdup(lines->tokens[i]);
 		TOKEN *line = tokenise(currl, delim);
-		char   *mnem = line->tokens[0];
+		char *mnem  = line->tokens[0];
 		if (strchr(mnem, ':')) continue; // Label encountered
 
 		int32_t word = func(line, p);
@@ -310,10 +309,13 @@ printf("after for loop in assemble\n");
 		assemble_write(p, word);
     printf("can i write in assemle????\n");
 
-        if (i != (lines->tokenCount - 1))
-        {
-            tokens_free(line) ;
-        }
+  //if(strcmp(line->tokens[0], "mla") != 0) {
+    tokens_free(line);
+//    }
+
+  //    if (i != (lines->tokenCount - 1))
+  //    {
+//      }
 
 	}// Assembling done
   printf("assemble donw\n");

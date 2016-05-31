@@ -17,7 +17,7 @@ assemble: 	assemble.c library/tokens.c library/bitwise.c library/assembler.c lib
 #
 emulate : 	emulate.c library/bitwise.c
 
-
+assembler:  library/assembler.h library/assembler.c
 
 clean:
 	rm -f $(wildcard *.o)
