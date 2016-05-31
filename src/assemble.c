@@ -422,7 +422,7 @@ int32_t ass_multiply_mla(TOKEN *line, ASSEMBLER_STRUCT *ass)
 
 int32_t SDT_num_const(TOKEN *line, ASSEMBLER_STRUCT *ass) {
   char *Regd = line->tokens[1];
-  char *adr = line->tokens[2];
+  char *adr  = line->tokens[2];
   int newAddress = expr_to_num(adr);
 
   if (newAddress <= 0xFF) {                  // Treat as mov Instruction
@@ -433,7 +433,8 @@ int32_t SDT_num_const(TOKEN *line, ASSEMBLER_STRUCT *ass) {
   } else {
     // use PC to calculate new address
     uint16_t last_address = assemble_append(ass, newAddress);
-    int offset = last_address - ass->current_address - 8;  // off-by-8 bytes effect
+    // off-by-8 bytes effect
+    int offset = last_address - ass->current_address - 8;
     //generate ldr r0,[PC, offset]
     char *newline = NULL;
 
@@ -460,26 +461,26 @@ int32_t ass_single_data_transfer(TOKEN *line, ASSEMBLER_STRUCT *ass)
     return SDT_num_const(line, ass);
   }
 
-  TOKEN *newline = tokenise(strdup(line->line), " ,[]");  // get arguements from <address>
+  // get arguements from <address>
+  TOKEN *newline = tokenise(strdup(line->line), " ,[]");
   char *expr = newline->tokens[3];
 
   if (newline->tokenCount == 3) {            // Case [Rn]
     offset = 0;
 
-  } else if (Is_Expression(expr)) {          // Case [Rn, <#expression>]
+  } else if (Is_Expression(expr)) {          // Case Rn, <#expression>
     offset = expr_to_num(expr);
     Up = offset >= 0;
 
-  } else {
+  } else {                                   // Case Optional
     Imm = 1;
 
     if (expr[0] == '+' || expr[0] == '-') {  // Check if there is sign
-      Up = (expr[0] == '+') ;         // If U is set then + else -
+      Up = (expr[0] == '+') ;                // If U is set then + else -
       expr++;                                // Remove the sign
     }
-    offset = as_shifted_reg_ass(newline, 3);
-
-    Up = (expr[0] == '+' || expr[0] == '-' ) ? Up : ( offset >= 0 );                                // As shifted register
+    offset = as_shifted_reg_ass(newline, 3);          // As shifted register
+    Up = (expr[0] == '+' || expr[0] == '-' ) ? Up : ( offset >= 0 );
 }
 
   SDTInstruct SDTinstr;
@@ -505,22 +506,24 @@ int32_t ass_single_data_transfer(TOKEN *line, ASSEMBLER_STRUCT *ass)
 
 int32_t ass_branch(TOKEN *line, ASSEMBLER_STRUCT *ass)
 {
-	char *suffix = (strcmp(line->tokens[0], "b") == 0) ? "al" : (line->tokens[0] + 1);
+	char *suffix = (line->tokens[0][0] != 'b') ? "al" : (line->tokens[0] + 1);
+	char *lbl    = line->tokens[1];
+  printf("lable is: %s\n", lbl);
 
-	char *lbl   = line->tokens[1];
- //	char *address = PARSE_REG(expr_to_num(label));
-        uint16_t lbl_address = *(uint16_t *) map_get(ass->symbolTable,lbl);
+  uint16_t lbl_address = *(uint16_t *) map_get(ass->symbolTable, lbl);
 
-        int sign   = (lbl_address < ass->current_address) ? -1 : 1;
-	int offset = ((ass->current_address  - lbl_address + 8) * sign )  >> 2;  // compute offet
+  int sign   = (lbl_address > ass->current_address) ? -1 : 1;
+  // compute offet
+	int offset = ((ass->current_address - lbl_address + 8) * sign ) >> 2;
 
 	BranchInstruct Branchinstr;
 	Branchinstr.Cond   = str_to_cond(suffix);
-	Branchinstr._101  = 5 % (1 << sizeof(char));
-        Branchinstr._0     = 0;
+  printf("the cond is:=== %p\n", suffix);
+	Branchinstr._101   = 5 % (1 << sizeof(char));
+  Branchinstr._0     = 0;
 	Branchinstr.Offset = offset;
 
-	return *(int32_t *) &Branchinstr;
+	return *((int32_t *) &Branchinstr);
 }
 
 
