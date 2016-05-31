@@ -224,15 +224,14 @@ int32_t *assemble_generate_bin(ASSEMBLER_STRUCT *ass)
   printf("printing the assemble.....\n");
   //assemble_print(ass);//TODO:delete
   int32_t *words = malloc(sizeof(int32_t) * (ass->TOTAL_line));
-  printf("pls\n");
+  printf("before for loop in generate_bin\n");
   for(int i = 0; i < (ass->TOTAL_line); i++)
   {
-    printf("yo\n");
     printf("%i\n", words[ass->TOTAL_line] );
     printf("ass->instr[i]->binary_word %c\n", (ass->instr[i])->binary_word);
     words[i] = (ass->instr[i])->binary_word;
     printf("words[i] after writing....%i\n",words[i]);
-    printf("ya\n");
+
   }
   return words;
 }
@@ -303,8 +302,7 @@ printf("after for loop in assemble\n");
 		if (strchr(mnem, ':')) continue; // Label encountered
 
 		int32_t word = func(line, p);
-    printf("%i\n", word );
-    printf("yoyoyoy\n");
+    printf("word: %i\n", word );
 
 		assemble_write(p, word);
     printf("can i write in assemle????\n");

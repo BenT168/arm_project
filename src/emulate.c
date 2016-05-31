@@ -189,7 +189,7 @@ int check_cond(int32_t word)
          return CPSR_GET(N) != CPSR_GET(V);
          break;
     case(GT):
-         return CPSR_GET(Z) & (CPSR_GET(N) == CPSR_GET(V));
+         return !CPSR_GET(Z) & (CPSR_GET(N) == CPSR_GET(V));
          break;
     case(LE):
          return CPSR_GET(Z) | (CPSR_GET(N) != CPSR_GET(V));
@@ -249,6 +249,7 @@ void data_processing(int32_t word)
 	           		           : as_immediate_reg(Operand2);
 	int result   = 0;
 
+
 	// calculate result by opcode
 	switch (OpCode)
 	{
@@ -280,9 +281,16 @@ void data_processing(int32_t word)
                     result = 0;
 	}
   	// save results if necessary
-	if(OpCode != TST || OpCode != TEQ || OpCode != CMP) {
-    REG_WRITE(Rd, result);
-  }
+    switch (OpCode)
+  	{
+  		case TEQ :
+  		case TST :
+      case CMP :
+                  break;
+      default :
+              REG_WRITE(Rd, result);
+              break;
+    }
 
 
 	if (IS_SET(SetCond)) {
@@ -413,7 +421,7 @@ void branch(int32_t word)
      int32_t offsetNewb = offsetb << branchShift;
 
      //signed bits extended to 32 bits
-     int32_t signed_bits = (offsetNewb >> (branchPC - branchShift)) << (SIZE_OF_WORD - branchOffset - branchShift);
+     int32_t signed_bits = (offsetNewb << (branchPC - branchShift)) >> (SIZE_OF_WORD - branchOffset - branchShift);
 
      //add the signed bits to PC
      INC_PC(signed_bits);
