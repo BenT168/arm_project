@@ -10,7 +10,7 @@ all	: 	assemble emulate
 #To create an executable file assemble, we need sources files
 #assemble.c,library/token.c, library/bitwise.c and library/assembler.c
 #
-assemble: 	assemble.c library/tokens.c library/bitwise.c library/assembler.c library/symbolTableADT.c
+assemble: 	assemble.c library/tokens.c library/bitwise.c library/assembler.c library/symbolTableList.c
 
 #To create an executable file emulate, we need sources files
 #emulate.c,library/ bitwise.c and library/bitwise.c

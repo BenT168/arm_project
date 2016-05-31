@@ -450,6 +450,7 @@ void multiply(int32_t word)
     if(IS_SET(SetCond))
     {
         int bit31 = get_bits(mulResult, 30, 31); //N is the 31 bit of result
+        CPSR_PUT(N, bit31);
         cpsrStruct->bitN = bit31;
         (mulResult == 0) ? (cpsrStruct->bitZ = 1) : (cpsrStruct->bitZ = 0);
     }

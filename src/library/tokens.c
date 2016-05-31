@@ -100,11 +100,11 @@ TOKEN* tokenise(char *str, const char *delim)
 
 	tokenStruct  = malloc(sizeof(tokenStruct));
 	tokenStruct->tokens   = malloc(0);
-	printf("c1\n");
+	printf("\n");
+	printf("after malloc (in tokenise)\n");
   int Tokncount = 0; // initial room for string
 	char *tok = NULL;
   size_t space = 0;
-  printf("c2\n");
    // allocate space for tokenst
    // tokens are added to this array;
 	 if ( tokenStruct == NULL || tokenStruct->tokens == NULL)
@@ -115,18 +115,15 @@ TOKEN* tokenise(char *str, const char *delim)
 
   tokenStruct->line = strdup(str);
 
-  printf("%zu\n",strlen(str));
+  printf("str lenght: %zu\n",strlen(str));
 //	size_t len = strlen(str) + 1;
-	printf("after size\n");
 //  tokenStruct->line = malloc(len);
-	printf("after malloc\n");
 //  memmove(tokenStruct->line, str, len);
 
 //	(tokenStruct->line) = malloc(strlen(str) + 1)
 //  strcpy(tokenStruct->line, str);
-	printf("c4a\n");
   tok = strtok(str, delim); // get the first token
-	printf("c6\n");
+	printf("first tok: %s\n", tok);
   while(tok != NULL) {
 		if (*tok == '\0') continue; // Discard empty tokens
 		space              	 = sizeof(char *) * (Tokncount + 1);
@@ -142,12 +139,9 @@ TOKEN* tokenise(char *str, const char *delim)
 	tokenStruct->tokenCount = Tokncount;
 
   //free(tokenStruct->line);
-	printf("c11\n");
 //	free(tokenStruct->tokens);
-	printf("c12\n");
 	//free(tokenStruct->line);
 	//tokens_free(tokenStruct);
-	printf("c13\n");
 	return tokenStruct;
 
 }
