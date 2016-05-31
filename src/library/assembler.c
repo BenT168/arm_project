@@ -179,7 +179,7 @@ uint16_t assemble_append(ASSEMBLER_STRUCT *ass, int32_t word)
         ass->TOTAL_line++;
 	realloc_instrs(ass);
 
-	uint16_t address = (ass->TOTAL_line-1) * sizeof(int32_t); 
+	uint16_t address = (ass->TOTAL_line-1) * sizeof(int32_t);
 	binary_instruct *instr = malloc(sizeof(binary_instruct));
 	instr->binary_word  = word;
 	instr->word_address = address;
@@ -218,13 +218,15 @@ void assemble_print(ASSEMBLER_STRUCT *ass)
 
 
 int32_t *assemble_generate_bin(ASSEMBLER_STRUCT *ass)
-{ 
+{
   printf("pls generate bin\n");
   int32_t *words = malloc(sizeof(int32_t) * ass->TOTAL_line);
   printf("pls\n");
   for(int i = 0; i < (ass->TOTAL_line); i++)
-  {  
+  {
     printf("yo\n");
+    printf("%i\n", words[i] );
+    printf("ass->instr[i] %c\n", ass->instr[i]->binary_word);
     words[i] = (ass->instr[i])->binary_word;
     printf("ya\n");
   }
@@ -305,10 +307,10 @@ printf("after for loop in assemble\n");
     printf("can i write in assemle????\n");
 
         if (i != (lines->tokenCount - 1))
-        { 
+        {
             tokens_free(line) ;
         }
-        
+
 	}// Assembling done
   printf("assemble donw\n");
 	return p;
