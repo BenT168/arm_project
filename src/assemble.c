@@ -27,6 +27,8 @@
 
 #define expr_to_num(expr) ((int) strtol((expr) + 1, NULL, 0))
 
+#define endian 0xFF
+
 
 ///////////////////////////// FUNCTION PROTOTYPE //////////////////////////////
 
@@ -103,16 +105,16 @@ void write_File(ASSEMBLER_STRUCT *ass, const char *binaryFile)
   printf("writefile\n");
   FILE *file = fopen(binaryFile, "wb"); //w = write b = binary
 
-  printf("ooo\n");
+  printf("after opening file (in write_file)\n");
   int32_t *program = assemble_generate_bin(ass);
   //get binary code from assembler program
-  printf("yolo\n");
+  printf("program (in write_file)\n");
   size_t size = ass->TOTAL_line * sizeof(int32_t);
   //size of each element that will be written
-  printf("nonono\n");
+  printf("size: %zu\n",size );
   assert(fwrite(program, 1, size, file) == size);
 
-  printf("ppp\n");
+  printf("after assertion (in write_file)\n");
   fclose(file);
 
   free(program);
@@ -267,7 +269,6 @@ static int32_t ass_data_proc(TOKEN *line, int SetCond, int Rn, int Rd, int Opera
 	char *Operand2 = line->tokens[Operand_2];
   printf("operand_2: %i\n", Operand_2);
   printf("Operand2 is....%s\n",Operand2);
-  printf("operand\n");
 	char *mnemonic = line->tokens[0];
   printf("%s\n", mnemonic);
   printf("%s\n", line->tokens[1]);
@@ -275,22 +276,16 @@ static int32_t ass_data_proc(TOKEN *line, int SetCond, int Rn, int Rd, int Opera
  DataProcessingInstruct DPInst;
 
 	DPInst.Cond	   = AL;
-  printf("cond\n");
 	DPInst._00	     = 0;
-  printf("00\n");
-  printf("%s\n", Operand2 );
 	DPInst.ImmOp	   = Is_Expression(Operand2);
-  printf("imop\n");
 	DPInst.Opcode	 = str_to_mnemonic(mnemonic);
-  printf("opcode\n");
 	DPInst.SetCond	 = SetCond;
 	DPInst.Rn       = PARSE_REG(Rn);
-    printf("parse reg rn\n");
+  printf("parse reg rn: %i\n", PARSE_REG(Rn));
 	DPInst.Rd	     = PARSE_REG(Rd);
-    printf("parse reg rd\n");
+    printf("parse reg rd: %i\n", PARSE_REG(Rn));
 	DPInst.Operand2 = check_op2(line, Operand_2);
   printf("data processing op2: %c\n", DPInst.Operand2);
-    printf("op2\n");
 
 	return *((int32_t *) &DPInst);
 }
@@ -423,7 +418,7 @@ int32_t SDT_num_const(TOKEN *line, ASSEMBLER_STRUCT *ass) {
   char *adr = line->tokens[2];
   int newAddress = expr_to_num(adr);
 
-  if (newAddress <= 0xFF) {                  // Treat as mov Instruction
+  if (newAddress <= endian) {                  // Treat as mov Instruction
     adr[0] = '#';
     line->tokens[0] = strdup("mov");
     return ass_data_proc_mov(line, ass);
@@ -477,7 +472,7 @@ int32_t ass_single_data_transfer(TOKEN *line, ASSEMBLER_STRUCT *ass)
     }
     offset = as_shifted_reg_ass(newline, 3);
 
-    Up = (expr[0] == '+' || expr[0] == '-' ) ? Up : ( offset >= 0 );                                // As shifted register
+    Up = (expr[0] == '+' || expr[0] == '-' ) ? Up : ( offset >= 0 ); // As shifted register
 }
 
   SDTInstruct SDTinstr;
