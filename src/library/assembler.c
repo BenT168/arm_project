@@ -143,18 +143,18 @@ extern ASSEMBLER_STRUCT *ass;
  }*/
 //  return ass;
 //}
-
-char* delstr(char *str)
+/*
+char *delstr(char *str)
 {
   char *result = strdup(str);
   str++;
   strcpy(result, str);
   return result;
 }
-
+*/
 
 void assemble_free(ASSEMBLER_STRUCT *ass)
- {
+{
   for(int i = 0; i < ass->TOTAL_line; i++)
   {
     free(ass->instr[i]);
@@ -165,15 +165,36 @@ void assemble_free(ASSEMBLER_STRUCT *ass)
   //{
     //map_free(ass->symbolTable[i]);
   //}
-//  map_free(ass->symbolTable);
+  map_free(ass->symbolTable, MAP_FREE_VAL | MAP_FREE_KEY);
   free(ass);
+}
+
+static void realloc_instrs(ASSEMBLER_STRUCT *ass)
+{
+  ass->instr = realloc(ass->instr, sizeof(binary_instruct *) * (ass->TOTAL_line));
+}
+
+uint16_t assemble_append(ASSEMBLER_STRUCT *ass, int32_t word)
+{
+        ass->TOTAL_line++;
+	realloc_instrs(ass);
+
+	uint16_t address = (ass->TOTAL_line-1) * sizeof(int32_t); 
+	binary_instruct *instr = malloc(sizeof(binary_instruct));
+	instr->binary_word  = word;
+	instr->word_address = address;
+
+	int current_instruct = address / sizeof(int32_t);
+	ass->instr[current_instruct] = instr;
+
+	return address;
 }
 
 
 void assemble_write(ASSEMBLER_STRUCT *ass, int32_t word)
 {
   printf("%080x\n", ass->current_address);
-  print_bits(word);
+  print_bits_inBE(word);
 
   binary_instruct *instr = malloc(sizeof(binary_instruct));
   instr->binary_word = word;
@@ -228,7 +249,7 @@ uint16_t *heap_uint16_t(uint16_t i)
 }
 
 
- ASSEMBLER_STRUCT* assemble(TOKEN *lines,  function_assPtr func, const char *delim)
+ASSEMBLER_STRUCT* assemble(TOKEN *lines,  function_assPtr func, const char *delim)
 {
   printf("Hello assemble\n");
   // Pass #1
@@ -258,7 +279,7 @@ printf("after for loop in assemble\n");
   // Initialize Assembly Program
 	int line_tot      = lines->tokenCount - labelc;
 	ASSEMBLER_STRUCT *p  = malloc(sizeof(ASSEMBLER_STRUCT));
-	p->instr         = malloc(sizeof(binary_instruct));
+	p->instr         = malloc(sizeof(0));
 	p->TOTAL_line       = line_tot;
 	p->symbolTable        = symtbl;
 	p->current_address      = 0;

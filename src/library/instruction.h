@@ -86,11 +86,10 @@ typedef struct ShiftReg
 
 typedef struct ShiftRegOptional
 {
-    unsigned int Rm       : 4;
-    unsigned int Flag1    : 1;
+    unsigned int Amount   : 5;
     unsigned int Type     : 2;
-    unsigned int Flag2    : 1;
-    unsigned int Rs       : 4;
+    unsigned int Flag     : 1;
+    unsigned int Rm       : 4;
 } ShiftRegOptional;
 
 
@@ -147,21 +146,21 @@ typedef enum ShiftType
 enum Mnemonic
 {
     //Data Processing_RESULT
-    and = 0, eor = 0, sub = 0, rsb = 0, add = 0, orr = 0,
+    and, eor = 0, sub = 0, rsb = 0, add = 0, orr = 0,
     //Data_Processing_MOV
-    mov = 1,
+    mov,
     //Data_Processing_CPSR
-    tst = 2, teq = 2, cmp = 2,
+    tst, teq = 2, cmp = 2,
     //Multiply_MUL
-    mul = 3,
+    mul,
     //Multiply_MLA
-    mla = 4,
+    mla,
     //Single Data Transfer
-    ldr = 5, str = 5,
+    ldr, str = 5,
     //Branch
-    beq  = 6, bne = 6, bge = 6, blt = 6, bgt = 6, ble = 6, b = 6,
+    beq, bne = 6, bge = 6, blt = 6, bgt = 6, ble = 6, b = 6,
     //Special
-    lsl = 7, andeq = 8,
+    lsl, andeq,
 } Mnemonic;
 
 struct { /* Mnemoic_toString is implemented as */
@@ -221,12 +220,8 @@ struct { /* ShiftType_toString is implemented as */
               low_buffer[j] = tolower(low_buffer[j]);           \
             }                                                  \
           }                                                     \
-    printf("%s\n",buffer);                                     \
-    printf("%s\n",low_buffer ); \
-                           \
-                             \
-		if (strcmp(buffer, low_buffer) == 0)                   \
-		{                                                      \
+          if (strcmp(buffer, low_buffer) == 0)                   \
+	  {                                                      \
       printf("inside if of str_to_enum\n");                \
       return a##_array[i].num;                             \
 		}                                                      \

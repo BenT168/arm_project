@@ -29,11 +29,17 @@ ASSEMBLER_STRUCT* assemble(TOKEN *, function_assPtr, const char *);
 
 void assemble_free(ASSEMBLER_STRUCT *);
 
+uint16_t assemble_append(ASSEMBLER_STRUCT *, int32_t);
+
 void assemble_write(ASSEMBLER_STRUCT *, int32_t);
 
 void assemble_print(ASSEMBLER_STRUCT *);
 
 int32_t* assemble_generate_bin(ASSEMBLER_STRUCT *);
+
+char *strdelchr(char *, char);
+
+uint16_t *heap_uint16_t(uint16_t);
 
 char* delstr(char *str);
 

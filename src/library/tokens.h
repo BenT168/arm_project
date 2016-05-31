@@ -26,15 +26,11 @@ void tokens_free(TOKEN *);
 
 void tokens_print(TOKEN *);
 
-TOKEN* tokenise(char* , const char*);
+TOKEN *tokenise(char * , const char *);
 
 void tokens_iter(TOKEN *, tokens_func);
 
 char tokens_endc(TOKEN *);
-
-char string_endc(char* );
-
-void *mem_chk(void *p);
 
 
 
