@@ -217,12 +217,16 @@ void assemble_print(ASSEMBLER_STRUCT *ass)
 }
 
 
-int32_t* assemble_generate_bin(ASSEMBLER_STRUCT *ass)
-{
-  int32_t* words = (int32_t*) malloc(sizeof(int32_t) * ass->TOTAL_line);
-  for(int i = 0; i < ass->TOTAL_line; i++)
-  {
-    words[i] = ass->instr[i]->binary_word;
+int32_t *assemble_generate_bin(ASSEMBLER_STRUCT *ass)
+{ 
+  printf("pls generate bin\n");
+  int32_t *words = malloc(sizeof(int32_t) * ass->TOTAL_line);
+  printf("pls\n");
+  for(int i = 0; i < (ass->TOTAL_line); i++)
+  {  
+    printf("yo\n");
+    words[i] = (ass->instr[i])->binary_word;
+    printf("ya\n");
   }
   return words;
 }
@@ -249,7 +253,7 @@ uint16_t *heap_uint16_t(uint16_t i)
 }
 
 
-ASSEMBLER_STRUCT* assemble(TOKEN *lines,  function_assPtr func, const char *delim)
+ASSEMBLER_STRUCT *assemble(TOKEN *lines,  function_assPtr func, const char *delim)
 {
   printf("Hello assemble\n");
   // Pass #1
@@ -300,9 +304,12 @@ printf("after for loop in assemble\n");
 		assemble_write(p, word);
     printf("can i write in assemle????\n");
 
-		tokens_free(line);
-	}
-	// Assembling done
+        if (i != (lines->tokenCount - 1))
+        { 
+            tokens_free(line) ;
+        }
+        
+	}// Assembling done
   printf("assemble donw\n");
 	return p;
 }

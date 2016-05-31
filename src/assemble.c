@@ -98,17 +98,21 @@ TOKEN *read_Source(const char *sourceFile)
 
 
 
-void write_File(ASSEMBLER_STRUCT *ass, const char *binaryFile) {
+void write_File(ASSEMBLER_STRUCT *ass, const char *binaryFile) 
+{ 
+  printf("writefile\n");
   FILE *file = fopen(binaryFile, "wb"); //w = write b = binary
-
+  
+  printf("ooo\n");
   int32_t *program = assemble_generate_bin(ass);
   //get binary code from assembler program
-
+  printf("yolo\n");
   size_t size = ass->TOTAL_line * sizeof(int32_t);
   //size of each element that will be written
-
+  printf("nonono\n");
   assert(fwrite(program, 1, size, file) == size);
-
+  
+  printf("ppp\n");
   fclose(file);
 
   free(program);
