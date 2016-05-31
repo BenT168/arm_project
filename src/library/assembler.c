@@ -159,13 +159,13 @@ void assemble_free(ASSEMBLER_STRUCT *ass)
   {
     free(ass->instr[i]);
   }
-  free(ass->instr);
 
+  free(ass->instr);
 //  for(int i = 0; i < sizeof(sizeof(ass->symbolTable)); i++)
   //{
     //map_free(ass->symbolTable[i]);
   //}
-  map_free(ass->symbolTable, MAP_FREE_VAL | MAP_FREE_KEY);
+  //map_free(ass->symbolTable, MAP_FREE_VAL | MAP_FREE_KEY);
   free(ass);
 }
 
@@ -221,14 +221,14 @@ void assemble_print(ASSEMBLER_STRUCT *ass)
 int32_t *assemble_generate_bin(ASSEMBLER_STRUCT *ass)
 {
   printf("pls generate bin\n");
-  assemble_print(ass);//TODO:delete
+  printf("printing the assemble.....\n");
+  //assemble_print(ass);//TODO:delete
   int32_t *words = malloc(sizeof(int32_t) * (ass->TOTAL_line));
   printf("pls\n");
   for(int i = 0; i < (ass->TOTAL_line); i++)
   {
     printf("yo\n");
     printf("%i\n", words[ass->TOTAL_line] );
-    printf("ass->instr[i]->word_address%c\n", (ass->instr[i])->word_address); //TODO: delete this line (just for testing)
     printf("ass->instr[i]->binary_word %c\n", (ass->instr[i])->binary_word);
     words[i] = (ass->instr[i])->binary_word;
     printf("words[i] after writing....%i\n",words[i]);
@@ -282,7 +282,6 @@ ASSEMBLER_STRUCT *assemble(TOKEN *lines,  function_assPtr func, const char *deli
 		}
     printf("right after if in assemble\n");
 		address += sizeof(int32_t);
-
 		tokens_free(line);
 	}
 printf("after for loop in assemble\n");
@@ -310,10 +309,13 @@ printf("after for loop in assemble\n");
 		assemble_write(p, word);
     printf("can i write in assemle????\n");
 
-        if (i != (lines->tokenCount - 1))
-        {
-            tokens_free(line) ;
-        }
+  //  if(strcmp(line->tokens[0], "mla") != 0) {
+      tokens_free(line);
+//    }
+
+  //    if (i != (lines->tokenCount - 1))
+  //    {
+//      }
 
 	}// Assembling done
   printf("assemble donw\n");

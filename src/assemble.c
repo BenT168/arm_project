@@ -213,7 +213,6 @@ int32_t assembler_func(TOKEN *line, ASSEMBLER_STRUCT *ass) {
   printf("in between assembler func\n");
   int i = str_to_mnemonic(mnemonic);
   printf("mnemonic: %i\n", i);
-  printf("hello world\n");
   return function_Array[i](line, ass);
 }
 
@@ -270,7 +269,6 @@ static int32_t ass_data_proc(TOKEN *line, int SetCond, int Rn, int Rd, int Opera
   printf("Operand2 is....%s\n",Operand2);
   printf("operand\n");
 	char *mnemonic = line->tokens[0];
-  printf("mnemonic\n");
   printf("%s\n", mnemonic);
   printf("%s\n", line->tokens[1]);
 
@@ -495,7 +493,7 @@ int32_t ass_single_data_transfer(TOKEN *line, ASSEMBLER_STRUCT *ass)
   SDTinstr.Rd	   = PARSE_REG(1);
   SDTinstr.Offset = offset;
 
-  tokens_free(line);
+  //tokens_free(line);
 
   return *((int32_t *) &SDTinstr);
 
@@ -505,14 +503,21 @@ int32_t ass_single_data_transfer(TOKEN *line, ASSEMBLER_STRUCT *ass)
 
 int32_t ass_branch(TOKEN *line, ASSEMBLER_STRUCT *ass)
 {
-	char *suffix = (strcmp(line->tokens[0], "b") == 0) ? "al" : (line->tokens[0] + 1);
+  printf("line->tokens[0]...%s\n", line->tokens[0]);
+  printf("line->tokens[0]...%s\n", line->tokens[0] + 1);
+
+char first_letter_token = line->tokens[0][0];
+printf("%c\n", first_letter_token );
+
+char *suffix = (first_letter_token != 'b') ? "AL" : (line->tokens[0] +  1);
+	//char *suffix = (strcmp(line->tokens[0], "b") == 0) ? "al" : (line->tokens[0] + 1);
 
 	char *lbl   = line->tokens[1];
  //	char *address = PARSE_REG(expr_to_num(label));
         uint16_t lbl_address = *(uint16_t *) map_get(ass->symbolTable,lbl);
 
-        int sign   = (lbl_address < ass->current_address) ? -1 : 1;
-	int offset = ((ass->current_address  - lbl_address + 8) * sign )  >> 2;  // compute offet
+        int sign   = (lbl_address > ass->current_address) ? -1 : 1;
+	int offset = ((ass->current_address - lbl_address + 8) * sign )  >> 2;  // compute offet
 
 	BranchInstruct Branchinstr;
 	Branchinstr.Cond   = str_to_cond(suffix);
@@ -588,7 +593,7 @@ int main(int argc, char **argv)
   tokens_free(lines);
   printf("after token_free main\n");
 
-  assemble_free(ass);
+  free(ass);
   printf("after ass_free main\n");
 
 
