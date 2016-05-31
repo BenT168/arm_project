@@ -27,6 +27,8 @@
 
 #define expr_to_num(expr) ((int) strtol((expr) + 1, NULL, 0))
 
+#define endian 0xFF
+
 
 ///////////////////////////// FUNCTION PROTOTYPE //////////////////////////////
 
@@ -103,16 +105,16 @@ void write_File(ASSEMBLER_STRUCT *ass, const char *binaryFile)
   printf("writefile\n");
   FILE *file = fopen(binaryFile, "wb"); //w = write b = binary
 
-  printf("ooo\n");
+  printf("after opening file (in write_file)\n");
   int32_t *program = assemble_generate_bin(ass);
   //get binary code from assembler program
-  printf("yolo\n");
+  printf("program (in write_file)\n");
   size_t size = ass->TOTAL_line * sizeof(int32_t);
   //size of each element that will be written
-  printf("nonono\n");
+  printf("size: %zu\n",size );
   assert(fwrite(program, 1, size, file) == size);
 
-  printf("ppp\n");
+  printf("after assertion (in write_file)\n");
   fclose(file);
 
   free(program);
@@ -268,7 +270,6 @@ static int32_t ass_data_proc(TOKEN *line, int SetCond, int Rn, int Rd, int Opera
 	char *Operand2 = line->tokens[Operand_2];
   printf("operand_2: %i\n", Operand_2);
   printf("Operand2 is....%s\n",Operand2);
-  printf("operand\n");
 	char *mnemonic = line->tokens[0];
   printf("%s\n", mnemonic);
   printf("%s\n", line->tokens[1]);
@@ -276,22 +277,18 @@ static int32_t ass_data_proc(TOKEN *line, int SetCond, int Rn, int Rd, int Opera
   DataProcessingInstruct DPInst;
 
 	DPInst.Cond	    = AL;
-  printf("cond\n");
 	DPInst._00	    = 0;
-  printf("00\n");
-  printf("%s\n", Operand2 );
 	DPInst.ImmOp	  = Is_Expression(Operand2);
-  printf("imop\n");
 	DPInst.Opcode	  = str_to_mnemonic(mnemonic);
-  printf("opcode\n");
-	DPInst.SetCond  = SetCond;
+	DPInst.SetCond	= SetCond;
 	DPInst.Rn       = PARSE_REG(Rn);
-  printf("parse reg rn\n");
+  printf("parse reg rn: %i\n", PARSE_REG(Rn));
 	DPInst.Rd	      = PARSE_REG(Rd);
-  printf("parse reg rd\n");
+  printf("parse reg rd: %i\n", PARSE_REG(Rn));
 	DPInst.Operand2 = check_op2(line, Operand_2);
   printf("data processing op2: %c\n", DPInst.Operand2);
-  printf("op2\n");
+
+  printf("PLEASE do %s for %s !!\n", mnemonic, line->tokens[1]);
 
 	return *((int32_t *) &DPInst);
 }
@@ -304,6 +301,7 @@ static int32_t ass_data_proc(TOKEN *line, int SetCond, int Rn, int Rd, int Opera
 
 int32_t ass_data_proc_result(TOKEN *line, ASSEMBLER_STRUCT *ass)
 {
+  printf("going to do data proccessing result!!!\n");
   int CPSR_CLEAR  = 0;
   int POS_OF_RD   = 1;
   int POS_OF_RN   = 2;
@@ -322,6 +320,7 @@ int32_t ass_data_proc_result(TOKEN *line, ASSEMBLER_STRUCT *ass)
 
 int32_t ass_data_proc_mov(TOKEN *line, ASSEMBLER_STRUCT *ass)
 {
+  printf("going to do data proccessing move!!!\n");
   int CPSR_CLEAR =  0;
   int POS_OF_RD  =  1;
   int RN_IGNORED = -1;
@@ -339,6 +338,7 @@ int32_t ass_data_proc_mov(TOKEN *line, ASSEMBLER_STRUCT *ass)
 */
 int32_t ass_data_proc_cpsr(TOKEN *line, ASSEMBLER_STRUCT *ass)
 {
+  printf("going to do data proccessing CPSR!!!\n");
   int CPSR_SET   =  1;
   int RD_IGNORED = -1;
   int POS_OF_RN  =  1;
@@ -370,7 +370,6 @@ int32_t ass_data_proc_cpsr(TOKEN *line, ASSEMBLER_STRUCT *ass)
 
 static int32_t ass_multiply(TOKEN *line, int Acc, int Rd, int Rm, int Rs, int Rn)
 {
-
   printf("%s\n", line->tokens[0] );
   printf("%s\n", line->tokens[1] );
 	MultiplyInstruct MulInst;
@@ -424,7 +423,7 @@ int32_t SDT_num_const(TOKEN *line, ASSEMBLER_STRUCT *ass) {
   char *adr  = line->tokens[2];
   int newAddress = expr_to_num(adr);
 
-  if (newAddress <= 0xFF) {                  // Treat as mov Instruction
+  if (newAddress <= endian) {                  // Treat as mov Instruction
     adr[0] = '#';
     line->tokens[0] = strdup("mov");
     return ass_data_proc_mov(line, ass);
@@ -439,13 +438,12 @@ int32_t SDT_num_const(TOKEN *line, ASSEMBLER_STRUCT *ass) {
 
     asprintf(&newline, "ldr %s, [PC, #%d]", Regd, offset); // PC =15
     TOKEN *newtoken = tokenise(newline, " ,");
-      return ass_single_data_transfer(newtoken, ass);
+    return ass_single_data_transfer(newtoken, ass);
   }
 }
 
 int32_t ass_single_data_transfer(TOKEN *line, ASSEMBLER_STRUCT *ass)
 {
-//  int Rn     = PARSE_REG(expr_to_num(line->tokens[1] + 1));
   char *adr  = line->tokens[2];
   char *mnem = line->tokens[0];
 
@@ -478,21 +476,23 @@ int32_t ass_single_data_transfer(TOKEN *line, ASSEMBLER_STRUCT *ass)
       Up = (expr[0] == '+') ;                // If U is set then + else -
       expr++;                                // Remove the sign
     }
+
     offset = as_shifted_reg_ass(newline, 3);          // As shifted register
     Up = (expr[0] == '+' || expr[0] == '-' ) ? Up : ( offset >= 0 );
+
 }
 
   SDTInstruct SDTinstr;
 
   SDTinstr.Cond   = AL;
-  SDTinstr._01	   = 1;
-  SDTinstr.I	  = Imm;
-  SDTinstr.P	     = Pre_index;
-  SDTinstr.U	     = Up;
-  SDTinstr._00	   = 0;
-  SDTinstr.L	     = (strcmp(mnem, "ldr") == 0);  //ldr --> L is set
+  SDTinstr._01	  = 1;
+  SDTinstr.I	    = Imm;
+  SDTinstr.P	    = Pre_index;
+  SDTinstr.U	    = Up;
+  SDTinstr._00	  = 0;
+  SDTinstr.L	    = (strcmp(mnem, "ldr") == 0);  //ldr --> L is set
   SDTinstr.Rn     = PARSE_REG(2);
-  SDTinstr.Rd	   = PARSE_REG(1);
+  SDTinstr.Rd	    = PARSE_REG(1);
   SDTinstr.Offset = offset;
 
   //tokens_free(line);
@@ -505,17 +505,20 @@ int32_t ass_single_data_transfer(TOKEN *line, ASSEMBLER_STRUCT *ass)
 
 int32_t ass_branch(TOKEN *line, ASSEMBLER_STRUCT *ass)
 {
-
+  printf("Start doing branch!!!\n");
   char first_letter_token = line->tokens[0][0];
   char *suffix = (first_letter_token != 'b') ? "AL" : (line->tokens[0] +  1);
+  printf("The suffix this time is: %s\n", suffix);
 
 	char *lbl    = line->tokens[1];
+  printf("The label this time is: %s\n", lbl);
 
   uint16_t lbl_address = *(uint16_t *) map_get(ass->symbolTable, lbl);
 
   int sign   = (lbl_address > ass->current_address) ? -1 : 1;
   // compute offet
 	int offset = ((ass->current_address - lbl_address + 8) * sign ) >> 2;
+  printf("We got the offset : %i !!\n", offset);
 
 
 	BranchInstruct Branchinstr;
@@ -524,6 +527,8 @@ int32_t ass_branch(TOKEN *line, ASSEMBLER_STRUCT *ass)
 	Branchinstr._101   = 5 % (1 << sizeof(char));
   Branchinstr._0     = 0;
 	Branchinstr.Offset = offset;
+
+  printf("PLEASE do %s for %s !!\n", suffix, lbl);
 
 	return *((int32_t *) &Branchinstr);
 }
@@ -584,11 +589,10 @@ int main(int argc, char **argv)
   ASSEMBLER_STRUCT *ass = assemble(lines, &assembler_func, " ,");
   printf("after ass main\n");
 
-   //assemble lines using assembler and get output to write to file
+  //assemble lines using assembler and get output to write to file
 
   write_File(ass, argv[2]);
   printf("after write main\n");
-
 
   tokens_free(lines);
   printf("after token_free main\n");

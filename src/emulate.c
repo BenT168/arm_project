@@ -195,7 +195,7 @@ int check_cond(int32_t word)
          return CPSR_GET(N) != CPSR_GET(V);
          break;
     case(GT):
-         return CPSR_GET(Z) & (CPSR_GET(N) == CPSR_GET(V));
+         return !CPSR_GET(Z) & (CPSR_GET(N) == CPSR_GET(V));
          break;
     case(LE):
          return CPSR_GET(Z) | (CPSR_GET(N) != CPSR_GET(V));
@@ -211,17 +211,16 @@ int check_cond(int32_t word)
 /* Print Register State (upon termination) */
 void print_register_state()
 {
-    printf("Registers state: \n");
-    printf("General registers: \n");
+    printf("Registers:\n");
     //Register 0 - 12 are the general registers
     for(int i = 0; i < REGISTER_COUNT - 4; i++)
     {
         int32_t reg = REG_READ(i);
-        printf("$%-3i:   %10d  (0x%08x)\n", i, reg, reg);
+        printf("$%-3i: %10d (0x%08x)\n", i, reg, reg);
     }
 
-    printf("PC  :   %10d  (0x%08x)\n", REG_READ(PC), REG_READ(PC));
-    printf("CPSR:   %10d  (0x%08x)\n", REG_READ(CPSR),  REG_READ(CPSR));
+    printf("PC  : %10d (0x%08x)\n", REG_READ(PC), REG_READ(PC));
+    printf("CPSR: %10d (0x%08x)\n", REG_READ(CPSR),  REG_READ(CPSR));
 
     printf("Non-zero memory:\n");
     for (int i = 0; i < MEMORY_CAPACITY; i += 4)
@@ -335,8 +334,9 @@ void data_processing(int32_t word)
 	int Operand1 = arm_Ptr.registers[Rn];
 
 	Operand2     = IS_CLEAR(ImmOp) ? as_shifted_reg(Operand2, SetCond)
-	           		           : as_immediate_reg(Operand2);
+	           		                 : as_immediate_reg(Operand2);
 	int result   = 0;
+
 
 	// calculate result by opcode
 	switch (OpCode)
@@ -369,9 +369,16 @@ void data_processing(int32_t word)
                     result = 0;
 	}
   	// save results if necessary
-	if(OpCode != TST || OpCode != TEQ || OpCode != CMP) {
-    REG_WRITE(Rd, result);
-  }
+    switch (OpCode)
+  	{
+  		case TEQ :
+  		case TST :
+      case CMP :
+                  break;
+      default :
+              REG_WRITE(Rd, result);
+              break;
+    }
 
 
 	if (IS_SET(SetCond)) {
@@ -502,7 +509,7 @@ void branch(int32_t word)
      int32_t offsetNewb = offsetb << branchShift;
 
      //signed bits extended to 32 bits
-     int32_t signed_bits = (offsetNewb >> (branchPC - branchShift)) << (SIZE_OF_WORD - branchOffset - branchShift);
+     int32_t signed_bits = (offsetNewb << (branchPC - branchShift)) >> (SIZE_OF_WORD - branchOffset - branchShift);
 
      //add the signed bits to PC
      INC_PC(signed_bits);
