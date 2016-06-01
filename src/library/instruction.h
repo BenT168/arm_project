@@ -30,7 +30,7 @@ typedef struct MultiplyInstruct
 {
   //Operand registers 4-bits each
     unsigned int Rm      : 4;
-    unsigned int _1001   : 3;
+    unsigned int _1001   : 4;
     unsigned int Rs      : 4;
     unsigned int Rn      : 4;
     unsigned int Rd      : 4; /* Destination registers 4-bits */
@@ -86,10 +86,11 @@ typedef struct ShiftReg
 
 typedef struct ShiftRegOptional
 {
-    unsigned int Amount   : 5;
-    unsigned int Type     : 2;
-    unsigned int Flag     : 1;
-    unsigned int Rm       : 4;
+   unsigned int Rm       : 4;
+   unsigned int Flag1    : 1;
+   unsigned int Type     : 2;
+   unsigned int Flag2    : 1;
+   unsigned int Rs       : 4;
 } ShiftRegOptional;
 
 

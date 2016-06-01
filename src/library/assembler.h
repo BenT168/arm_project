@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 #include "tokens.h"
-#include "symbolTableADT.h"
+#include "symbolTableList.h"
 
 
 typedef struct binary_instruct
@@ -16,7 +16,7 @@ typedef struct binary_instruct
 typedef struct ASSEMBLER_STRUCT
 {
   binary_instruct **instr; // Binary Instruction Array
-  map *symbolTable; //array of symbol table
+  symbolTableList *symbolTable; //array of symbol table
   int TOTAL_line;   // total of the line
   uint16_t current_address; //address of the current instruction
 } ASSEMBLER_STRUCT;
@@ -37,10 +37,8 @@ void assemble_print(ASSEMBLER_STRUCT *);
 
 int32_t *assemble_generate_bin(ASSEMBLER_STRUCT *);
 
-char *strdelchr(char *, char);
+char *delchr(char *, char);
 
 uint16_t *heap_uint16_t(uint16_t);
-
-char *delstr(char *str);
 
 #endif

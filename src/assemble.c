@@ -15,7 +15,7 @@
 #include "library/register.h"
 #include "library/tokens.h"
 #include "library/bitwise.h"
-#include "library/symbolTableADT.h"
+#include "library/symbolTableList.h"
 
 
 
@@ -122,15 +122,10 @@ void write_File(ASSEMBLER_STRUCT *ass, const char *binaryFile)
 
 //////////////////////////   Core     //////////////////////////////////////////
 
-//TODO: CHECKKKKKK!!!!!!
 int as_numeric_constant(int value){
-  //int num_bit = 0;
+
   int to_num = 0;
-  /*while(num_bit < 32){
-    rotate_right(value, 2);
-    num_bit += 2;
-  }
-  */
+
   while (get_bits(value, 8 , range_bit - 1 ) != 0 && to_num < range_bit )
   {
      for (int i = 0; i < 2; i++)
@@ -173,7 +168,7 @@ int as_shifted_reg_ass(TOKEN *line, int Rm)
 	//in the form <shiftname><#expression>
 	if(Is_Expression(Operand2))
 	{
-  	//+1 to git rid of 'r' but just getting the reg number
+  	//+1 to get rid of 'r' but just getting the reg number
  		shiftReg.Rm = PARSE_REG(Rm - 1);
   		shiftReg.Flag = 0;
   		shiftReg.Type = shiftType;
@@ -182,11 +177,11 @@ int as_shifted_reg_ass(TOKEN *line, int Rm)
   		result = *((int *) &shiftReg);
 
 	} else { //in the form <shiftname><register>
-	  //CHECK THE STRUC?!??!
   		regOp.Rm = PARSE_REG(Rm + 2);
-  		regOp.Flag = 0;
+  		regOp.Flag1 = 1;
   		regOp.Type = shiftType;
-  		regOp.Amount = PARSE_REG(Rm) | (1 << 4);
+      regOp.Flag2 = 0;
+  		regOp.Rs = PARSE_REG(Rm + 1) | (0 << 3);
 
   //regOp.Rs = atoi(line->tokens[Rm] + 1) << 3; //getting the last bit of Rs
 
@@ -212,9 +207,8 @@ function_assPtr function_Array[9];
 
 int32_t assembler_func(TOKEN *line, ASSEMBLER_STRUCT *ass) {
   char *mnemonic = line->tokens[0];
-  printf("in between assembler func\n");
   int i = str_to_mnemonic(mnemonic);
-  printf("mnemonic: %i\n", i);
+  printf("mnemonic: %i then going to funcArray\n", i);
   return function_Array[i](line, ass);
 }
 
@@ -375,10 +369,8 @@ static int32_t ass_multiply(TOKEN *line, int Acc, int Rd, int Rm, int Rs, int Rn
 	MulInst.SetCond  = 0;
 	MulInst.Rd	     = PARSE_REG(Rd);
   printf("rd: %i\n", PARSE_REG(Rd));
-  printf("after parse reg rd\n");
 	MulInst.Rn	     = PARSE_REG(Rn);
   printf("rn: %i\n", PARSE_REG(Rn));
-  printf("in mul reg rn\n");
   printf("Rs: %i\n",Rs );
 	MulInst.Rs	     = PARSE_REG(Rs);
   printf("in mul reg rs\n");
@@ -402,13 +394,13 @@ int32_t ass_multiply_mul(TOKEN *line, ASSEMBLER_STRUCT *ass)
 
 int32_t ass_multiply_mla(TOKEN *line, ASSEMBLER_STRUCT *ass)
 {
-  printf("inside multiply\n");
+  printf("inside multiply mla\n");
   int _ACC        = 1;
   int POS_OF_RD   = 1;
   int POS_OF_RM   = 2;
   int POS_OF_RS   = 3;
   int POS_OF_RN   = 4;
-  printf("before return multiply\n");
+  printf("before return multiply mla\n");
   return ass_multiply(line, _ACC, POS_OF_RD, POS_OF_RM, POS_OF_RS, POS_OF_RN);
 }
 
@@ -438,7 +430,7 @@ int32_t SDT_num_const(TOKEN *line, ASSEMBLER_STRUCT *ass) {
 
 int32_t ass_single_data_transfer(TOKEN *line, ASSEMBLER_STRUCT *ass)
 {
-//  int Rn     = PARSE_REG(expr_to_num(line->tokens[1] + 1));
+  // int Rn     = PARSE_REG(expr_to_num(line->tokens[1] + 1));
   char *adr  = line->tokens[2];
   char *mnem = line->tokens[0];
 
@@ -501,17 +493,17 @@ int32_t ass_branch(TOKEN *line, ASSEMBLER_STRUCT *ass)
   printf("line->tokens[0]...%s\n", line->tokens[0]);
   printf("line->tokens[0]...%s\n", line->tokens[0] + 1);
 
-char first_letter_token = line->tokens[0][0];
-printf("%c\n", first_letter_token );
+  char first_letter_token = line->tokens[0][0];
+  printf("%c\n", first_letter_token );
 
-char *suffix = (first_letter_token != 'b') ? "AL" : (line->tokens[0] +  1);
+  char *suffix = (first_letter_token != 'b') ? "AL" : (line->tokens[0] +  1);
 	//char *suffix = (strcmp(line->tokens[0], "b") == 0) ? "al" : (line->tokens[0] + 1);
 
 	char *lbl   = line->tokens[1];
- //	char *address = PARSE_REG(expr_to_num(label));
-        uint16_t lbl_address = *(uint16_t *) map_get(ass->symbolTable,lbl);
+ //char *address = PARSE_REG(expr_to_num(label));
+  uint16_t lbl_address = list_get_address(ass->symbolTable,lbl);
 
-        int sign   = (lbl_address > ass->current_address) ? -1 : 1;
+  int sign   = (lbl_address > ass->current_address) ? -1 : 1;
 	int offset = ((ass->current_address - lbl_address + 8) * sign )  >> 2;  // compute offet
 
 	BranchInstruct Branchinstr;
@@ -548,8 +540,6 @@ TOKEN *new_token = (TOKEN*) malloc(sizeof(TOKEN));
 new_token = tokenise(new_line, " ,");
 return ass_data_proc_mov(new_token, ass);
 
-//free(new_token_line); TODO: Remeber to free
-
 }
 
 ////////////////////A factorial program ////////////////////////////////////////
@@ -579,7 +569,7 @@ int main(int argc, char **argv)
   ASSEMBLER_STRUCT *ass = assemble(lines, &assembler_func, " ,");
   printf("after ass main\n");
 
-   //assemble lines using assembler and get output to write to file
+  //assemble lines using assembler and get output to write to file
 
   write_File(ass, argv[2]);
   printf("after write main\n");
