@@ -89,7 +89,7 @@ void list_insert_back(symbolTableList *list, char *val, uint16_t key) {
 
 void list_destroy(symbolTableList *list) {
   printf("going into list_destroy\n");
-  struct symbolTableNode *node = list->first;
+  symbolTableNode *node = list->first;
   printf("after assigning node in list destroy\n");
   while (node != NULL) {
     symbolTableNode *nextNode = node->next;
