@@ -182,10 +182,10 @@ int check_cond(int32_t word)
 
   switch(cond){
     case(EQ):
-         return CPSR_GET(Z);
+         return CPSR_SET(Z);
          break;
     case(NE):
-         return !CPSR_GET(Z);
+         return !CPSR_SET(Z);
          break;
     case(GE):
          return CPSR_GET(N) == CPSR_GET(V);
@@ -194,10 +194,10 @@ int check_cond(int32_t word)
          return CPSR_GET(N) != CPSR_GET(V);
          break;
     case(GT):
-         return !CPSR_GET(Z) & (CPSR_GET(N) == CPSR_GET(V));
+         return (IS_CLEAR(Z)) & (CPSR_GET(N) == CPSR_GET(V));
          break;
     case(LE):
-         return CPSR_GET(Z) | (CPSR_GET(N) != CPSR_GET(V));
+         return (IS_SET(Z)) | (CPSR_GET(N) != CPSR_GET(V));
          break;
     case(AL):
          return 1;
@@ -311,6 +311,50 @@ int32_t as_shifted_reg(int32_t value, int8_t setCond)
   	}
 
 		return value;
+}
+
+//  5.5 GPIO ////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+
+int pins[32];
+
+int is_GPIO_address(int address) {
+
+	switch(address)
+	{
+		case 0x20200000:
+		case 0x20200004:
+		case 0x20200008:
+		case 0x20200028:
+		case 0x2020001c: return 1;
+		default:         return 0;
+	}
+}
+
+void print_GPIO_address(int address)
+{
+	int group_of_pins = 0;
+	int pin_on        = 0;
+	int pin_off       = 0;
+
+	switch(address)
+	{
+		case 0x20200000: group_of_pins =  0; goto pin_accessed;
+		case 0x20200004: group_of_pins = 10; goto pin_accessed;
+		case 0x20200008: group_of_pins = 20; goto pin_accessed;
+		case 0x20200028: pin_off       =  1; break;
+		case 0x2020001c: pin_on        =  1; break;
+		default:         return;
+	}
+
+	if (pin_on)  printf("PIN ON\n");
+	if (pin_off) printf("PIN OFF\n");
+
+	return;
+
+pin_accessed:
+    printf("One GPIO pin from %d to %d has been accessed\n",
+           group_of_pins, group_of_pins + 9);
 }
 
 
@@ -460,6 +504,8 @@ void multiply(int32_t word)
         (mulResult == 0) ? (CPSR_SET(Z)) : !(CPSR_SET(Z));
         //(mulResult == 0) ? (cpsrStruct->bitZ = 1) : (cpsrStruct->bitZ = 0);
     }
+
+
 }
 
 
@@ -487,18 +533,58 @@ void single_data_transfer(int32_t word)
     dataOffset = as_immediate_reg(dataOffset);
   }
 
-  if (IS_SET(dataP)) _Rn += (IS_SET(dataU) ? dataOffset : -dataOffset);
+  if (IS_SET(dataP))  _Rn += (IS_SET(dataU) ? dataOffset : -dataOffset);
 
-  if (_Rn < 0 || _Rn >= MEMORY_CAPACITY ) {
-    printf("Error: Out of bounds memory access at address 0x%08x\n", _Rn);
-    return;
+  if (is_GPIO_address(_Rn))
+  {
+    print_GPIO_address(_Rn);
+    if(IS_SET(dataL)) REG_WRITE(dataRd, _Rd);
+  } else {
+    if (_Rn < 0 || _Rn >= MEMORY_CAPACITY ) goto moob;
+    IS_SET(dataL) ? (REG_WRITE(dataRd, MEM_R_32bits(_Rn))) : MEM_W_32bits(_Rn, _Rd);
   }
 
-  IS_SET(dataL) ? (REG_WRITE(dataRd, MEM_R_32bits(_Rn))) : MEM_W_32bits(_Rn, _Rd);
-
   if (IS_CLEAR(dataP)) REG_WRITE(dataRn, _Rn += (IS_SET(dataU) ? dataOffset : -dataOffset));
+
+  if (!is_GPIO_address(_Rn))
+  {
+    if (_Rn < 0 || _Rn >= MEMORY_CAPACITY) goto moob;
+  }
+  return;
+
+  moob:
+    printf("Error: Out of bounds memory access at address 0x%08x\n", _Rn);
+    return;
+
 }
-/*  //Pre-indexing
+
+/*
+
+if (PreIndexing) address += (IS_SET(U) ? Offset : -Offset);
+
+if (is_GPIO_address(address))
+{
+  print_GPIO_address(address);
+    if (IS_SET(L)) REG_WRITE(Rd, address);
+}
+else
+{
+  if (address < 0 || address >= MEMORY_CAPACITY) goto moob;
+  if (IS_SET(L)) REG_WRITE(Rd, MEM_WORD_READ(address));
+  else           MEM_WORD_WRITE(address, value);
+}
+
+if (PostIndexing) REG_WRITE(Rn, address += (IS_SET(U) ? Offset : -Offset));
+if (!is_GPIO_address(address))
+{
+  if (address < 0 || address >= MEMORY_CAPACITY) goto moob;
+}
+return;
+
+moob:
+  printf("Error: Out of bounds memory access at address 0x%08x\n", address);
+  return;
+}//Pre-indexing
   if (IS_SET(dataP))
   {
     REG_WRITE(dataRn, _Rn += (IS_SET(dataU) ? dataOffset : -dataOffset));
@@ -536,8 +622,9 @@ void single_data_transfer(int32_t word)
 
 void branch(int32_t word)
 {
-     int branchOffset =  24;
+     //int branchOffset =  24;
      int branchShift  =  2;
+     int branchPC = 8;
 
      BranchInstruct *BranchInst = (BranchInstruct *) &word;
 
@@ -548,11 +635,11 @@ void branch(int32_t word)
 
      //offset is shifted left 2 bits
      int offsetNewb = offsetb << branchShift;
-     int mask = 0x00ffffff;
-     int32_t offsetNew32 = mask & offsetNewb;
+     //int mask = 0x00ffffff;
+     //int32_t offsetNew32 = mask & offsetNewb;
      //signed bits extended to 32 bits
-     int32_t signed_bits = (offsetNew32 >> (branchOffset - 1)) << (SIZE_OF_WORD - 1);
-     //int32_t signed_bits = (offsetNewb << (branchPC - branchShift + 1)) >> (SIZE_OF_WORD - 1);
+     //int32_t signed_bits = (offsetNew32 >> (branchOffset - 1)) << (SIZE_OF_WORD - 1);
+     int32_t signed_bits = (offsetNewb << (branchPC - branchShift + 1)) >> (SIZE_OF_WORD - 1);
 
      //add the signed bits to PC
      INC_PC(signed_bits);
