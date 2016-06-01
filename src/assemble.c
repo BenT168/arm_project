@@ -15,7 +15,7 @@
 #include "library/register.h"
 #include "library/tokens.h"
 #include "library/bitwise.h"
-#include "library/symbolTableADT.h"
+#include "library/symbolTableList.h"
 
 
 
@@ -212,9 +212,8 @@ function_assPtr function_Array[9];
 
 int32_t assembler_func(TOKEN *line, ASSEMBLER_STRUCT *ass) {
   char *mnemonic = line->tokens[0];
-  printf("in between assembler func\n");
   int i = str_to_mnemonic(mnemonic);
-  printf("mnemonic: %i\n", i);
+  printf("mnemonic: %i then going to funcArray\n", i);
   return function_Array[i](line, ass);
 }
 

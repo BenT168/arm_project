@@ -7,8 +7,7 @@
 #include "assembler.h"
 #include "tokens.h"
 #include "bitwise.h"
-#include "symbolTableADT.h"
-//#include "hashmap.h"
+#include "symbolTableList.h"
 
 
 extern ASSEMBLER_STRUCT *ass;
@@ -254,8 +253,10 @@ uint16_t *heap_uint16_t(uint16_t i)
 
 ASSEMBLER_STRUCT *assemble(TOKEN *lines, function_assPtr func, const char *delim)
 {
+  printf("\n");
   printf("Hello assemble\n");
   // Pass #1
+<<<<<<< HEAD
 	map *symtbl      = map_new(&map_cmp_str);
 	uint16_t address = 0;
 	int labelc       = 0;
@@ -274,6 +275,28 @@ ASSEMBLER_STRUCT *assemble(TOKEN *lines, function_assPtr func, const char *delim
 			continue;
 		}
     printf("right after if in assemble\n");
+=======
+  symbolTableList *symbolTable = NULL;
+	uint16_t  address = 0;
+	int       labelc  = 0;
+  printf("before inner for loop in assemble\n");
+	for (int i = 0; i < lines->tokenCount; i++)
+	{
+		char   *currl = strdup(lines->tokens[i]);
+    printf("current line: %s\n", currl );
+		TOKEN *line  = tokenise(currl, delim);
+		char   *label = line->tokens[0];
+    printf("label: %s\n", label);
+    if(strchr(label, ':')) //label encountered
+  {
+    labelc++;
+      if(labelc == 1) { // first label encountered
+        list_initialise(symbolTable);
+      }
+     list_insert_back(symbolTable, end_list(symbolTable) , strdelchr(label, ':'), address);  // add symbol at end of list each time
+  }
+    printf("label02: %s\n", label);
+>>>>>>> 57464dd925bfc591f3b0db40668d231f2a1d6ad9
 		address += sizeof(int32_t);
 		tokens_free(line);
 	}
@@ -290,7 +313,12 @@ ASSEMBLER_STRUCT *assemble(TOKEN *lines, function_assPtr func, const char *delim
 	// Pass #2
 	for (int i = 0; i < lines->tokenCount; i++)
 	{
+<<<<<<< HEAD
 		char *currl = strdup(lines->tokens[i]);
+=======
+		char  *currl = strdup(lines->tokens[i]);
+    printf("currl for tokenise: %s\n",currl );
+>>>>>>> 57464dd925bfc591f3b0db40668d231f2a1d6ad9
 		TOKEN *line = tokenise(currl, delim);
 		char *mnem  = line->tokens[0];
 		if (strchr(mnem, ':')) continue; // Label encountered
@@ -310,6 +338,6 @@ ASSEMBLER_STRUCT *assemble(TOKEN *lines, function_assPtr func, const char *delim
 //      }
 
 	}// Assembling done
-  printf("assemble donw\n");
+  printf("assemble done\n");
 	return p;
 }
