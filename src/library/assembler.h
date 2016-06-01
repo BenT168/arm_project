@@ -41,6 +41,4 @@ char *delchr(char *, char);
 
 uint16_t *heap_uint16_t(uint16_t);
 
-//char *delstr(char *str);
-
 #endif
