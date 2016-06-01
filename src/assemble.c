@@ -178,9 +178,10 @@ int as_shifted_reg_ass(TOKEN *line, int Rm)
 
 	} else { //in the form <shiftname><register>
   		regOp.Rm = PARSE_REG(Rm + 2);
-  		regOp.Flag = 0;
+  		regOp.Flag1 = 1;
   		regOp.Type = shiftType;
-  		regOp.Amount = PARSE_REG(Rm) | (1 << 4);
+      regOp.Flag2 = 0;
+  		regOp.Rs = PARSE_REG(Rm + 1) | (0 << 3);
 
   //regOp.Rs = atoi(line->tokens[Rm] + 1) << 3; //getting the last bit of Rs
 

@@ -248,9 +248,9 @@ int32_t as_shifted_reg(int32_t value, int8_t setCond)
 {
   	ShiftReg *sreg = (ShiftReg *) &value;
 
+    int Rm       = sreg->Rm;
   	int Flag     = sreg->Flag;
   	int Type     = sreg->Type;
-  	int Rm       = sreg->Rm;
   	int amount   = sreg->Amount;
   	uint32_t reg = REG_READ(Rm);
   	int carryAmt = 0;
@@ -393,15 +393,18 @@ void data_processing(int32_t word)
     	case TEQ :
     	case ORR :
     	case MOV :
-  	  case SUB  :
-  	  case RSB  :
-  	  case CMP  :
+        CPSR_PUT(C, result);
+        break;
+  	  case SUB :
+  	  case RSB :
+  	  case CMP :
         CPSR_PUT(C, (result >= 0));
         break;
     	case ADD  :
           CPSR_PUT(C, CPSR_GET(V));
           break;
-      default  : result = 0;                        
+      default  :
+          break;
     }
 	}
 }
