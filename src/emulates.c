@@ -35,7 +35,7 @@
                            (MEM_R_8bits(m + 3) & 0xFF) << (SIZE_OF_WORD - 32))
 
 //writing one byte(8-bits)
-#define MEM_W_8bits(m, b) (arm_Ptr->memory[m] = (b))
+#define MEM_W_8bits(m, b) (arm_Ptr->memory[(m)] = (b))
 //writing 4 bytes(32-bits)
 #define MEM_W_32bits(m, w)   MEM_W_8bits(m + 0, ((w) >>  0 ) & 0xFF); \
                              MEM_W_8bits(m + 1, ((w) >>  8 ) & 0xFF); \
@@ -134,7 +134,6 @@ void emulator()
       fetched_code = arm_Ptr->pipeline->fetched;
       decoded_code = arm_Ptr->pipeline->decoded;
 
-
     } while(decoded_code != 0);
 
      //for a cycle of pipeline, previously fetched instr is decoded and ancestor ints is executed.
@@ -147,13 +146,16 @@ void emulator()
 /*decode instruction */
 void decode_instr(int32_t word)
 {
-  switch (BIT_GET(word, 27))
+  int code = BIT_GET(word, 27);
+
+  switch (code)
   {
     case 1:
       branch(word);
       break;
     case 0:
-      IS_SET(BIT_GET(word, 26)) ? single_data_transfer(word) : decode_checker(word);
+      IS_SET(BIT_GET(word, 26)) ? single_data_transfer(word)
+                                         : decode_checker(word);
       break;
     default:
       break;
@@ -167,10 +169,11 @@ void decode_checker(int32_t word)
   if(IS_SET(BIT_GET(word, 25))) {
     data_processing(word);
   } else {
-    if(IS_CLEAR(BIT_GET(word, 4))) {
+    if(IS_SET(BIT_GET(word, 6)) || IS_SET(BIT_GET(word, 5))) {
       data_processing(word);
     } else{
-      (IS_SET(BIT_GET(word, 7))) ? multiply(word) : data_processing(word);
+      (IS_SET(BIT_GET(word, 4)) && IS_SET(BIT_GET(word, 7)))
+                              ? multiply(word) : data_processing(word);
     }
   }
 }
@@ -181,25 +184,25 @@ int check_cond(int32_t word)
   int cond = get_bits(word, 28, 31);
 
   switch(cond){
-    case(EQ):
+    case(eq):
          return CPSR_GET(Z);
          break;
-    case(NE):
+    case(ne):
          return !CPSR_GET(Z);
          break;
-    case(GE):
+    case(ge):
          return CPSR_GET(N) == CPSR_GET(V);
          break;
-    case(LT):
+    case(lt):
          return CPSR_GET(N) != CPSR_GET(V);
          break;
-    case(GT):
+    case(gt):
          return !CPSR_GET(Z) & (CPSR_GET(N) == CPSR_GET(V));
          break;
-    case(LE):
+    case(le):
          return CPSR_GET(Z) | (CPSR_GET(N) != CPSR_GET(V));
          break;
-    case(AL):
+    case(al):
          return 1;
          break;
     default :
@@ -247,26 +250,26 @@ int32_t as_shifted_reg(int32_t value, int8_t setCond)
 {
   	ShiftReg *sreg = (ShiftReg *) &value;
 
-    int Rm       = sreg->Rm;
   	int Flag     = sreg->Flag;
   	int Type     = sreg->Type;
-  	int Amt      = sreg->Amount;
+  	int Rm       = sreg->Rm;
+  	int amount   = sreg->Amount;
   	uint32_t reg = REG_READ(Rm);
   	int carryAmt = 0;
 
   	if (IS_SET(Flag))
   	{
-  		int Rs = REG_READ(get_bits(Amt, 1, 4));
-  		Amt = get_bits(Rs, 0, 8);
+  		int Rs = REG_READ(get_bits(amount, 1, 4));
+  		amount = get_bits(Rs, 0, 8);
   	}
 
   	switch (Type)
   	{
   		case LSL : // Arithmetic and logical shift left are equivalent
   		{
-  			value = reg << Amt;
-  			if (Amt != 0) {
-				  carryAmt = BIT_GET(reg, SIZE_OF_WORD - Amt );
+  			value = reg << amount;
+  			if (amount != 0) {
+				  carryAmt = BIT_GET(reg, 31 - amount + 1);
 				}
   			if (IS_SET(setCond)) {
 				  CPSR_PUT(C, carryAmt);
@@ -276,9 +279,9 @@ int32_t as_shifted_reg(int32_t value, int8_t setCond)
 
   		case LSR :
   		{
-  			value = reg >> Amt;
-  			if (Amt != 0) {
-				  carryAmt = BIT_GET(reg, Amt - 1);
+  			value = reg >> amount;
+  			if (amount != 0) {
+				  carryAmt = BIT_GET(reg, amount - 1);
 				}
   			if (IS_SET(setCond)){
 					CPSR_PUT(C, carryAmt);
@@ -288,14 +291,14 @@ int32_t as_shifted_reg(int32_t value, int8_t setCond)
 
   		case ASR :
   		{
-  			value = reg >> Amt;
-  			if (Amt != 0){
-   				carryAmt = BIT_GET(reg, Amt - 1);
+  			value = reg >> amount;
+  			if (amount != 0){
+   				carryAmt = BIT_GET(reg, amount - 1);
 				}
   			if (setCond == 1){
 				  CPSR_PUT(C, carryAmt);
           int bit = BIT_GET(reg, 31); // TODO move to bits set
-            for (int j = 0; j < Amt; j++){
+            for (int j = 0; j < amount; j++){
 							BIT_PUT(value, 31 - j, bit);
 						}
 				}
@@ -304,7 +307,7 @@ int32_t as_shifted_reg(int32_t value, int8_t setCond)
 
   		case ROR :
   		{
-  			value = rotate_right(reg, Amt);
+  			value = rotate_right(reg, amount);
   		}
 			break;
 
@@ -386,17 +389,21 @@ void data_processing(int32_t word)
     CPSR_PUT(N, BIT_GET(result, 31));
 
     switch (OpCode)  {
-
-  	  case SUB :
-  	  case RSB :
-  	  case CMP :
+      case AND :
+    	case TST :
+    	case EOR :
+    	case TEQ :
+    	case ORR :
+    	case MOV :
+  	  case SUB  :
+  	  case RSB  :
+  	  case CMP  :
         CPSR_PUT(C, (result >= 0));
         break;
     	case ADD  :
           CPSR_PUT(C, CPSR_GET(V));
           break;
-      default  :
-          break;
+      default  : result = 0;
     }
 	}
 }
@@ -493,7 +500,6 @@ void single_data_transfer(int32_t word)
     printf("Error: Out of bounds memory access at address 0x%08x\n", _Rn);
     return;
   }
-
   IS_SET(dataL) ? (REG_WRITE(dataRd, MEM_R_32bits(_Rn))) : MEM_W_32bits(_Rn, _Rd);
 
   if (IS_CLEAR(dataP)) REG_WRITE(dataRn, _Rn += (IS_SET(dataU) ? dataOffset : -dataOffset));
@@ -536,8 +542,9 @@ void single_data_transfer(int32_t word)
 
 void branch(int32_t word)
 {
-     int branchOffset =  24;
+     int branchOffset =  23;
      int branchShift  =  2;
+     //int branchPC     =  8;
 
      BranchInstruct *BranchInst = (BranchInstruct *) &word;
 
@@ -551,7 +558,7 @@ void branch(int32_t word)
      int mask = 0x00ffffff;
      int32_t offsetNew32 = mask & offsetNewb;
      //signed bits extended to 32 bits
-     int32_t signed_bits = (offsetNew32 >> (branchOffset - 1)) << (SIZE_OF_WORD - 1);
+     int32_t signed_bits = (offsetNew32 >> branchOffset) << (SIZE_OF_WORD - 1);
      //int32_t signed_bits = (offsetNewb << (branchPC - branchShift + 1)) >> (SIZE_OF_WORD - 1);
 
      //add the signed bits to PC
@@ -578,7 +585,7 @@ int main(int argc, char **argv)
 
 
     arm_Ptr = calloc (1, sizeof(ARM_State));
-    arm_Ptr->pipeline = calloc(1, sizeof(Pipeline));
+    arm_Ptr->pipeline = calloc(1, sizeof(arm_Ptr->pipeline));
 
     if(arm_Ptr == NULL)
     {

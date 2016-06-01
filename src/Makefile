@@ -16,7 +16,7 @@ assemble: 	assemble.c library/tokens.c library/bitwise.c library/assembler.c lib
 #emulate.c, library/tokens.c, library/ bitwise.c, library/assembler.c and
 #library/symbolTableADT.c
 #
-emulate : 	emulate.c library/bitwise.c
+emulate : emulate.c library/bitwise.c
 
 
 clean:
