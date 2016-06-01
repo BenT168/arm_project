@@ -18,6 +18,7 @@
 
 #include "library/bitwise.h"
 #include "library/register.h"
+#include "library/gpio.h"
 
 /* Memory Read/Write */
 
@@ -35,12 +36,13 @@
                            (MEM_R_8bits(m + 3) & 0xFF) << (SIZE_OF_WORD - 32))
 
 //writing one byte(8-bits)
-#define MEM_W_8bits(m, b) (arm_Ptr->memory[m] = (b))
+#define MEM_W_8bits(m, b) (arm_Ptr->memory[m] = b)
+
 //writing 4 bytes(32-bits)
-#define MEM_W_32bits(m, w)   MEM_W_8bits(m + 0, ((w) >>  0 ) & 0xFF); \
-                             MEM_W_8bits(m + 1, ((w) >>  8 ) & 0xFF); \
-                             MEM_W_8bits(m + 2, ((w) >> 16 ) & 0xFF); \
-                             MEM_W_8bits(m + 3, ((w) >> 24 ) & 0xFF);
+#define MEM_W_32bits(m, w)    MEM_W_8bits(m + 0, (w >>  0 ) & 0xFF); \
+                              MEM_W_8bits(m + 1, (w >>  8 ) & 0xFF); \
+                              MEM_W_8bits(m + 2, (w >> 16 ) & 0xFF); \
+                              MEM_W_8bits(m + 3, (w >> 24 ) & 0xFF);
 
 
 ///////////////////////////// FUNCTION PROTOTYPE //////////////////////////////
@@ -153,7 +155,8 @@ void decode_instr(int32_t word)
       branch(word);
       break;
     case 0:
-      IS_SET(BIT_GET(word, 26)) ? single_data_transfer(word) : decode_checker(word);
+      IS_SET(BIT_GET(word, 26)) ? single_data_transfer(word)
+                                : decode_checker(word);
       break;
     default:
       break;
@@ -167,10 +170,11 @@ void decode_checker(int32_t word)
   if(IS_SET(BIT_GET(word, 25))) {
     data_processing(word);
   } else {
-    if(IS_CLEAR(BIT_GET(word, 4))) {
+    if(IS_CLEAR(BIT_GET(word, 4)) && IS_SET(BIT_GET(word, 5))) {
       data_processing(word);
     } else{
-      (IS_SET(BIT_GET(word, 7))) ? multiply(word) : data_processing(word);
+      (IS_SET(BIT_GET(word, 7)) && IS_CLEAR(BIT_GET(word, 6)))
+                          ? multiply(word) : data_processing(word);
     }
   }
 }
@@ -181,31 +185,18 @@ int check_cond(int32_t word)
   int cond = get_bits(word, 28, 31);
 
   switch(cond){
-    case(EQ):
-         return CPSR_SET(Z);
-         break;
-    case(NE):
-         return !CPSR_SET(Z);
-         break;
-    case(GE):
-         return CPSR_GET(N) == CPSR_GET(V);
-         break;
-    case(LT):
-         return CPSR_GET(N) != CPSR_GET(V);
-         break;
-    case(GT):
-         return (IS_CLEAR(Z)) & (CPSR_GET(N) == CPSR_GET(V));
-         break;
-    case(LE):
-         return (IS_SET(Z)) | (CPSR_GET(N) != CPSR_GET(V));
-         break;
-    case(AL):
-         return 1;
-         break;
-    default :
-         return 0;
+    case(EQ): return  CPSR_SET(Z); break;
+    case(NE): return !CPSR_SET(Z); break;
+    case(GE): return CPSR_GET(N) == CPSR_GET(V); break;
+    case(LT): return CPSR_GET(N) != CPSR_GET(V); break;
+    case(GT): return (IS_CLEAR(Z)) & (CPSR_GET(N) == CPSR_GET(V)); break;
+    case(LE): return (IS_SET(Z)) | (CPSR_GET(N) != CPSR_GET(V)); break;
+    case(AL): return 1; break;
+    default : return 0;
   }
+
 }
+
 
 /* Print Register State (upon termination) */
 void print_register_state()
@@ -271,8 +262,8 @@ int32_t as_shifted_reg(int32_t value, int8_t setCond)
   			if (IS_SET(setCond)) {
 				  CPSR_PUT(C, carryAmt);
 				}
+        break;
   		}
-			break;
 
   		case LSR :
   		{
@@ -283,8 +274,8 @@ int32_t as_shifted_reg(int32_t value, int8_t setCond)
   			if (IS_SET(setCond)){
 					CPSR_PUT(C, carryAmt);
 				}
+        break;
   		}
-			break;
 
   		case ASR :
   		{
@@ -292,69 +283,24 @@ int32_t as_shifted_reg(int32_t value, int8_t setCond)
   			if (Amt != 0){
    				carryAmt = BIT_GET(reg, Amt - 1);
 				}
-  			if (setCond == 1){
+  			if (setCond == 1) {
 				  CPSR_PUT(C, carryAmt);
-          int bit = BIT_GET(reg, 31); // TODO move to bits set
+          int bit = BIT_GET(reg, 31);
             for (int j = 0; j < Amt; j++){
 							BIT_PUT(value, 31 - j, bit);
 						}
 				}
-  		}
-			break;
+        break;
+    	}
 
   		case ROR :
   		{
   			value = rotate_right(reg, Amt);
   		}
 			break;
-
   	}
 
 		return value;
-}
-
-//  5.5 GPIO ////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////
-
-int pins[32];
-
-int is_GPIO_address(int address) {
-
-	switch(address)
-	{
-		case 0x20200000:
-		case 0x20200004:
-		case 0x20200008:
-		case 0x20200028:
-		case 0x2020001c: return 1;
-		default:         return 0;
-	}
-}
-
-void print_GPIO_address(int address)
-{
-	int group_of_pins = 0;
-	int pin_on        = 0;
-	int pin_off       = 0;
-
-	switch(address)
-	{
-		case 0x20200000: group_of_pins =  0; goto pin_accessed;
-		case 0x20200004: group_of_pins = 10; goto pin_accessed;
-		case 0x20200008: group_of_pins = 20; goto pin_accessed;
-		case 0x20200028: pin_off       =  1; break;
-		case 0x2020001c: pin_on        =  1; break;
-		default:         return;
-	}
-
-	if (pin_on)  printf("PIN ON\n");
-	if (pin_off) printf("PIN OFF\n");
-
-	return;
-
-pin_accessed:
-    printf("One GPIO pin from %d to %d has been accessed\n",
-           group_of_pins, group_of_pins + 9);
 }
 
 
@@ -362,6 +308,9 @@ pin_accessed:
 
 
 /* data processing */
+
+int resultforBranch = 0;
+
 
 void data_processing(int32_t word)
 {
@@ -377,7 +326,7 @@ void data_processing(int32_t word)
 	int Operand1 = arm_Ptr->registers[Rn];
 
 	Operand2     = IS_CLEAR(ImmOp) ? as_shifted_reg(Operand2, SetCond)
-	           		           : as_immediate_reg(Operand2);
+	           		                 : as_immediate_reg(Operand2);
 	int result   = 0;
 
 
@@ -386,41 +335,37 @@ void data_processing(int32_t word)
 	{
 		case AND :
 		case TST :
-                    result = Operand1 & Operand2;
-                    break;
+      result = Operand1 & Operand2; break;
 		case EOR :
 		case TEQ :
-                    result = Operand1 ^ Operand2;
-                    break;
+      result = Operand1 ^ Operand2;
+      break;
 		case SUB :
 		case CMP :
-                    result = Operand1 - Operand2;
-                    break;
+      result = Operand1 - Operand2; break;
 		case RSB :
-                    result = Operand2 - Operand1;
-                    break;
+      result = Operand2 - Operand1; break;
 		case ADD :
-                    result = Operand1 + Operand2;
-                    break;
+      result = Operand1 + Operand2; break;
 		case ORR :
-                    result = Operand1 | Operand2;
-                    break;
+      result = Operand1 | Operand2; break;
 		case MOV :
-                    result = Operand2;
-                    break;
+      result = Operand2; break;
 		default  :
-                    result = 0;
+      result = 0;
 	}
+
   	// save results if necessary
     switch (OpCode)
   	{
   		case TEQ :
   		case TST :
       case CMP :
-                  break;
+        resultforBranch = result;
+        break;
       default :
-              REG_WRITE(Rd, result);
-              break;
+        REG_WRITE(Rd, result);
+        break;
     }
 
 
@@ -430,19 +375,16 @@ void data_processing(int32_t word)
     CPSR_PUT(N, BIT_GET(result, 31));
 
     switch (OpCode)  {
-
   	  case SUB :
   	  case RSB :
   	  case CMP :
-        CPSR_PUT(C, (result >= 0));
-        break;
-    	case ADD  :
-          CPSR_PUT(C, CPSR_GET(V));
-          break;
-      default  :
-          break;
+        CPSR_PUT(C, (result >= 0)); break;
+    	case ADD :
+        CPSR_PUT(C, CPSR_GET(V)); break;
+      default  : break;
     }
 	}
+  //printf("CPSR Z is %i\n",CPSR_GET(Z) );
 }
 
 
@@ -524,8 +466,9 @@ void single_data_transfer(int32_t word)
     int dataL      = SDTInst->L;
 
     int _Rn = arm_Ptr->registers[dataRn];
-    int _Rd   = arm_Ptr->registers[dataRd];
-	//Check if I is setbranchOffset
+    int _Rd = arm_Ptr->registers[dataRd];
+
+  //Check if I is setbranchOffset
   if (IS_SET(dataI))
   {
     dataOffset = as_shifted_reg(dataOffset, 0);
@@ -535,88 +478,28 @@ void single_data_transfer(int32_t word)
 
   if (IS_SET(dataP))  _Rn += (IS_SET(dataU) ? dataOffset : -dataOffset);
 
-  if (is_GPIO_address(_Rn))
+  if (is_GPIO_addr(_Rn))
   {
-    print_GPIO_address(_Rn);
+    print_GPIO_addr(_Rn);
     if(IS_SET(dataL)) REG_WRITE(dataRd, _Rd);
   } else {
-    if (_Rn < 0 || _Rn >= MEMORY_CAPACITY ) goto moob;
+    if (_Rn < 0 || _Rn >= MEMORY_CAPACITY ) goto bound_error;
     IS_SET(dataL) ? (REG_WRITE(dataRd, MEM_R_32bits(_Rn))) : MEM_W_32bits(_Rn, _Rd);
   }
 
   if (IS_CLEAR(dataP)) REG_WRITE(dataRn, _Rn += (IS_SET(dataU) ? dataOffset : -dataOffset));
 
-  if (!is_GPIO_address(_Rn))
+  if (!is_GPIO_addr(_Rn))
   {
-    if (_Rn < 0 || _Rn >= MEMORY_CAPACITY) goto moob;
+    if (_Rn < 0 || _Rn >= MEMORY_CAPACITY) goto bound_error;
   }
   return;
 
-  moob:
+  bound_error:
     printf("Error: Out of bounds memory access at address 0x%08x\n", _Rn);
     return;
 
 }
-
-/*
-
-if (PreIndexing) address += (IS_SET(U) ? Offset : -Offset);
-
-if (is_GPIO_address(address))
-{
-  print_GPIO_address(address);
-    if (IS_SET(L)) REG_WRITE(Rd, address);
-}
-else
-{
-  if (address < 0 || address >= MEMORY_CAPACITY) goto moob;
-  if (IS_SET(L)) REG_WRITE(Rd, MEM_WORD_READ(address));
-  else           MEM_WORD_WRITE(address, value);
-}
-
-if (PostIndexing) REG_WRITE(Rn, address += (IS_SET(U) ? Offset : -Offset));
-if (!is_GPIO_address(address))
-{
-  if (address < 0 || address >= MEMORY_CAPACITY) goto moob;
-}
-return;
-
-moob:
-  printf("Error: Out of bounds memory access at address 0x%08x\n", address);
-  return;
-}//Pre-indexing
-  if (IS_SET(dataP))
-  {
-    REG_WRITE(dataRn, _Rn += (IS_SET(dataU) ? dataOffset : -dataOffset));
-    IS_SET(dataL) ? (REG_WRITE(dataRd, MEM_R_32bits(_Rn))) : MEM_W_32bits(_Rn, _Rd);
-  //Post-indexing
-  } else {
-    IS_SET(dataL) ? (REG_WRITE(dataRd, MEM_R_32bits(_Rn))) : MEM_W_32bits(_Rn, _Rd);
-    REG_WRITE(dataRn, _Rn += (IS_SET(dataU) ? dataOffset : -dataOffset));
-    }
-}
-*/
-  //int PostIndexing = IS_CLEAR(P);
-	//int PreIndexing  = !PostIndexing;
-
-	//int address = ARM->registers[Rn];
-	//int value   = ARM->registers[Rd];
-
-//	if (PreIndexing) address += (IS_SET(U) ? Offset : -Offset);
-
-
-	//if (address < 0 || address >= MEMORY_CAPACITY) goto moob;
-	//if (IS_SET(L)) REG_WRITE(Rd, MEM_WORD_READ(address));
-	//else           MEM_WORD_WRITE(address, value);
-
-
-	//if (PostIndexing) REG_WRITE(Rn, address += (IS_SET(U) ? Offset : -Offset));
-
-
-//moob:
-    //printf("Error: Out of bounds memory access at address 0x%08x\n", address);
-  //  return;
-
 
 /*branch */
 
@@ -627,7 +510,19 @@ void branch(int32_t word)
      int branchPC = 8;
 
      BranchInstruct *BranchInst = (BranchInstruct *) &word;
+     int Cond = BranchInst->Cond;
 
+     //check for bne and bqe
+     if(resultforBranch == 0 && Cond == 0) { //beq
+       goto branchCode;
+     } else if(resultforBranch != 0 && Cond == 1) { //bne
+       goto branchCode;
+     } else if(Cond == 14) {
+       goto branchCode;
+     }
+     goto end;
+
+   branchCode: ;
      //offset is between in bits 0-23
      //branchStrc -> Offset = get_bits(word, 0, 23);
 
@@ -647,6 +542,8 @@ void branch(int32_t word)
      arm_Ptr->pipeline->fetched = MEM_R_32bits(REG_READ(PC));
      //PC = PC + 4;
      INC_PC(4);
+
+     end: ;
 }
 
 

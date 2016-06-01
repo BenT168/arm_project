@@ -120,7 +120,9 @@ typedef enum Opcode
     TEQ =  9,
     CMP = 10,
     ORR = 12,
-    MOV = 13
+    MOV = 13,
+    BEQ = 14,
+    BNE = 15
 } Opcode;
 
 
