@@ -373,10 +373,10 @@ void data_processing(int32_t word)
   		case TEQ :
   		case TST :
       case CMP :
-                  break;
+      break;
       default :
-              REG_WRITE(Rd, result);
-              break;
+        REG_WRITE(Rd, result);
+        break;
     }
 
 
@@ -393,10 +393,10 @@ void data_processing(int32_t word)
         CPSR_PUT(C, (result >= 0));
         break;
     	case ADD  :
-          CPSR_PUT(C, CPSR_GET(V));
-          break;
+        CPSR_PUT(C, CPSR_GET(V));
+        break;
       default  :
-          break;
+        break;
     }
 	}
 }
@@ -477,8 +477,8 @@ void single_data_transfer(int32_t word)
     int dataU      = SDTInst->U;
     int dataL      = SDTInst->L;
 
-    int _Rn = arm_Ptr->registers[dataRn];
-    int _Rd   = arm_Ptr->registers[dataRd];
+   int _Rn = arm_Ptr->registers[dataRn];
+   //int _Rd   = arm_Ptr->registers[dataRd];
 	//Check if I is setbranchOffset
   if (IS_SET(dataI))
   {
@@ -487,16 +487,36 @@ void single_data_transfer(int32_t word)
     dataOffset = as_immediate_reg(dataOffset);
   }
 
-  if (IS_SET(dataP)) _Rn += (IS_SET(dataU) ? dataOffset : -dataOffset);
+//  if (IS_SET(dataP)) _Rn += (IS_SET(dataU) ? dataOffset : -dataOffset);
+
+//Pre-indexing
+ if (IS_SET(dataP))
+ {
+   dataRn += (IS_SET(dataU)? dataOffset : -dataOffset);
+   IS_SET(dataL) ? (word = MEM_R_32bits(dataRd)) : MEM_W_32bits(dataRd, word);
+ //Post-indexing
+ } else {
+   IS_SET(dataL) ? (word = MEM_R_32bits(dataRd)) : MEM_W_32bits(dataRd, word);
+   dataRn += (IS_SET(dataU)? dataOffset : -dataOffset);
+   REG_WRITE(_Rn, dataRn);
+   }
+
+   if(_Rn == (arm_Ptr->registers[PC])){
+     INC_PC(8);
+   }
 
   if (_Rn < 0 || _Rn >= MEMORY_CAPACITY ) {
     printf("Error: Out of bounds memory access at address 0x%08x\n", _Rn);
     return;
   }
 
-  IS_SET(dataL) ? (REG_WRITE(dataRd, MEM_R_32bits(_Rn))) : MEM_W_32bits(_Rn, _Rd);
+  //IS_SET(dataL) ? (REG_WRITE(dataRd, MEM_R_32bits(_Rn))) : MEM_W_32bits(_Rn, _Rd);
 
-  if (IS_CLEAR(dataP)) REG_WRITE(dataRn, _Rn += (IS_SET(dataU) ? dataOffset : -dataOffset));
+//  if (IS_CLEAR(dataP)) REG_WRITE(dataRn, _Rn += (IS_SET(dataU) ? dataOffset : -dataOffset));
+
+
+
+
 }
 /*  //Pre-indexing
   if (IS_SET(dataP))
