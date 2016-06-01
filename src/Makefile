@@ -13,11 +13,11 @@ all	: 	assemble emulate
 assemble: 	assemble.c library/tokens.c library/bitwise.c library/assembler.c library/symbolTableList.c
 
 #To create an executable file emulate, we need sources files
-#emulate.c,library/ bitwise.c and library/bitwise.c
+#emulate.c, library/tokens.c, library/ bitwise.c, library/assembler.c and
+#library/symbolTableADT.c
 #
-emulate : 	emulate.c library/bitwise.c
+emulate : emulate.c library/bitwise.c
 
-assembler:  library/assembler.h library/assembler.c
 
 clean:
 	rm -f $(wildcard *.o)

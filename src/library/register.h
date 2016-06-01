@@ -22,18 +22,5 @@
 /* PC INCREMENT */
 #define INC_PC(i) (REG_READ(PC) += (i))
 
-//////////////////////////////CPSR Structure //////////////////////////////////
-
-/*
-typedef struct CPSR_STRUCT
-{
-  unsigned int _000 : 28;
-  unsigned int bitV : 1;
-  unsigned int bitC : 1;
-  unsigned int bitZ : 1;
-  unsigned int bitN : 1;
-} CPSR_STRUCT;
-
-*/
 
 #endif
