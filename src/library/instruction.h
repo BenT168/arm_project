@@ -30,7 +30,7 @@ typedef struct MultiplyInstruct
 {
   //Operand registers 4-bits each
     unsigned int Rm      : 4;
-    unsigned int _1001   : 3;
+    unsigned int _1001   : 4;
     unsigned int Rs      : 4;
     unsigned int Rn      : 4;
     unsigned int Rd      : 4; /* Destination registers 4-bits */

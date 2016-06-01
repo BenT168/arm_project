@@ -20,7 +20,7 @@
 /* Memory Read/Write */
 
 //reading one byte (8-bits)
-#define MEM_R_8bits(m)     (arm_Ptr.memory[m])
+#define MEM_R_8bits(m)     (arm_Ptr->memory[m])
 //reading 4 bytes (32-bits) LITTLE ENDIAN
 #define MEM_R_32bits(m)   ((MEM_R_8bits(m + 3) & 0xFF) << (SIZE_OF_WORD - 8) |\
                            (MEM_R_8bits(m + 2) & 0xFF) << (SIZE_OF_WORD - 16) |\
@@ -33,7 +33,7 @@
                            (MEM_R_8bits(m + 3) & 0xFF) << (SIZE_OF_WORD - 32))
 
 //writing one byte(8-bits)
-#define MEM_W_8bits(m, b) (arm_Ptr.memory[(m)] = (b))
+#define MEM_W_8bits(m, b) (arm_Ptr->memory[(m)] = (b))
 //writing 4 bytes(32-bits)
 #define MEM_W_32bits(m, w)   MEM_W_8bits(m + 0, ((w) >>  0 ) & 0xFF); \
                              MEM_W_8bits(m + 1, ((w) >>  8 ) & 0xFF); \
@@ -44,7 +44,7 @@
 ///////////////////////////// FUNCTION PROTOTYPE //////////////////////////////
 
 
-struct ARM_State arm_Ptr;
+struct ARM_State *arm_Ptr;
 
 void read_ARM(const char *);
 
@@ -88,7 +88,7 @@ void read_ARM(const char *filename)
         int num_instruct = size / size_instruct;
         //Read instructions into ARM Memory
         // for(int i = 0; i < MEMORY_CAPACITY; i++)
-        size_t newLen = fread(arm_Ptr.memory, size_instruct, num_instruct, file);
+        size_t newLen = fread(arm_Ptr->memory, size_instruct, num_instruct, file);
         if (newLen == 0)
         {
            fputs("Error reading file", stderr);
@@ -109,12 +109,12 @@ void emulator()
 {
     REG_WRITE(PC, 0);
 
-    arm_Ptr.pipeline.fetched = MEM_R_32bits(REG_READ(PC));
+    arm_Ptr->pipeline->fetched = MEM_R_32bits(REG_READ(PC));
 
     INC_PC(4);
 
     int32_t decoded_code;
-    int32_t fetched_code = arm_Ptr.pipeline.fetched;
+    int32_t fetched_code = arm_Ptr->pipeline->fetched;
     int cond_check = check_cond(fetched_code);
 
     //the emulator should terminate when it executes an all-0 instr
@@ -122,15 +122,15 @@ void emulator()
     do {
       //If the condition matched, we can execute the instr
       if(cond_check == 1) {
-        decode_instr(arm_Ptr.pipeline.decoded);
+        decode_instr(arm_Ptr->pipeline->decoded);
       }
 
-      arm_Ptr.pipeline.decoded = arm_Ptr.pipeline.fetched;
-      arm_Ptr.pipeline.fetched = MEM_R_32bits(REG_READ(PC));
+      arm_Ptr->pipeline->decoded = arm_Ptr->pipeline->fetched;
+      arm_Ptr->pipeline->fetched = MEM_R_32bits(REG_READ(PC));
       INC_PC(4);
 
-      fetched_code = arm_Ptr.pipeline.fetched;
-      decoded_code = arm_Ptr.pipeline.decoded;
+      fetched_code = arm_Ptr->pipeline->fetched;
+      decoded_code = arm_Ptr->pipeline->decoded;
 
     } while(decoded_code != 0);
 
@@ -144,16 +144,15 @@ void emulator()
 /*decode instruction */
 void decode_instr(int32_t word)
 {
-  int code = get_bits(word, 27, 28) + get_bits(word, 25,26);
+  int code = BIT_GET(word, 27);
 
   switch (code)
   {
-    case 2:
+    case 1:
       branch(word);
       break;
-    case 1:
     case 0:
-      IS_SET(get_bits(word, 26, 27)) ? single_data_transfer(word)
+      IS_SET(BIT_GET(word, 26)) ? single_data_transfer(word)
                                          : decode_checker(word);
       break;
     default:
@@ -165,13 +164,14 @@ void decode_instr(int32_t word)
 /* helper function for decode_instr */
 void decode_checker(int32_t word)
 {
-  if(IS_SET(get_bits(word, 25, 26))) {
+  if(IS_SET(BIT_GET(word, 25))) {
     data_processing(word);
   } else {
-    if(IS_SET(get_bits(word, 6, 7) || IS_SET(get_bits(word, 5, 6 )))) {
+    if(IS_SET(BIT_GET(word, 6)) || IS_SET(BIT_GET(word, 5))) {
       data_processing(word);
     } else{
-      (IS_SET(get_bits(word, 4,5))) ? multiply(word) : data_processing(word);
+      (IS_SET(BIT_GET(word, 4)) && IS_SET(BIT_GET(word, 7)))
+                              ? multiply(word) : data_processing(word);
     }
   }
 }
@@ -331,7 +331,7 @@ void data_processing(int32_t word)
 	int Rd       = DPInst->Rd;
 	int Operand2 = DPInst->Operand2; // 11-0
 
-	int Operand1 = arm_Ptr.registers[Rn];
+	int Operand1 = arm_Ptr->registers[Rn];
 
 	Operand2     = IS_CLEAR(ImmOp) ? as_shifted_reg(Operand2, SetCond)
 	           		           : as_immediate_reg(Operand2);
@@ -383,18 +383,25 @@ void data_processing(int32_t word)
 
 	if (IS_SET(SetCond)) {
 	// set flags
-  	    CPSR_PUT(Z, (result == 0));
-            CPSR_PUT(N, BIT_GET(result, 31));
+  	CPSR_PUT(Z, (result == 0));
+    CPSR_PUT(N, BIT_GET(result, 31));
 
-            switch (OpCode)  {
-  		case 2  :
-  		case 3  :
-  		case 10 :
-        	    CPSR_PUT(C, (result >= 0));
-                    break;
-  		case 4  :
-                    CPSR_PUT(C, CPSR_GET(V));
-                    break;
+    switch (OpCode)  {
+      case AND :
+    	case TST :
+    	case EOR :
+    	case TEQ :
+    	case ORR :
+    	case MOV :
+  	  case SUB  :
+  	  case RSB  :
+  	  case CMP  :
+        CPSR_PUT(C, (result >= 0));
+        break;
+    	case ADD  :
+          CPSR_PUT(C, CPSR_GET(V));
+          break;
+      default  : result = 0;                        
     }
 	}
 }
@@ -424,19 +431,21 @@ int32_t convert2complement(int32_t reg)
 
 void multiply(int32_t word)
 {
-    int cpsrReg = arm_Ptr.registers[CPSR];
+    //int cpsrReg = arm_Ptr->registers[CPSR];
     MultiplyInstruct *MultiInst = (MultiplyInstruct *) &word;
-    CPSR_STRUCT *cpsrStruct = (CPSR_STRUCT *) &cpsrReg;
+    //CPSR_STRUCT *cpsrStruct = (CPSR_STRUCT *) &cpsrReg;
 
+    int Acc     = MultiInst->Acc;
+    int SetCond = MultiInst->SetCond;
     int Rd      = MultiInst->Rd;
     int Rn      = MultiInst->Rn;
     int Rs      = MultiInst->Rs;
     int Rm      = MultiInst->Rm;
-    int Acc     = MultiInst->Acc;
-    int SetCond = MultiInst->SetCond;
+
 
     int32_t dataRm = convert(REG_READ(Rm));
     int32_t dataRs = convert(REG_READ(Rs));
+
     int32_t mulResult = dataRm * dataRs;
 
     if(IS_SET(Acc))
@@ -449,10 +458,12 @@ void multiply(int32_t word)
 
     if(IS_SET(SetCond))
     {
-        int bit31 = get_bits(mulResult, 30, 31); //N is the 31 bit of result
+
+        int bit31 = BIT_GET(mulResult, 31); //N is the 31 bit of result
         CPSR_PUT(N, bit31);
-        cpsrStruct->bitN = bit31;
-        (mulResult == 0) ? (cpsrStruct->bitZ = 1) : (cpsrStruct->bitZ = 0);
+        //arm_Ptr->registers[CPSR] = bit31;
+        (mulResult == 0) ? (CPSR_SET(Z)) : !(CPSR_SET(Z));
+        //(mulResult == 0) ? (cpsrStruct->bitZ = 1) : (cpsrStruct->bitZ = 0);
     }
 }
 
@@ -464,59 +475,94 @@ void single_data_transfer(int32_t word)
     SDTInstruct *SDTInst = (SDTInstruct *) &word;
 
     int dataRn     = SDTInst->Rn;         // base register
+    int dataRd     = SDTInst->Rd;
     int dataOffset = SDTInst->Offset;
     int dataI      = SDTInst->I;
     int dataP      = SDTInst->P;
     int dataU      = SDTInst->U;
     int dataL      = SDTInst->L;
 
+    int _Rn = arm_Ptr->registers[dataRn];
+    int _Rd   = arm_Ptr->registers[dataRd];
 	//Check if I is setbranchOffset
   if (IS_SET(dataI))
   {
-    dataOffset = as_shifted_reg(dataOffset, 1);
+    dataOffset = as_shifted_reg(dataOffset, 0);
   } else {
     dataOffset = as_immediate_reg(dataOffset);
   }
 
-  //Pre-indexing
+  if (IS_SET(dataP)) _Rn += (IS_SET(dataU) ? dataOffset : -dataOffset);
+
+  if (_Rn < 0 || _Rn >= MEMORY_CAPACITY ) {
+    printf("Error: Out of bounds memory access at address 0x%08x\n", _Rn);
+    return;
+  }
+  IS_SET(dataL) ? (REG_WRITE(dataRd, MEM_R_32bits(_Rn))) : MEM_W_32bits(_Rn, _Rd);
+
+  if (IS_CLEAR(dataP)) REG_WRITE(dataRn, _Rn += (IS_SET(dataU) ? dataOffset : -dataOffset));
+}
+/*  //Pre-indexing
   if (IS_SET(dataP))
   {
-    dataRn += (IS_SET(dataU)? dataOffset : -dataOffset);
-    IS_SET(dataL) ? (word = MEM_R_32bits(dataRn)) : MEM_W_32bits(dataRn, word);
+    REG_WRITE(dataRn, _Rn += (IS_SET(dataU) ? dataOffset : -dataOffset));
+    IS_SET(dataL) ? (REG_WRITE(dataRd, MEM_R_32bits(_Rn))) : MEM_W_32bits(_Rn, _Rd);
   //Post-indexing
   } else {
-    IS_SET(dataL) ? (word = MEM_R_32bits(dataRn)) : MEM_W_32bits(dataRn, word);
-    dataRn += (IS_SET(dataU)? dataOffset : -dataOffset);
+    IS_SET(dataL) ? (REG_WRITE(dataRd, MEM_R_32bits(_Rn))) : MEM_W_32bits(_Rn, _Rd);
+    REG_WRITE(dataRn, _Rn += (IS_SET(dataU) ? dataOffset : -dataOffset));
     }
 }
+*/
+  //int PostIndexing = IS_CLEAR(P);
+	//int PreIndexing  = !PostIndexing;
+
+	//int address = ARM->registers[Rn];
+	//int value   = ARM->registers[Rd];
+
+//	if (PreIndexing) address += (IS_SET(U) ? Offset : -Offset);
+
+
+	//if (address < 0 || address >= MEMORY_CAPACITY) goto moob;
+	//if (IS_SET(L)) REG_WRITE(Rd, MEM_WORD_READ(address));
+	//else           MEM_WORD_WRITE(address, value);
+
+
+	//if (PostIndexing) REG_WRITE(Rn, address += (IS_SET(U) ? Offset : -Offset));
+
+
+//moob:
+    //printf("Error: Out of bounds memory access at address 0x%08x\n", address);
+  //  return;
 
 
 /*branch */
 
 void branch(int32_t word)
 {
-     int branchOffset =  24;
+     int branchOffset =  23;
      int branchShift  =  2;
-     int branchPC     =  8;
+     //int branchPC     =  8;
 
      BranchInstruct *BranchInst = (BranchInstruct *) &word;
 
      //offset is between in bits 0-23
      //branchStrc -> Offset = get_bits(word, 0, 23);
 
-     int32_t offsetb = BranchInst-> Offset;
+     int offsetb = BranchInst-> Offset;
 
      //offset is shifted left 2 bits
-     int32_t offsetNewb = offsetb << branchShift;
-
+     int offsetNewb = offsetb << branchShift;
+     int mask = 0x00ffffff;
+     int32_t offsetNew32 = mask & offsetNewb;
      //signed bits extended to 32 bits
-     int32_t signed_bits = (offsetNewb << (branchPC - branchShift)) >> (SIZE_OF_WORD - branchOffset - branchShift);
+     int32_t signed_bits = (offsetNew32 >> branchOffset) << (SIZE_OF_WORD - 1);
+     //int32_t signed_bits = (offsetNewb << (branchPC - branchShift + 1)) >> (SIZE_OF_WORD - 1);
 
      //add the signed bits to PC
      INC_PC(signed_bits);
 
-     arm_Ptr.pipeline.fetched = MEM_R_32bits(REG_READ(PC));
-     //CHECK ABOUT THE PC AND PIPELINE!!
+     arm_Ptr->pipeline->fetched = MEM_R_32bits(REG_READ(PC));
      //PC = PC + 4;
      INC_PC(4);
 }
@@ -528,16 +574,29 @@ void branch(int32_t word)
 
 int main(int argc, char **argv)
 {
-    if(argc == 0) {
+    if(argc < 2)
+    {
       // not in form of .bin '.','b','i','n','/0';
         printf( "No argument in input\n");
-        printf("Please type in a bin file\n");
         exit(EXIT_FAILURE);
     }
 
+
+    arm_Ptr = calloc (1, sizeof(ARM_State));
+    arm_Ptr->pipeline = calloc(1, sizeof(arm_Ptr->pipeline));
+
+    if(arm_Ptr == NULL)
+    {
+      printf( "No argument in input\n");
+      printf("Please type in a bin file\n");
+      exit(EXIT_FAILURE);
+    }
     //Read input file and emulate
     read_ARM(argv[1]);
     emulator();
+
+    free(arm_Ptr -> pipeline);
+    free(arm_Ptr);
 
     return EXIT_SUCCESS;
 

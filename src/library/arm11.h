@@ -22,7 +22,7 @@ typedef struct ARM_State
 {
     int8_t   memory[MEMORY_CAPACITY];
     int32_t  registers[REGISTER_COUNT];
-    Pipeline pipeline;
+    Pipeline *pipeline;
 } ARM_State;
 
 ////////////////////////// REGISTER DEFINITIONS  //////////////////////////////

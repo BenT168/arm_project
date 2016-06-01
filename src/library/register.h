@@ -11,8 +11,8 @@
 ///////////////////////////// MACROS /////////////////////////////////////////
 
 /* REGISTER READ/WRITE */
-#define REG_READ(r)     (arm_Ptr.registers[(r)])
-#define REG_WRITE(r, v) (arm_Ptr.registers[(r)] = (v))
+#define REG_READ(r)     (arm_Ptr->registers[(r)])
+#define REG_WRITE(r, v) (arm_Ptr->registers[(r)] = (v))
 
 /* CPSR READ/WRITE */
 #define CPSR_CLR(posf)    (BIT_CLR(REG_READ(CPSR), (posf)))
@@ -24,7 +24,7 @@
 
 //////////////////////////////CPSR Structure //////////////////////////////////
 
-
+/*
 typedef struct CPSR_STRUCT
 {
   unsigned int _000 : 28;
@@ -34,6 +34,6 @@ typedef struct CPSR_STRUCT
   unsigned int bitN : 1;
 } CPSR_STRUCT;
 
-
+*/
 
 #endif

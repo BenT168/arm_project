@@ -5,7 +5,7 @@
 
 #include "symbolTableList.h"
 
-///////////////////// ADT Douvle-Linked List //////////////////////////////////
+///////////////////// ADT Double-Linked List //////////////////////////////////
 
 ///////////////////////////////Iterate/////////////////////////////////////////
 
@@ -34,7 +34,7 @@ uint16_t list_iter_addr(list_iter iter) {
 /////////////////////////////////main functions////////////////////////////////
 
 symbolTableNode *list_alloc_node(void) {
-  symbolTableNode *node = malloc(sizeof(symbolTableNode));
+  struct symbolTableNode *node = malloc(sizeof(symbolTableNode));
   if (node == NULL) {
     perror("list_alloc_node");
     exit(EXIT_FAILURE);
@@ -56,7 +56,7 @@ list->last->prev = list->first;
 }
 
 void list_insert(symbolTableList *list, list_iter iter, char* val, uint16_t key) {
-  symbolTableNode *newNode = list_alloc_node();
+  struct symbolTableNode *newNode = list_alloc_node();
   newNode->stringVal = val;
   newNode->address = key;
 
@@ -88,7 +88,9 @@ void list_insert_back(symbolTableList *list, char *val, uint16_t key) {
 
 
 void list_destroy(symbolTableList *list) {
-  symbolTableNode *node = list->first;
+  printf("going into list_destroy\n");
+  struct symbolTableNode *node = list->first;
+  printf("after assigning node in list destroy\n");
   while (node != NULL) {
     symbolTableNode *nextNode = node->next;
     list_free_node(node);

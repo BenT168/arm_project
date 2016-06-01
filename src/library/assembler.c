@@ -136,6 +136,7 @@ ASSEMBLER_STRUCT *assemble(TOKEN *lines,  function_assPtr func, const char *deli
         list_initialise(symbolTable);
       }
      list_insert_back(symbolTable, delchr(label, ':'), address);
+     printf("after list_insert_back\n");
      // add symbol at end of list each time
   }
     printf("label02: %s\n", label);
@@ -166,8 +167,9 @@ printf("after for loop in assemble\n");
 		assemble_write(ass, word);
     printf("can i write in assemle????\n");
 
-  
+
     list_destroy(symbolTable);
+    printf("after list destroy?\n");
     tokens_free(line);
 
 	}

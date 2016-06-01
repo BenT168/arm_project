@@ -30,7 +30,6 @@ void tokens_print(TOKEN *lines)
 
 TOKEN* tokenise(char *str, const char *delim)
 {
-
 	tokenStruct  = malloc(sizeof(tokenStruct));
 	tokenStruct->tokens   = malloc(0);
 	printf("\n");
