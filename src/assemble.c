@@ -500,17 +500,17 @@ int32_t ass_branch(TOKEN *line, ASSEMBLER_STRUCT *ass)
   printf("line->tokens[0]...%s\n", line->tokens[0]);
   printf("line->tokens[0]...%s\n", line->tokens[0] + 1);
 
-char first_letter_token = line->tokens[0][0];
-printf("%c\n", first_letter_token );
+  char first_letter_token = line->tokens[0][0];
+  printf("%c\n", first_letter_token );
 
-char *suffix = (first_letter_token != 'b') ? "AL" : (line->tokens[0] +  1);
+  char *suffix = (first_letter_token != 'b') ? "AL" : (line->tokens[0] +  1);
 	//char *suffix = (strcmp(line->tokens[0], "b") == 0) ? "al" : (line->tokens[0] + 1);
 
 	char *lbl   = line->tokens[1];
  //	char *address = PARSE_REG(expr_to_num(label));
-        uint16_t lbl_address = *(uint16_t *) map_get(ass->symbolTable,lbl);
+  uint16_t lbl_address = list_get_address(ass->symbolTable,lbl);
 
-        int sign   = (lbl_address > ass->current_address) ? -1 : 1;
+  int sign   = (lbl_address > ass->current_address) ? -1 : 1;
 	int offset = ((ass->current_address - lbl_address + 8) * sign )  >> 2;  // compute offet
 
 	BranchInstruct Branchinstr;

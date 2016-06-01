@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "symbolTableList.h"
 #include <assert.h>
 
+#include "symbolTableList.h"
 
 ///////////////////////////////Iterate/////////////////////////////////////////
 
@@ -22,6 +22,11 @@ list_iter list_iter_next(list_iter iter) {
 char* list_iter_value(list_iter iter) {
   assert(list_is_internal(iter));
   return iter->stringVal;
+}
+
+uint16_t list_iter_addr(list_iter iter) {
+  assert(list_is_internal(iter));
+  return iter->address;
 }
 
 /////////////////////////////////main functions////////////////////////////////
@@ -48,7 +53,7 @@ list->first->next = list->last;
 list->last->prev = list->first;
 }
 
-void list_insert(symbolTableList *list, list_iter iter, char* val, int32_t *key) {
+void list_insert(symbolTableList *list, list_iter iter, char* val, uint16_t key) {
   symbolTableNode *newNode = list_alloc_node();
   newNode->stringVal = val;
   newNode->address = key;
@@ -60,13 +65,23 @@ void list_insert(symbolTableList *list, list_iter iter, char* val, int32_t *key)
 
 }
 
-void list_insert_front(symbolTableList *list, char *val, int32_t *key) {
+void list_insert_front(symbolTableList *list, char *val, uint16_t key) {
   list_insert(list, begin_list(list), val, key);
 
 }
 
-void list_insert_back(symbolTableList *list, char *val, int32_t *key) {
+void list_insert_back(symbolTableList *list, char *val, uint16_t key) {
    list_insert(list, end_list(list), val, key);
+ }
+
+ uint16_t list_get_address(symbolTableList *list, char* val) {
+   for(list_iter i = begin_list(list); i != end_list(list); i = list_iter_next(i)) {
+     if(strcmp(list_iter_value(i), val) == 0) {
+       return list_iter_addr(i);
+     }
+   }
+   perror("string value not found in symbolTableList");
+   exit(EXIT_FAILURE);
  }
 
 
