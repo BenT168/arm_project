@@ -46,7 +46,7 @@ int32_t get_bits(int32_t i, int start, int end)
     /* create a mask that matches the bits between start and end*/
     mask = ((1 << (end - start + 1)) - 1) << start;
     /* use the & operation to extract the required bits*/
-    return (mask & i) >> start;
+    return (i & mask) >> start;
 }
 
 

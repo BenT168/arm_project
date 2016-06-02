@@ -141,10 +141,10 @@ ASSEMBLER_STRUCT *assemble(TOKEN *lines, function_assPtr func, const char *delim
         list_initialise(symbolTable);
         printf("after list initialise\n");
       }
-      list_insert_back(symbolTable, delchr(label, ':'), address);
-      printf("after list insert back\n");
-      // add symbol at end of list each time
-    }
+     list_insert_back(symbolTable, delchr(label, ':'), address);
+     printf("after list_insert_back\n");
+     // add symbol at end of list each time
+  }
     printf("label02: %s\n", label);
 
   	address += sizeof(uint16_t);
@@ -175,6 +175,7 @@ ASSEMBLER_STRUCT *assemble(TOKEN *lines, function_assPtr func, const char *delim
     printf("can i write in assemle????\n");
 
     list_destroy(symbolTable);
+    printf("after list destroy?\n");
     tokens_free(line);
 	}
   printf("assemble done\n");

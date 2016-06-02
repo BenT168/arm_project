@@ -11,8 +11,8 @@
 ///////////////////////////// MACROS /////////////////////////////////////////
 
 /* REGISTER READ/WRITE */
-#define REG_READ(r)     (arm_Ptr.registers[(r)])
-#define REG_WRITE(r, v) (arm_Ptr.registers[(r)] = (v))
+#define REG_READ(r)     (arm_Ptr->registers[(r)])
+#define REG_WRITE(r, v) (arm_Ptr->registers[(r)] = (v))
 
 /* CPSR READ/WRITE */
 #define CPSR_CLR(posf)    (BIT_CLR(REG_READ(CPSR), (posf)))
@@ -21,19 +21,6 @@
 #define CPSR_PUT(posf, i) {(IS_SET(i)) ? CPSR_SET(posf): CPSR_CLR(posf);}
 /* PC INCREMENT */
 #define INC_PC(i) (REG_READ(PC) += (i))
-
-//////////////////////////////CPSR Structure //////////////////////////////////
-
-
-typedef struct CPSR_STRUCT
-{
-  unsigned int _000 : 28;
-  unsigned int bitV : 1;
-  unsigned int bitC : 1;
-  unsigned int bitZ : 1;
-  unsigned int bitN : 1;
-} CPSR_STRUCT;
-
 
 
 #endif

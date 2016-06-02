@@ -19,7 +19,7 @@
 
 
 
-// for numerica constant it's in the form "#x" where x is a natural number
+// for numerica constant it's in the form "#x" where x is a naturAL number
 // or in the form "=x" for ldr instr (the expr can be 32 bits after =)
 
 #define max_8bit_represented  256 // 2^8 = 256
@@ -59,7 +59,7 @@ int32_t ass_single_data_transfer(TOKEN *, ASSEMBLER_STRUCT *);
 /* Branch */
 int32_t ass_branch(TOKEN *, ASSEMBLER_STRUCT *);
 
-/* Special */
+/* SpeciAL */
 int32_t andeq_func(TOKEN *, ASSEMBLER_STRUCT *);
 int32_t lsl_func(TOKEN *, ASSEMBLER_STRUCT *);
 
@@ -122,26 +122,26 @@ void write_File(ASSEMBLER_STRUCT *ass, const char *binaryFile)
 
 //////////////////////////   Core     //////////////////////////////////////////
 
-int as_numeric_constant(int value){
+int as_numeric_constant(int vALue){
 
   int to_num = 0;
 
-  while (get_bits(value, 8 , range_bit - 1 ) != 0 && to_num < range_bit )
+  while (get_bits(vALue, 8 , range_bit - 1 ) != 0 && to_num < range_bit )
   {
      for (int i = 0; i < 2; i++)
       {
-        int last = BIT_GET(value, 31);
-        value <<= 1;
-        BIT_PUT(value, 0, last);
+        int last = BIT_GET(vALue, 31);
+        vALue <<= 1;
+        BIT_PUT(vALue, 0, last);
       }
     	to_num += 2;
   }
 
   if(to_num == range_bit) {
-    perror("numerical constant cannot be represented.");
+    perror("numericAL constant cannot be represented.");
     exit(EXIT_FAILURE);
   }
-  return ((to_num / 2) << 8) | value;
+  return ((to_num / 2) << 8) | vALue;
 }
 
 // can be either <shiftname><register> or <shiftname><#expression>
@@ -177,10 +177,11 @@ int as_shifted_reg_ass(TOKEN *line, int Rm)
   	result = *((int *) &shiftReg);
 
 	} else { //in the form <shiftname><register>
-  	regOp.Rm = PARSE_REG(Rm + 2);
-  	regOp.Flag = 0;
-  	regOp.Type = shiftType;
-  	regOp.Amount = PARSE_REG(Rm) | (1 << 4);
+  		regOp.Rm = PARSE_REG(Rm + 2);
+  		regOp.Flag1 = 1;
+  		regOp.Type = shiftType;
+      regOp.Flag2 = 0;
+  		regOp.Rs = PARSE_REG(Rm + 1) | (0 << 3);
 
   //regOp.Rs = atoi(line->tokens[Rm] + 1) << 3; //getting the last bit of Rs
 
@@ -419,7 +420,7 @@ int32_t SDT_num_const(TOKEN *line, ASSEMBLER_STRUCT *ass) {
     return ass_data_proc_mov(line, ass);
 
   } else {
-    // use PC to calculate new address
+    // use PC to cALculate new address
     uint16_t last_address = assemble_append(ass, newAddress);
     // off-by-8 bytes effect
     int offset = last_address - ass->current_address - 8;
@@ -439,7 +440,7 @@ int32_t ass_single_data_transfer(TOKEN *line, ASSEMBLER_STRUCT *ass)
 
   //It's Pre-indexed address if the expression ends with ']'
   int Pre_index = tokens_endc(line) == ']';
-  //initialise I, U, Offset
+  //initiALise I, U, Offset
   int Imm    = 0;
   int Up     = 1;
   int offset = 0;
@@ -502,6 +503,7 @@ int32_t ass_branch(TOKEN *line, ASSEMBLER_STRUCT *ass)
 
   char *suffix = (first_letter_token != 'b') ? "AL" : (line->tokens[0] + 1);
 	char *lbl    = line->tokens[1];
+
   uint16_t lbl_address = list_get_address(ass->symbolTable,lbl);
 
   int sign   = (lbl_address > ass->current_address) ? -1 : 1;
@@ -521,7 +523,7 @@ int32_t ass_branch(TOKEN *line, ASSEMBLER_STRUCT *ass)
 }
 
 
-//////////////////Special Instruction //////////////////////////////////////////
+//////////////////SpeciAL Instruction //////////////////////////////////////////
 
 /*andeq func */
 //for instr that compute results, the syntax is <opcode> Rd, Rn, <Operand 2>
@@ -533,8 +535,8 @@ int32_t andeq_func(TOKEN *line, ASSEMBLER_STRUCT *ass){
 }
 
 /*lsl func */
-//note: asprintf() cal the length of the string, allocate that amount of mem and
-//write the string into it. it is an implicit malloc need to free afterward
+//note: asprintf() cAL the length of the string, ALlocate that amount of mem and
+//write the string into it. it is an implicit mALloc need to free afterward
 //Compile lsl Rn,<#expression> as mov Rn, Rn, lsl <#expression>
 int32_t lsl_func(TOKEN *line, ASSEMBLER_STRUCT *ass){
 char *new_line = NULL;
@@ -547,7 +549,7 @@ return ass_data_proc_mov(new_token, ass);
 
 }
 
-////////////////////A factorial program ////////////////////////////////////////
+////////////////////A factoriAL program ////////////////////////////////////////
 //ARM stores instructions using Little-endian
 
 
