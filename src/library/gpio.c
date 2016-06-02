@@ -10,7 +10,7 @@ int is_GPIO_addr(int addr) {
 		case 0x20200004:
 		case 0x20200008:
 		case 0x20200028:
-		case 0x2020001c: return 1;
+		case 0x2020001c: return 1; 
 		default:         return 0;
 	}
 }

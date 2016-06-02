@@ -43,6 +43,7 @@
                            MEM_W_8bits(m + 3, (w >> 24) & 0xFF);
 
 
+
 ///////////////////////////// FUNCTION PROTOTYPE //////////////////////////////
 
 
@@ -339,6 +340,9 @@ void data_processing(int32_t word)
 
 	Operand2     = IS_CLEAR(ImmOp) ? as_shifted_reg(Operand2, SetCond)
 	           		                 : as_immediate_reg(Operand2);
+
+// printf("Operand 2: %i\n",Operand2 );
+// printf("Opcode: %i\n",OpCode );
 	int result   = 0;
 
 
@@ -379,6 +383,7 @@ void data_processing(int32_t word)
       break;
   }
 
+
 	if (IS_SET(SetCond)) {
 	// set flags
   	CPSR_PUT(Z, (result == 0));
@@ -386,6 +391,12 @@ void data_processing(int32_t word)
 
     switch (OpCode)  {
   	  case SUB :
+        if(result <= 0){
+          CPSR_PUT(C, 0);
+        } else {
+          CPSR_PUT(C, 1);
+        }
+        break;
   	  case RSB :
   	  case CMP :
         CPSR_PUT(C, (result >= 0)); break;
@@ -456,7 +467,6 @@ void multiply(int32_t word)
   }
 }
 
-
 /*Single data transfer */
 
 void single_data_transfer(int32_t word)
@@ -471,8 +481,8 @@ void single_data_transfer(int32_t word)
   int dataU      = SDTInst->U;
   int dataL      = SDTInst->L;
 
-  int _Rn = arm_Ptr->registers[dataRn];
-  int _Rd = arm_Ptr->registers[dataRd];
+  int RegRn = arm_Ptr->registers[dataRn];
+  int RegRd = arm_Ptr->registers[dataRd];
 
   //Check if I is setbranchOffset
  if (IS_SET(dataI)) {
@@ -483,7 +493,7 @@ void single_data_transfer(int32_t word)
 
   // Pre-Indexing
   if (IS_SET(dataP)) {
-    _Rn += (IS_SET(dataU) ? dataOffset : -dataOffset);
+    RegRn += (IS_SET(dataU) ? dataOffset : -dataOffset);
   }
 
 /*
@@ -498,7 +508,7 @@ void single_data_transfer(int32_t word)
   } else {
     MEM_W_32bits(_Rn, _Rd);
   }*/
-
+/*
   if (is_GPIO_addr(_Rn)) {
     //printf("before print GPIO_addr\n");
     print_GPIO_addr(_Rn);
@@ -515,26 +525,58 @@ void single_data_transfer(int32_t word)
     } else {
       MEM_W_32bits(_Rn, _Rd);
     }
+    */
+
+  if (is_GPIO_addr(RegRn))
+  {
+    print_GPIO_addr(RegRn);
+
+    if(IS_SET(dataL))
+    {
+      REG_WRITE(dataRd, RegRn);
+    }
+
+  } else {
+
+      if (RegRn < 0 || RegRn >= MEMORY_CAPACITY) {
+        printf("Error: Out of bounds memory access at address 0x%08x\n", RegRn);
+        return;
+      }
+
+      if(IS_SET(dataL))
+      {
+        REG_WRITE(dataRd, MEM_R_32bits(RegRn));
+      } else {
+        MEM_W_32bits(RegRn, RegRd);
+      }
+
   }
 
   if (IS_CLEAR(dataP)) {
-    REG_WRITE(dataRn, _Rn += (IS_SET(dataU) ? dataOffset : -dataOffset));
+    REG_WRITE(dataRn, RegRn += (IS_SET(dataU) ? dataOffset : -dataOffset));
   }
 
   /*if (!is_GPIO_addr(_Rn)) {
     if (_Rn < 0 || _Rn > MEMORY_CAPACITY) {
       printf("Error: Out of bounds memory access at address 0x%08x\n", _Rn);
+=======
+  if (!is_GPIO_addr(RegRn))
+  {
+    if (RegRn < 0 || RegRn > MEMORY_CAPACITY)
+    {
+      printf("Error: Out of bounds memory access at address 0x%08x\n", RegRn);
+>>>>>>> 4461587c9fe6faeddce7868fa96d8c28a3a1e686
       return;
     }
   }*/
 }
-
 
 /*branch */
 void branch(int32_t word)
 {
   int branchOffset =  6;
   int branchShift  =  2;
+
 
   BranchInstruct *BranchInst = (BranchInstruct *) &word;
   int Cond = BranchInst->Cond;
@@ -548,16 +590,12 @@ void branch(int32_t word)
     goto branchCode;
   }
   goto end;
-
   branchCode: ;
-    int32_t signed_bits = (((BranchInst->Offset) <<
-                          branchShift) << branchOffset) >> branchOffset;
-
+    int32_t signed_bits = (((BranchInst->Offset) << \
+    branchShift) << branchOffset) >> branchOffset;
     //add the signed bits to PC
     INC_PC(signed_bits);
-
     arm_Ptr->pipeline->fetched = MEM_R_32bits(REG_READ(PC));
-
     //PC = PC + 4;
     INC_PC(4);
   end: ;
