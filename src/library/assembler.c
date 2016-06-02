@@ -55,20 +55,18 @@ void assemble_write(ASSEMBLER_STRUCT *ass, int32_t word)
 
   binary_instruct *instr = malloc(sizeof(binary_instruct));
   instr->binary_word = word;
-  printf("current addr :%" PRIu32 "\n", ass->current_address);
-  instr->word_address = ass->current_address;
-  int current_instruct = ass->current_address / sizeof(int32_t);
-  printf("current instruct: %i\n", current_instruct);
+  //printf("current addr :%" PRIu32 "\n", ass->current_address);
+  instr->word_address = ass->current_address; //0
+  int current_instruct = ass->current_address / sizeof(int32_t); //0
+  //printf("current instruct: %i\n", current_instruct);
   ass->instr[current_instruct] = instr;
   ass->current_address += sizeof(int32_t);
-  printf("current addr :%" PRIu32 "\n", ass->current_address);
+  //printf("current addr after add:%" PRIu32 "\n", ass->current_address);
 
 }
 
 
-
-int32_t *assemble_generate_bin(ASSEMBLER_STRUCT *ass)
-{
+int32_t *assemble_generate_bin(ASSEMBLER_STRUCT *ass) {
 
   int32_t *words = malloc(sizeof(int32_t) * (ass->TOTAL_line));
   //printf("before for loop in generate_bin\n");
@@ -77,32 +75,21 @@ int32_t *assemble_generate_bin(ASSEMBLER_STRUCT *ass)
     //printf("%i\n", ass->TOTAL_line );
     //printf("ass->instr[i]->binary_word %c\n", (ass->instr[i])->binary_word);
     words[i] = (ass->instr[i])->binary_word;
-    printf("words[i] after writing....%i\n",words[i]);
+    //printf("words[i] after writing....%i\n",words[i]);
    //printf("words generate: %i \n", words[i]);
   }
 
   return words;
 }
 
-char *delchr(char *buffer, char chr)
-{
+char *delchr(char *buffer, char chr) {
     char *str = strdup(buffer);
     char* c;
 
-	if ((c = strchr(str, chr)) != NULL)
-	{
-	    //size_t left = sizeof(str) - (c + 1 - str);
-	    strcpy(c, c+1);//memmove(c, c + 1, left);
+	if ((c = strchr(str, chr)) != NULL) {
+	    strcpy(c, c+1);
 	}
-
 	return str;
-}
-
-uint16_t *heap_uint16_t(uint16_t i)
-{
-	uint16_t *pt = malloc(sizeof(uint16_t));
-	*pt = i;
-	return pt;
 }
 
 
@@ -150,7 +137,6 @@ ASSEMBLER_STRUCT *assemble(TOKEN *lines,  function_assPtr func, const char *deli
 //printf("after for loop in assemble\n");
   // Initialize Assembly Program
 	int line_total         = lines->tokenCount - label_count;
-	//ASSEMBLER_STRUCT *ass  = malloc(sizeof(ASSEMBLER_STRUCT));
 	ass->instr             = malloc(sizeof(binary_instruct));
 	ass->TOTAL_line        = line_total;
 	ass->symbolTable       = symbolTable;

@@ -95,7 +95,6 @@ void list_insert_back(symbolTableList *list, char *val, uint16_t key) {
 
 
 void list_destroy(symbolTableList *list) {
-
   symbolTableNode *node = list->first;
   while (node != NULL) {
     symbolTableNode *nextNode = node->next;
