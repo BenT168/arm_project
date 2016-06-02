@@ -158,7 +158,6 @@ void decode_instr(int32_t word)
       break;
     default:
       break;
-
 	}
 }
 
@@ -441,18 +440,18 @@ void multiply(int32_t word)
 
     if(IS_SET(Acc))
     {
-        int32_t dataRn = convert(REG_READ(Rn));
-        mulResult += dataRn;
+      int32_t dataRn = convert(REG_READ(Rn));
+      mulResult += dataRn;
     }
 
     REG_WRITE(Rd, mulResult);
 
     if(IS_SET(SetCond))
     {
-        int bit31 = get_bits(mulResult, 30, 31); //N is the 31 bit of result
-        CPSR_PUT(N, bit31);
-        cpsrStruct->bitN = bit31;
-        (mulResult == 0) ? (cpsrStruct->bitZ = 1) : (cpsrStruct->bitZ = 0);
+      int bit31 = get_bits(mulResult, 30, 31); //N is the 31 bit of result
+      CPSR_PUT(N, bit31);
+      cpsrStruct->bitN = bit31;
+      (mulResult == 0) ? (cpsrStruct->bitZ = 1) : (cpsrStruct->bitZ = 0);
     }
 }
 
@@ -461,14 +460,14 @@ void multiply(int32_t word)
 
 void single_data_transfer(int32_t word)
 {
-    SDTInstruct *SDTInst = (SDTInstruct *) &word;
+  SDTInstruct *SDTInst = (SDTInstruct *) &word;
 
-    int dataRn     = SDTInst->Rn;         // base register
-    int dataOffset = SDTInst->Offset;
-    int dataI      = SDTInst->I;
-    int dataP      = SDTInst->P;
-    int dataU      = SDTInst->U;
-    int dataL      = SDTInst->L;
+  int dataRn     = SDTInst->Rn;         // base register
+  int dataOffset = SDTInst->Offset;
+  int dataI      = SDTInst->I;
+  int dataP      = SDTInst->P;
+  int dataU      = SDTInst->U;
+  int dataL      = SDTInst->L;
 
 	//Check if I is set
   if (IS_SET(dataI))
@@ -487,7 +486,7 @@ void single_data_transfer(int32_t word)
   } else {
     IS_SET(dataL) ? (word = MEM_R_32bits(dataRn)) : MEM_W_32bits(dataRn, word);
     dataRn += (IS_SET(dataU)? dataOffset : -dataOffset);
-    }
+  }
 }
 
 

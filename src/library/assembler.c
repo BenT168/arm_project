@@ -12,145 +12,6 @@
 
 extern ASSEMBLER_STRUCT *ass;
 
-//ASSEMBLER_STRUCT* assemble(TOKEN *lines, function_assPtr func, const char *delim)
-//{
-  //char* line_after_delim = NULL;
-  //=(char*)malloc(sizeof(char) * MAX_CHAR_inLINE);
-//  int label_count = 0;
-  //int size_of_string = 0;
-  //char **symbol = (char**)malloc(sizeof(char*)*sizeof(line_after_delim));
-  //for(int i = 0; i < 10; i++) {
-    //symbol[i] = malloc(sizeof(char)*sizeof(line_after_delim));
-  //}
-//  TOKEN *token = (TOKEN*)malloc(sizeof(TOKEN));
-//  char* current_Line = (char*) malloc(sizeof(char) * lines->tokenCount);
-
-//  printf("before for loop\n");
-//  for(int i = 0; i < lines->tokenCount; i++) {
-//    printf("d1 \n");
-
-//    char* current_Line = (char*) malloc(sizeof(char) * lines->tokenCount);
-//    printf("d2 \n");
-
-  //  if(!current_Line) {
-    //  perror("Malloc failed.");
-    //} else {
-  /*    printf("d3 \n");
-      current_Line = lines->tokens[i];
-      printf("d4 \n");
-      token = tokenise(current_Line, delim);
-      tokens_print(token);
-      printf("d5 \n");
-      char *label = (char *) malloc(sizeof(char) * MAX_CHAR_inLINE);
-      label = lines->tokens[0];
-      printf("%s\n", label);
-      const char dLm = ':';
-      printf("d6 \n");
-      printf("%ld\n", sizeof(label));
-    //  if(sizeof(label))
-
-
-      char *test = ":from";
-      char *res = delstr(test);
-      printf("%s\n", res);
-      char *l = strchr(label, dLm);
-      printf("after l\n");
-      //line_after_delim = strdup(l);
-      label_count++;
-
-      char **symbol = (char**)malloc(sizeof(char*) * sizeof(l));
-      printf("after initialising symbol\n");
-      for(int i = 0; i < 10; i++) {
-        symbol[i] = malloc(sizeof(char)*sizeof(l));
-      }
-
-    //  for(int i=0; i < )
-      symbol[i] = delstr(l);
-
-      printf("after symbol\n");
-      //(char*)malloc(sizeof(char) * MAX_CHAR_inLINE);
-      printf("d6a \n"); */
-    /*  if(!line_after_delim) {
-        perror("Malloc failed");
-      }
-      printf("d6b \n");
-
-      char* str;
-      char* l = "hello:from";
-
-      str = strchr(l, dLm);
-
-      printf("%s\n", str);
-
-      line_after_delim = strchr(label, dLm);
-
-      printf("d7 \n");
-      if(line_after_delim != NULL) {
-        printf("d8 \n");
-        //have a label
-        label_count++;
-        symbol[i] = delstr(line_after_delim);
-         // removes ':' from line_after_delim
-      } */
-      //free(line_after_delim);
-      //free(label);
-  //  }
-  //free(current_Line);
-  //free(line_after_delim);
-/*  for(int i = 0; i < 10; i++) {
-    free(symbol[i]);
-  }
-  free(symbol);
-  }
-
-  //free(line_after_delim);
-
-  //free(current_Line);
-  printf("after for loop\n"); */
-
-  //tokens_free(token);
-/*  for(int i = 0; i < 10; i++) {
-    free(symbol[i]);
-  }
-  free(symbol);*/
-
-  //initialise assemble
-  /*int line_total = lines->tokenCount - label_count;
-  ass = malloc(sizeof(ASSEMBLER_STRUCT));
-  ass->TOTAL_line = line_total;
-  ass->symbolTable = symbol;
-  if(line_after_delim != NULL) {
-    ass->instr = malloc(sizeof(binary_instruct) * (ass->TOTAL_line));
-    ass->current_address = 0;
-    //realloc(ass->instr, sizeof(binary_instruct) * (ass->TOTAL_line));
-  }
-
-  for(int i = 0; i < lines->tokenCount; i++) {
-    char* current_Line = malloc(strlen(lines->tokens[i]) + 1);
-    current_Line = lines->tokens[i];
-    if(!current_Line) {
-      perror("Malloc failed.");
-    } else {
-    token = tokenise(current_Line, delim);
-    char *label = token->tokens[0];
-    line_after_delim = strchr(label, ':');
-    int32_t word = func(token);
-    assemble_write(ass, word);
-   }
-   free(current_Line);
-   tokens_free(token);
- }*/
-//  return ass;
-//}
-/*
-char *delstr(char *str)
-{
-  char *result = strdup(str);
-  str++;
-  strcpy(result, str);
-  return result;
-}
-*/
 
 void assemble_free(ASSEMBLER_STRUCT *ass)
 {
@@ -216,6 +77,7 @@ int32_t *assemble_generate_bin(ASSEMBLER_STRUCT *ass)
 {
   printf("pls generate bin\n");
   printf("printing the assemble.....\n");
+
   int32_t *words = malloc(sizeof(int32_t) * (ass->TOTAL_line));
   printf("before for loop in generate_bin\n");
   for(int i = 0; i < (ass->TOTAL_line); i++)
@@ -229,12 +91,12 @@ int32_t *assemble_generate_bin(ASSEMBLER_STRUCT *ass)
   return words;
 }
 
-char *strdelchr(char *buffer, char chr)
+char *delchr(char *buffer, char chr)
 {
   char *str = strdup(buffer);
   char* c;
 
-	if ((c = index(str, chr)) != NULL)
+	if ((c = strchr(str, chr)) != NULL)
 	{
 	  //size_t left = sizeof(str) - (c + 1 - str);
 	  strcpy(c, c+1);//memmove(c, c + 1, left);
@@ -256,88 +118,65 @@ ASSEMBLER_STRUCT *assemble(TOKEN *lines, function_assPtr func, const char *delim
   printf("\n");
   printf("Hello assemble\n");
   // Pass #1
-<<<<<<< HEAD
-	map *symtbl      = map_new(&map_cmp_str);
-	uint16_t address = 0;
-	int labelc       = 0;
-  printf("before inner for loop in assemble\n");
-	for (int i = 0; i < lines->tokenCount; i++)
-	{
-		char *currl = strdup(lines->tokens[i]);
-		TOKEN *line = tokenise(currl, delim);
-		char *label = line->tokens[0];
-    printf("before if in assemble\n");
-		if (strchr(label, ':')) // Label encountered
-		{
-			labelc++;
-			map_put(symtbl, strdelchr(label, ':'), heap_uint16_t(address));
-      tokens_free(line);
-			continue;
-		}
-    printf("right after if in assemble\n");
-=======
+
   symbolTableList *symbolTable = NULL;
-	uint16_t  address = 0;
-	int       labelc  = 0;
+	uint16_t  address        = 0;
+	int       label_count    = 0;
   printf("before inner for loop in assemble\n");
 	for (int i = 0; i < lines->tokenCount; i++)
 	{
-		char   *currl = strdup(lines->tokens[i]);
-    printf("current line: %s\n", currl );
-		TOKEN *line  = tokenise(currl, delim);
-		char   *label = line->tokens[0];
+		char   *current_Line = strdup(lines->tokens[i]);
+    printf("current line: %s\n", current_Line);
+		TOKEN *line          = tokenise(current_Line, delim);
+		char  *label         = line->tokens[0];
     printf("label: %s\n", label);
-    if(strchr(label, ':')) //label encountered
-  {
-    labelc++;
-      if(labelc == 1) { // first label encountered
+
+    //char last_char = label[strlen(label) - 1];
+    if(1) //label encountered
+    {
+      label_count++;
+      printf("I'm in the if after lable_count++\n");
+      if(label_count == 1) { // first label encountered
+        printf("before list intialise\n");
         list_initialise(symbolTable);
+        printf("after list initialise\n");
       }
-     list_insert_back(symbolTable, end_list(symbolTable) , strdelchr(label, ':'), address);  // add symbol at end of list each time
-  }
+      list_insert_back(symbolTable, delchr(label, ':'), address);
+      printf("after list insert back\n");
+      // add symbol at end of list each time
+    }
     printf("label02: %s\n", label);
->>>>>>> 57464dd925bfc591f3b0db40668d231f2a1d6ad9
-		address += sizeof(int32_t);
-		tokens_free(line);
+
+  	address += sizeof(uint16_t);
+  	tokens_free(line);
 	}
   printf("after for loop in assemble\n");
   // Initialize Assembly Program
-	int line_tot        = lines->tokenCount - labelc;
-	ASSEMBLER_STRUCT *p = malloc(sizeof(ASSEMBLER_STRUCT));
-	p->instr            = malloc(sizeof(0));
-	p->TOTAL_line       = line_tot;
-	p->symbolTable      = symtbl;
-	p->current_address  = 0;
-	//realloc_instrs(p);
+	int line_total        = lines->tokenCount - label_count;
+	ASSEMBLER_STRUCT *ass = malloc(sizeof(ASSEMBLER_STRUCT));
+	ass->instr            = malloc(sizeof(binary_instruct));
+	ass->TOTAL_line       = line_total;
+	ass->symbolTable      = symbolTable;
+	ass->current_address  = 0;
 
 	// Pass #2
 	for (int i = 0; i < lines->tokenCount; i++)
 	{
-<<<<<<< HEAD
-		char *currl = strdup(lines->tokens[i]);
-=======
-		char  *currl = strdup(lines->tokens[i]);
-    printf("currl for tokenise: %s\n",currl );
->>>>>>> 57464dd925bfc591f3b0db40668d231f2a1d6ad9
-		TOKEN *line = tokenise(currl, delim);
-		char *mnem  = line->tokens[0];
-		if (strchr(mnem, ':')) continue; // Label encountered
+		char *current_Line = strdup(lines->tokens[i]);
+    printf("currl for tokenise: %s\n",current_Line);
+		TOKEN *line = tokenise(current_Line, delim);
+		char *mnemonic = line->tokens[0];
+		if (strchr(mnemonic, ':')) continue; // Label encountered
 
-		int32_t word = func(line, p);
+		int32_t word = func(line, ass);
     printf("word: %i\n", word );
 
-		assemble_write(p, word);
+		assemble_write(ass, word);
     printf("can i write in assemle????\n");
 
-  //if(strcmp(line->tokens[0], "mla") != 0) {
+    list_destroy(symbolTable);
     tokens_free(line);
-//    }
-
-  //    if (i != (lines->tokenCount - 1))
-  //    {
-//      }
-
-	}// Assembling done
+	}
   printf("assemble done\n");
-	return p;
+	return ass;
 }
