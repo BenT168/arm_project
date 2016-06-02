@@ -43,25 +43,25 @@ typedef struct MultiplyInstruct
 
 typedef struct SDTInstruct
 {
-    unsigned int Offset : 12;
-    unsigned int Rd     :  4;
-    unsigned int Rn     :  4;
-    unsigned int L      :  1;
-    unsigned int _00    :  2;
-    unsigned int U      :  1;
-    unsigned int P      :  1;
-    unsigned int I      :  1;
+    unsigned int Offset : 12; /* Offset 12-bits */
+    unsigned int Rd     :  4; /* Destination register 4-bits */
+    unsigned int Rn     :  4; /* First operand register 4-bits */
+    unsigned int L      :  1; /* Load/Store bit 1-bit */
+    unsigned int _00    :  2; /* Nullity field 2-bits */
+    unsigned int Up     :  1; /* Up bit 1-bit */
+    unsigned int P      :  1; /* Pre/Post indexing bit 1-bit */
+    unsigned int ImmOff :  1; /* Immediate Offset 1-bit */
     unsigned int _01    :  2;
-    unsigned int Cond   :  4;
+    unsigned int Cond   :  4; /* Condition field 4-bits */
 } SDTInstruct;
 
 
 typedef struct BranchInstruct
 {
-    unsigned int Offset : 24;
-    unsigned int _0     :  1;
+    unsigned int Offset : 24; /* Offset 24-bits */
+    unsigned int _0     :  1; /* Nullity field 1-bit */
     unsigned int _101   :  3;
-    unsigned int Cond   :  4;
+    unsigned int Cond   :  4; /* Condition field 4-bits */
 } BranchInstruct;
 
 

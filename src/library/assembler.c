@@ -36,12 +36,12 @@ uint16_t assemble_constant_write(ASSEMBLER_STRUCT *ass, int32_t word)
 
     ass->instr = realloc(ass->instr, sizeof(binary_instruct*) * ass->TOTAL_line);
 
-	uint16_t address = (ass->TOTAL_line-1) * sizeof(int32_t);
+	uint16_t address       = (ass->TOTAL_line-1) * sizeof(int32_t);
 	binary_instruct *instr = malloc(sizeof(binary_instruct));
-	instr->binary_word  = word;
-	instr->word_address = address;
+	instr->binary_word     = word;
+	instr->word_address    = address;
 
-	int current_instruct = address / sizeof(int32_t);
+	int current_instruct         = address / sizeof(int32_t);
 	ass->instr[current_instruct] = instr;
 
 	return address;
@@ -54,6 +54,7 @@ void assemble_write(ASSEMBLER_STRUCT *ass, int32_t word)
   //print_bits_inBE(word);
 
   binary_instruct *instr = malloc(sizeof(binary_instruct));
+
   instr->binary_word = word;
   //printf("current addr :%" PRIu32 "\n", ass->current_address);
   instr->word_address = ass->current_address; //0
@@ -93,7 +94,7 @@ char *delchr(char *buffer, char chr) {
 }
 
 
-ASSEMBLER_STRUCT *assemble(TOKEN *lines,  function_assPtr func, const char *delim)
+ASSEMBLER_STRUCT *assemble(TOKEN *lines, function_assPtr func, const char *delim)
 {
 
   //printf("try this\n");
@@ -148,13 +149,14 @@ ASSEMBLER_STRUCT *assemble(TOKEN *lines,  function_assPtr func, const char *deli
 		char  *current_Line = strdup(lines->tokens[i]);
     //printf("currl for tokenise: %s\n",current_Line);
 		TOKEN *line = tokenise(current_Line, delim);
-		char   *mnemonic = line->tokens[0];
+		char *mnemonic = line->tokens[0];
 		if (strchr(mnemonic, ':')) continue; // Label encountered
 
 		int32_t word = func(line, ass);
     //printf("word: %i\n", word );
 
 		assemble_write(ass, word);
+
     //printf("can i write in assemle????\n");
 
     tokens_free(line);

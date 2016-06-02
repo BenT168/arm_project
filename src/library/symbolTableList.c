@@ -39,7 +39,8 @@ symbolTableNode *list_alloc_node(void) {
     perror("list_alloc_node");
     exit(EXIT_FAILURE);
   }
-return node;
+  printf("We will return a node\n");
+  return node;
 }
 
 void list_free_node(symbolTableNode *node) {
@@ -47,18 +48,11 @@ void list_free_node(symbolTableNode *node) {
 }
 
 void list_initialise(symbolTableList *list) {
-
-//printf("alloc first\n");
 list->first = list_alloc_node();
-//printf("alloc last\n");
 list->last = list_alloc_node();
-//printf(" first prev\n");
 list->first->prev = NULL;
-//printf(" last next\n");
 list->last->next = NULL;
-//printf("first next\n");
 list->first->next = list->last;
-//printf("last prev\n");
 list->last->prev = list->first;
 }
 

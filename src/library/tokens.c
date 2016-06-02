@@ -11,10 +11,11 @@ TOKEN *tokenStruct = NULL;
 
 void tokens_free(TOKEN *lines)
 {
-	for (int i = 0 ; i < lines->tokenCount; i++)
+	for (int i = 0; i < lines->tokenCount; i++)
 	{
 		free(lines->tokens[i]);
 	}
+
 	//free(lines->tokens);
   free(lines->line);
 	free(lines);
@@ -40,7 +41,7 @@ TOKEN* tokenise(char *str, const char *delim)
   size_t space = 0;
    // allocate space for tokenst
    // tokens are added to this array;
-	 if ( tokenStruct == NULL || tokenStruct->tokens == NULL)
+	if (tokenStruct == NULL || tokenStruct->tokens == NULL)
  	{
  		perror("Malloc failed for tokens! INSUFFICIENT MEMORY");
  		exit(EXIT_FAILURE);
@@ -52,9 +53,9 @@ TOKEN* tokenise(char *str, const char *delim)
 	//printf("first tok: %s\n", tok);
   while(tok != NULL) {
 		if (*tok == '\0') continue; // Discard empty tokens
-		space              	 = sizeof(char *) * (Tokncount + 1);
-		tokenStruct->tokens  = realloc(tokenStruct->tokens, space);
-		if ((tokenStruct->tokens)  == NULL)
+		space               = sizeof(char *) * (Tokncount + 1);
+		tokenStruct->tokens = realloc(tokenStruct->tokens, space);
+		if ((tokenStruct->tokens) == NULL)
   	{
   		perror("Malloc failed for tokens! INSUFFICIENT MEMORY");
   		exit(EXIT_FAILURE);
@@ -83,5 +84,5 @@ void tokens_iter(TOKEN *lines, tokens_func func)
 char tokens_endc(TOKEN *lines)
 {
 	return lines->tokens[lines->tokenCount-1]
-		[strlen(lines->tokens[lines->tokenCount-1])-1];
+	[strlen(lines->tokens[lines->tokenCount-1])-1];
 }
