@@ -6,7 +6,6 @@
 
 void print_bits(int32_t i);
 /*PrintBits Function*/
-
 void print_bits_inBE(int32_t i);
 /*Print bits in big endian */
 int32_t get_bits(int32_t i, int start, int end);

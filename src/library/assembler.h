@@ -16,7 +16,7 @@ typedef struct binary_instruct
 typedef struct ASSEMBLER_STRUCT
 {
   binary_instruct **instr; // Binary Instruction Array
-  symbolTableList *symbolTable; //array of symbol table
+  symbolTableList* symbolTable; //array of symbol table
   int TOTAL_line;   // total of the line
   uint16_t current_address; //address of the current instruction
 } ASSEMBLER_STRUCT;
@@ -29,7 +29,7 @@ ASSEMBLER_STRUCT *assemble(TOKEN *, function_assPtr, const char *);
 
 void assemble_free(ASSEMBLER_STRUCT *);
 
-uint16_t assemble_append(ASSEMBLER_STRUCT *, int32_t);
+uint16_t assemble_constant_write(ASSEMBLER_STRUCT *, int32_t);
 
 void assemble_write(ASSEMBLER_STRUCT *, int32_t);
 
@@ -39,6 +39,6 @@ int32_t *assemble_generate_bin(ASSEMBLER_STRUCT *);
 
 char *delchr(char *, char);
 
-uint16_t *heap_uint16_t(uint16_t);
+
 
 #endif

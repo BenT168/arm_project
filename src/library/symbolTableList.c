@@ -34,7 +34,7 @@ uint16_t list_iter_addr(list_iter iter) {
 /////////////////////////////////main functions////////////////////////////////
 
 symbolTableNode *list_alloc_node(void) {
-  struct symbolTableNode *node = malloc(sizeof(symbolTableNode));
+  symbolTableNode *node = malloc(sizeof(symbolTableNode));
   if (node == NULL) {
     perror("list_alloc_node");
     exit(EXIT_FAILURE);
@@ -47,11 +47,18 @@ void list_free_node(symbolTableNode *node) {
 }
 
 void list_initialise(symbolTableList *list) {
+
+//printf("alloc first\n");
 list->first = list_alloc_node();
+//printf("alloc last\n");
 list->last = list_alloc_node();
+//printf(" first prev\n");
 list->first->prev = NULL;
+//printf(" last next\n");
 list->last->next = NULL;
+//printf("first next\n");
 list->first->next = list->last;
+//printf("last prev\n");
 list->last->prev = list->first;
 }
 
@@ -88,12 +95,28 @@ void list_insert_back(symbolTableList *list, char *val, uint16_t key) {
 
 
 void list_destroy(symbolTableList *list) {
-  printf("going into list_destroy\n");
+  //printf("going into list_destroy\n");
   struct symbolTableNode *node = list->first;
-  printf("after assigning node in list destroy\n");
+  //printf("after assigning node in list destroy\n");
   while (node != NULL) {
     symbolTableNode *nextNode = node->next;
     list_free_node(node);
     node = nextNode;
   }
+}
+
+void displayList(symbolTableList *list) {
+
+   //start from the beginning
+  symbolTableNode* node = list->first;
+
+   //navigate till the end of the list
+   printf("\n[ ");
+
+   while(node != NULL) {
+      printf("(%s,%i)", node->stringVal ,node->address);
+      node = node->next;
+   }
+
+   printf(" ]");
 }

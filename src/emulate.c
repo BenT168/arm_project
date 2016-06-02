@@ -16,6 +16,7 @@
 
 #include "library/bitwise.h"
 #include "library/register.h"
+#include "library/gpio.h"
 
 /* Memory Read/Write */
 
@@ -118,25 +119,30 @@ void emulator()
   int cond_check = check_cond(fetched_code);
 
   //the emulator should terminate when it executes an all-0 instr
-
+  //printf("before while loop in print register\n");
   do {
+    //printf("start to do loop\n");
     //If the condition matched, we can execute the instr
     if(cond_check == 1) {
+      //printf("in the if in do loop\n");
       decode_instr(arm_Ptr->pipeline->decoded);
     }
 
   arm_Ptr->pipeline->decoded = arm_Ptr->pipeline->fetched;
   arm_Ptr->pipeline->fetched = MEM_R_32bits(REG_READ(PC));
   INC_PC(4);
+  //printf("after arm_Ptr->pipeline stuff\n" );
 
   fetched_code = arm_Ptr->pipeline->fetched;
   decoded_code = arm_Ptr->pipeline->decoded;
+  //printf("after fetch and decode in do loop\n");
 
   } while (decoded_code != 0);
 
   //for a cycle of pipeline, previously fetched instr is decoded and ancestor ints is executed.
   //the emulator should terminate when it executes an all-0 instr
   //Upon termination, output the state of all the registers
+  //printf("we want to print register\n");
   print_register_state();
 }
 
@@ -279,6 +285,7 @@ int32_t as_shifted_reg(int32_t value, int8_t setCond)
 			}
   		if (IS_SET(setCond)) {
 				CPSR_PUT(C, carryAmt);
+
 			}
       break;
   	}
@@ -418,6 +425,7 @@ void multiply(int32_t word)
   MultiplyInstruct *MultiInst = (MultiplyInstruct *) &word;
   //CPSR_STRUCT *cpsrStruct = (CPSR_STRUCT *) &cpsrReg;
 
+
   int Acc     = MultiInst->Acc;
   int SetCond = MultiInst->SetCond;
   int Rd      = MultiInst->Rd;
@@ -467,18 +475,18 @@ void single_data_transfer(int32_t word)
   int _Rd = arm_Ptr->registers[dataRd];
 
   //Check if I is setbranchOffset
- if (IS_SET(dataI))
-  {
-    dataOffset = as_shifted_reg(dataOffset, 0);
-  } else {
-    dataOffset = as_immediate_reg(dataOffset);
-  }
+ if (IS_SET(dataI)) {
+   dataOffset = as_shifted_reg(dataOffset, 0);
+ } else {
+   dataOffset = as_immediate_reg(dataOffset);
+ }
 
   // Pre-Indexing
   if (IS_SET(dataP)) {
     _Rn += (IS_SET(dataU) ? dataOffset : -dataOffset);
   }
 
+/*
   // Check if it is out of boundary
   if (_Rn < 0 || _Rn >= MEMORY_CAPACITY) {
     printf("Error: Out of bounds memory access at address 0x%08x\n", _Rn);
@@ -489,10 +497,36 @@ void single_data_transfer(int32_t word)
     REG_WRITE(dataRd, MEM_R_32bits(_Rn));
   } else {
     MEM_W_32bits(_Rn, _Rd);
+  }*/
+
+  if (is_GPIO_addr(_Rn)) {
+    //printf("before print GPIO_addr\n");
+    print_GPIO_addr(_Rn);
+    if(IS_SET(dataL)) {
+      REG_WRITE(dataRd, MEM_R_32bits(_Rn));
+    }
+  } else {
+    if (_Rn < 0 || _Rn >= MEMORY_CAPACITY) {
+      printf("Error: Out of bounds memory access at address 0x%08x\n", _Rn);
+      return;
+    }
+    if(IS_SET(dataL)) {
+      REG_WRITE(dataRd, MEM_R_32bits(_Rn));
+    } else {
+      MEM_W_32bits(_Rn, _Rd);
+    }
   }
+
   if (IS_CLEAR(dataP)) {
     REG_WRITE(dataRn, _Rn += (IS_SET(dataU) ? dataOffset : -dataOffset));
   }
+
+  /*if (!is_GPIO_addr(_Rn)) {
+    if (_Rn < 0 || _Rn > MEMORY_CAPACITY) {
+      printf("Error: Out of bounds memory access at address 0x%08x\n", _Rn);
+      return;
+    }
+  }*/
 }
 
 
@@ -541,7 +575,6 @@ int main(int argc, char **argv)
     printf( "No argument in input\n");
     exit(EXIT_FAILURE);
   }
-
   arm_Ptr = calloc (1, sizeof(ARM_State));
   arm_Ptr->pipeline = calloc(1, sizeof(Pipeline));
 

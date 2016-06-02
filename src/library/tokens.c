@@ -32,8 +32,8 @@ TOKEN* tokenise(char *str, const char *delim)
 {
 	tokenStruct  = malloc(sizeof(tokenStruct));
 	tokenStruct->tokens   = malloc(0);
-	printf("\n");
-	printf("after malloc (in tokenise)\n");
+	//printf("\n");
+	//printf("after malloc (in tokenise)\n");
   int Tokncount = 0; // initial room for string
 	char *tok = NULL;
   size_t space = 0;
@@ -48,7 +48,7 @@ TOKEN* tokenise(char *str, const char *delim)
   tokenStruct->line = strdup(str);
 
   tok = strtok(str, delim); // get the first token
-	printf("first tok: %s\n", tok);
+	//printf("first tok: %s\n", tok);
   while(tok != NULL) {
 		if (*tok == '\0') continue; // Discard empty tokens
 		space              	 = sizeof(char *) * (Tokncount + 1);

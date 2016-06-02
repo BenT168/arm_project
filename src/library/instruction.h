@@ -224,9 +224,8 @@ struct { /* ShiftType_toString is implemented as */
             }                                                  \
           }                                                     \
           if (strcmp(buffer, low_buffer) == 0)                   \
-	  {                                                      \
-      printf("inside if of str_to_enum\n");                \
-      return a##_array[i].num;                             \
+          {                                                 \
+            return a##_array[i].num;                             \
 		}                                                      \
 	}                                                        \
 	return -1;                                               \
