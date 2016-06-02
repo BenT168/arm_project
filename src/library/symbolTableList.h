@@ -33,15 +33,17 @@ void list_insert_front(symbolTableList *, char *, uint16_t);
 
 void list_insert_back(symbolTableList *, char *, uint16_t);
 
-uint16_t list_get_address(symbolTableList *, char*); 
+uint16_t list_get_address(symbolTableList *, char*);
 
 void list_destroy(symbolTableList *);
 
+void displayList(symbolTableList *);
+
 ///////////////////////////////Iterate/////////////////////////////////////////
 
-list_iter begin_list(symbolTableList *);
+list_iter begin_list(symbolTableList *list);
 
-list_iter end_list(symbolTableList *);
+list_iter end_list(symbolTableList *list);
 
 list_iter list_iter_next(list_iter iter);
 
