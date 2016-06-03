@@ -55,13 +55,14 @@ void assemble_write(ASSEMBLER_STRUCT *ass, int32_t word)
 
   binary_instruct *instr = malloc(sizeof(binary_instruct));
   instr->binary_word = word;
-  printf("current addr :%" PRIu32 "\n", ass->current_address);
+  printf("word: %i\n", word );
+  //printf("current addr :%" PRIu32 "\n", ass->current_address);
   instr->word_address = ass->current_address;
   int current_instruct = ass->current_address / sizeof(int32_t);
-  printf("current instruct: %i\n", current_instruct);
+  //printf("current instruct: %i\n", current_instruct);
   ass->instr[current_instruct] = instr;
   ass->current_address += sizeof(int32_t);
-  printf("current addr :%" PRIu32 "\n", ass->current_address);
+  //printf("current addr :%" PRIu32 "\n", ass->current_address);
 
 }
 
@@ -74,12 +75,13 @@ int32_t *assemble_generate_bin(ASSEMBLER_STRUCT *ass)
   //printf("before for loop in generate_bin\n");
   for(int i = 0; i < (ass->TOTAL_line); i++)
   {
-    //printf("%i\n", ass->TOTAL_line );
+    printf("total_line: %i\n", ass->TOTAL_line );
     //printf("ass->instr[i]->binary_word %c\n", (ass->instr[i])->binary_word);
     words[i] = (ass->instr[i])->binary_word;
     printf("words[i] after writing....%i\n",words[i]);
    //printf("words generate: %i \n", words[i]);
   }
+
 
   return words;
 }

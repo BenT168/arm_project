@@ -496,37 +496,6 @@ void single_data_transfer(int32_t word)
     RegRn += (IS_SET(dataU) ? dataOffset : -dataOffset);
   }
 
-/*
-  // Check if it is out of boundary
-  if (_Rn < 0 || _Rn >= MEMORY_CAPACITY) {
-    printf("Error: Out of bounds memory access at address 0x%08x\n", _Rn);
-    return;
-  }
-
-  if (IS_SET(dataL)) {
-    REG_WRITE(dataRd, MEM_R_32bits(_Rn));
-  } else {
-    MEM_W_32bits(_Rn, _Rd);
-  }*/
-/*
-  if (is_GPIO_addr(_Rn)) {
-    //printf("before print GPIO_addr\n");
-    print_GPIO_addr(_Rn);
-    if(IS_SET(dataL)) {
-      REG_WRITE(dataRd, MEM_R_32bits(_Rn));
-    }
-  } else {
-    if (_Rn < 0 || _Rn >= MEMORY_CAPACITY) {
-      printf("Error: Out of bounds memory access at address 0x%08x\n", _Rn);
-      return;
-    }
-    if(IS_SET(dataL)) {
-      REG_WRITE(dataRd, MEM_R_32bits(_Rn));
-    } else {
-      MEM_W_32bits(_Rn, _Rd);
-    }
-    */
-
   if (is_GPIO_addr(RegRn))
   {
     print_GPIO_addr(RegRn);
@@ -555,20 +524,6 @@ void single_data_transfer(int32_t word)
   if (IS_CLEAR(dataP)) {
     REG_WRITE(dataRn, RegRn += (IS_SET(dataU) ? dataOffset : -dataOffset));
   }
-
-  /*if (!is_GPIO_addr(_Rn)) {
-    if (_Rn < 0 || _Rn > MEMORY_CAPACITY) {
-      printf("Error: Out of bounds memory access at address 0x%08x\n", _Rn);
-=======
-  if (!is_GPIO_addr(RegRn))
-  {
-    if (RegRn < 0 || RegRn > MEMORY_CAPACITY)
-    {
-      printf("Error: Out of bounds memory access at address 0x%08x\n", RegRn);
->>>>>>> 4461587c9fe6faeddce7868fa96d8c28a3a1e686
-      return;
-    }
-  }*/
 }
 
 /*branch */

@@ -121,17 +121,17 @@ void write_File(ASSEMBLER_STRUCT *ass, const char *binaryFile)
 
 //////////////////////////   Core     //////////////////////////////////////////
 
-int as_numeric_constant(int vALue){
+int as_numeric_constant(int value){
 
   int to_num = 0;
 
-  while (get_bits(vALue, 8 , range_bit - 1 ) != 0 && to_num < range_bit )
+  while (get_bits(value, 8 , range_bit - 1 ) != 0 && to_num < range_bit )
   {
      for (int i = 0; i < 2; i++)
       {
-        int last = BIT_GET(vALue, 31);
-        vALue <<= 1;
-        BIT_PUT(vALue, 0, last);
+        int last = BIT_GET(value, 31);
+        value <<= 1;
+        BIT_PUT(value, 0, last);
       }
     	to_num += 2;
   }
@@ -140,7 +140,7 @@ int as_numeric_constant(int vALue){
     perror("numerical constant cannot be represented.");
     exit(EXIT_FAILURE);
   }
-  return ((to_num / 2) << 8) | vALue;
+  return ((to_num / 2) << 8) | value;
 }
 
 // can be either <shiftname><register> or <shiftname><#expression>
