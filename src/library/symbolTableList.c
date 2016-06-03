@@ -50,7 +50,6 @@ symbolTableNode *list_alloc_node(void) {
     perror("list_alloc_node");
     exit(EXIT_FAILURE);
   }
-  printf("We will return a node\n");
   return node;
 }
 

@@ -303,7 +303,6 @@ int check_op2(TOKEN *line, int op2){
 
  int32_t ass_data_proc(TOKEN *line, int SetCond, int Rn, int Rd, int Operand_2)
 {
-  printf("start of data proccessing\n");
 	char *Operand2 = line->tokens[Operand_2];
 	char *mnemonic = line->tokens[0];
 
@@ -333,7 +332,6 @@ int check_op2(TOKEN *line, int op2){
 
 int32_t ass_data_proc_result(TOKEN *line, ASSEMBLER_STRUCT *ass)
 {
-  printf("going to do data proccessing result!!!\n");
   int CPSR_CLEAR  = 0;
   int POS_OF_RD   = 1;
   int POS_OF_RN   = 2;
@@ -352,7 +350,6 @@ int32_t ass_data_proc_result(TOKEN *line, ASSEMBLER_STRUCT *ass)
 
 int32_t ass_data_proc_mov(TOKEN *line, ASSEMBLER_STRUCT *ass)
 {
-  printf("going to do data proccessing move!!!\n");
   int CPSR_CLEAR =  0;
   int POS_OF_RD  =  1;
   int RN_IGNORED = -1;
@@ -370,7 +367,6 @@ int32_t ass_data_proc_mov(TOKEN *line, ASSEMBLER_STRUCT *ass)
 */
 int32_t ass_data_proc_cpsr(TOKEN *line, ASSEMBLER_STRUCT *ass)
 {
-  printf("going to do data proccessing CPSR!!!\n");
   int CPSR_SET   =  1;
   int RD_IGNORED = -1;
   int POS_OF_RN  =  1;
@@ -557,23 +553,22 @@ int32_t SDT_num_const(TOKEN *line, ASSEMBLER_STRUCT *ass) {
 
 int32_t ass_branch(TOKEN *line, ASSEMBLER_STRUCT *ass)
 {
-
-  char *suffix = (strcmp(line->tokens[0], "b") == 0) ? "AL" : (line->tokens[0] + 1);
+  char *suffix = (strcmp(line->tokens[0], "b") == 0) ? "al" : (line->tokens[0] + 1);
 
 	char *lbl   = line->tokens[1];
- //	char *address = PARSE_REG(expr_to_num(label));
 
   uint16_t lbl_address = list_get_address(ass->symbolTable, lbl);
 
   int sign   = (lbl_address > ass->current_address) ? -1 : 1;
-	int offset = ((ass->current_address  - lbl_address + 8) * sign )  >> 2;  // compute offet
+	int offset = ( sign * (ass->current_address  - lbl_address + 8)) >> 2;  // compute offset
+  int newOffset = (offset > 0) ? - offset : offset;
 
 	BranchInstruct Branchinstr;
 
+
 	Branchinstr.Cond   = str_to_cond(suffix);
-	Branchinstr._101   = 5;
-  Branchinstr._0     = 0;
-	Branchinstr.Offset =  ( offset < 0 ? - (offset) : (offset) );
+	Branchinstr._1010  = 10;
+	Branchinstr.Offset = newOffset + 2;
 
 
 	return *((int32_t *) &Branchinstr);
