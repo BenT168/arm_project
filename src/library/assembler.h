@@ -37,8 +37,12 @@ void assemble_print(ASSEMBLER_STRUCT *);
 
 int32_t *assemble_generate_bin(ASSEMBLER_STRUCT *);
 
-char *delchr(char *, char);
+char *strdelchr(char *, char);
 
 uint16_t *heap_uint16_t(uint16_t);
+
+char *delstr(char *str);
+
+void *chk(void *);
 
 #endif

@@ -22,6 +22,8 @@ typedef void (*tokens_func)(char *);
 
 /*Function Prototype*/
 
+void *tok_chk(void *);
+
 void tokens_free(TOKEN *);
 
 void tokens_print(TOKEN *);

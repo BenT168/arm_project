@@ -5,7 +5,18 @@
 
 #include "symbolTableList.h"
 
-///////////////////// ADT Double-Linked List //////////////////////////////////
+
+int map_cmp_str(void *mic, void *mik)
+{
+	return strcmp((char *) mic, (char *) mik);
+}
+
+
+int map_cmp_int(void *mic, void *mik)
+{
+	return *((int *) mic) - *((int *) mik);
+}
+
 
 ///////////////////////////////Iterate/////////////////////////////////////////
 

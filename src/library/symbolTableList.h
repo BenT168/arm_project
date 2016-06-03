@@ -6,6 +6,15 @@
 #include <string.h>
 #include <stdint.h>
 
+typedef int (*map_cmp)(void *, void *);
+
+int map_cmp_str(void *, void *);
+
+int map_cmp_int(void *, void *);
+
+////////////////////////////////////////////////////////////////////////////////
+
+
 typedef struct symbolTableNode {
   char *stringVal;
   uint16_t address;
@@ -18,8 +27,8 @@ typedef struct symbolTableList {
   symbolTableNode *last;
 } symbolTableList;
 
-
 typedef struct symbolTableNode* list_iter;
+
 
 symbolTableNode *list_alloc_node(void);
 
@@ -33,7 +42,7 @@ void list_insert_front(symbolTableList *, char *, uint16_t);
 
 void list_insert_back(symbolTableList *, char *, uint16_t);
 
-uint16_t list_get_address(symbolTableList *, char*); 
+uint16_t list_get_address(symbolTableList *, char*);
 
 void list_destroy(symbolTableList *);
 
@@ -52,5 +61,7 @@ char* list_iter_value(list_iter iter);
 uint16_t list_iter_addr(list_iter iter);
 
 #define list_is_internal(iter) (iter->next != NULL && iter->next != NULL)
+
+
 
 #endif
