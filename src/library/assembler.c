@@ -20,8 +20,11 @@ void assemble_free(ASSEMBLER_STRUCT *ass)
   {
     free(ass->instr[i]);
   }
+  //printf("after for loop in assemble_free\n");
 
-  free(ass->instr);
+  //free(ass->instr);
+
+  //printf("after free ass->inster\n");
   free(ass);
 }
 
