@@ -16,12 +16,17 @@ extern ASSEMBLER_STRUCT *ass;
 
 void assemble_free(ASSEMBLER_STRUCT *ass)
 {
-  for(int i = 0; i < ass->TOTAL_line; i++)
-  {
+   //puts("begin ass free");
+  for(int i = 0; i < ass->TOTAL_line; i++) {
+    //puts("in for loop in ass free");
     free(ass->instr[i]);
   }
 
-  free(ass->instr);
+  //free(ass->instr);
+  //puts("after ass instr free");
+  //puts("in here list not null");
+    list_destroy(ass->symbolTable);
+   //puts("after symboltable free");
   free(ass);
 }
 
@@ -131,7 +136,6 @@ ASSEMBLER_STRUCT *assemble(TOKEN *lines, function_assPtr func, const char *delim
 		tokens_free(line);
 
   }
-  list_destroy(symbolTable);
   //printf("after list destroy?\n");
 
 
