@@ -33,6 +33,8 @@ void list_insert_front(symbolTableList *, char *, uint16_t);
 
 void list_insert_back(symbolTableList *, char *, uint16_t);
 
+void list_insert_ascending(symbolTableList *list, char* val, uint16_t key);
+
 uint16_t list_get_address(symbolTableList *, char*);
 
 void list_destroy(symbolTableList *);

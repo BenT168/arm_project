@@ -125,10 +125,10 @@ void write_File(ASSEMBLER_STRUCT *ass, const char *binaryFile)
   free(program);
 
   end: ;
-  //printf("after free program\n");
+  printf("after free program\n");
   fclose(file);
 
-  //printf("after fclose\n");
+  printf("after fclose\n");
 
 
 
@@ -528,7 +528,7 @@ int32_t ass_single_data_transfer(TOKEN *line, ASSEMBLER_STRUCT *ass)
 
   } else if (Is_Expression(expr)) {          // Case [Rn, <#expression>]
     RnNum = atoi(rn +1);
-    printf("RnNum: %i\n", RnNum);
+    //printf("RnNum: %i\n", RnNum);
     if(strcmp(adr, "[PC") != 0) {
       offset = abs(expr_to_num(expr));
       UpFlag = offset >= 0;
@@ -542,13 +542,13 @@ int32_t ass_single_data_transfer(TOKEN *line, ASSEMBLER_STRUCT *ass)
 
   } else {                                   // Case Optional
     Imm = 1;
-     printf("expr :%s\n", expr);
+     //printf("expr :%s\n", expr);
     if (expr[0] == '+' || expr[0] == '-') {  // Check if there is sign
-    puts("in if statement");
+    //puts("in if statement");
       UpFlag = (expr[0] == '+') ;                // If U is set then + else -
       expr++;                                // Remove the sign
     }
-    puts("in this shifted reg");
+    //puts("in this shifted reg");
     RnNum = atoi(rn +1);
     offset = as_shifted_reg_ass(newline, 3);          // As shifted register
     UpFlag = (expr[0] == '+' || expr[0] == '-' ) ? UpFlag : ( offset >= 0 );
@@ -567,11 +567,11 @@ int32_t ass_single_data_transfer(TOKEN *line, ASSEMBLER_STRUCT *ass)
   SDTinstr.L	     = (strcmp(mnem, "ldr") == 0);  //ldr --> L is set
 //  printf("mnem :%s\n",mnem);
   SDTinstr.Rn     = RnNum;
-  printf("Rn: %i\n", RnNum);
+  //printf("Rn: %i\n", RnNum);
   SDTinstr.Rd	   = PARSE_REG(1);
-  printf("Rd: %i\n", PARSE_REG(1));
+  //printf("Rd: %i\n", PARSE_REG(1));
   SDTinstr.Offset = offset;
-  printf("Offset: %i\n", offset);
+  //printf("Offset: %i\n", offset);
  //puts("end of std");
   return *((int32_t *) &SDTinstr);
 
@@ -590,20 +590,27 @@ int32_t ass_branch(TOKEN *line, ASSEMBLER_STRUCT *ass)
 
   char *suffix = (first_letter_token != 'b') ? "AL" : (line->tokens[0] + 1);
 	char *lbl    = line->tokens[1];
+  printf("lbl: %s\n",lbl);
 
   uint16_t lbl_address = list_get_address(ass->symbolTable,lbl);
+  printf("lbl addr:%i\n",lbl_address);
 
 
   int sign   = (lbl_address > ass->current_address) ? -1 : 1;
+  printf("sign: %i\n", sign);
   // compute offet
-	int offset = ((ass->current_address - lbl_address + 8) * sign ) >> 2;
+	int offset = (((ass->current_address - lbl_address + 8) * sign) >> 2);
+  int newOffset = (offset < 0) ? offset : -offset;
+  //printf("Offset: %i\n", offset);
 
 	BranchInstruct Branchinstr;
 	Branchinstr.Cond   = str_to_cond(suffix);
-	Branchinstr._101   = 5 % (1 << sizeof(char));
-  Branchinstr._0     = 0;
-	Branchinstr.Offset = offset;
-
+  printf("str suffix:%i\n", Branchinstr.Cond);
+	Branchinstr._1010  = 10;
+  //Branchinstr._0     = 0;
+	Branchinstr.Offset = newOffset + 2;
+  printf("Offset: %i\n", newOffset + 2);
+  puts("print before result");
   //printf("PLEASE do %s for %s !!\n", suffix, lbl);
 
 	return *((int32_t *) &Branchinstr);

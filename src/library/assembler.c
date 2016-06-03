@@ -16,24 +16,12 @@ extern ASSEMBLER_STRUCT *ass;
 
 void assemble_free(ASSEMBLER_STRUCT *ass)
 {
-   //puts("begin ass free");
   for(int i = 0; i < ass->TOTAL_line; i++) {
-    //puts("in for loop in ass free");
     free(ass->instr[i]);
   }
-
-  //free(ass->instr);
-  //puts("after ass instr free");
-  //puts("in here list not null");
     list_destroy(ass->symbolTable);
-   //puts("after symboltable free");
   free(ass);
 }
-
-/*static void realloc_instrs(ASSEMBLER_STRUCT *ass)
-{
-  ass->instr = realloc(ass->instr, sizeof(binary_instruct *) * (ass->TOTAL_line));
-}*/
 
 uint16_t assemble_constant_write(ASSEMBLER_STRUCT *ass, int32_t word)
 {
@@ -102,9 +90,7 @@ char *delchr(char *buffer, char chr) {
 ASSEMBLER_STRUCT *assemble(TOKEN *lines, function_assPtr func, const char *delim)
 {
 
-  //printf("try this\n");
   symbolTableList* symbolTable = malloc(sizeof(symbolTableList));
-  //printf("will this work\n");
 
   list_initialise(symbolTable);
 
@@ -121,32 +107,30 @@ ASSEMBLER_STRUCT *assemble(TOKEN *lines, function_assPtr func, const char *delim
 
     if(strchr(label, ':')) { //label encountered
       label_count++;
-      if(label_count == 1) { // first label encountered
-        //printf("label count is 1\n");
-      }
       //printf("go into list insert back\n");
       list_insert_back(symbolTable, delchr(label, ':'), address);
-      //printf("after list_insert_back\n");
-      //printf("first value in list:%s\n", list_iter_value(ass->symbolTable->first));
-      // add symbol at end of list each time
-
+      displayList(symbolTable);
+      uint16_t addr = list_get_address(symbolTable,  delchr(label, ':'));
+      printf("addr: %i\n", addr);
+      puts("after first tokens free");
     }
-    //printf("notlabel02: %s\n", label);
+    printf("notlabel02: %s\n", label);
 		address += sizeof(uint16_t);
+    puts("before token free");
 		tokens_free(line);
+    puts("after token free");
 
   }
-  //printf("after list destroy?\n");
 
 
-//printf("after for loop in assemble\n");
+  puts("before declare");
   // Initialize Assembly Program
 	int line_total         = lines->tokenCount - label_count;
 	ass->instr             = malloc(sizeof(binary_instruct));
 	ass->TOTAL_line        = line_total;
 	ass->symbolTable       = symbolTable;
 	ass->current_address   = 0;
-
+ puts("before for loop");
 	// Pass #2
 	for (int i = 0; i < lines->tokenCount; i++)
 	{
@@ -165,7 +149,8 @@ ASSEMBLER_STRUCT *assemble(TOKEN *lines, function_assPtr func, const char *delim
 
     tokens_free(line);
 	}
-  //printf("assemble done\n");
+
+  printf("assemble done\n");
 	return ass;
 
 

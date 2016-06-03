@@ -16,7 +16,7 @@ void tokens_free(TOKEN *lines)
 		free(lines->tokens[i]);
 	}
 
-	free(lines->tokens);
+	//free(lines->tokens);
   free(lines->line);
 	free(lines);
 }

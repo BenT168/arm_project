@@ -59,8 +59,8 @@ typedef struct SDTInstruct
 typedef struct BranchInstruct
 {
     unsigned int Offset : 24; /* Offset 24-bits */
-    unsigned int _0     :  1; /* Nullity field 1-bit */
-    unsigned int _101   :  3;
+    //unsigned int _0     :  1; /* Nullity field 1-bit */
+    unsigned int _1010  :  4;
     unsigned int Cond   :  4; /* Condition field 4-bits */
 } BranchInstruct;
 
