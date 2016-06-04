@@ -124,7 +124,8 @@ void emulator()
   do {
     //printf("start to do loop\n");
     //If the condition matched, we can execute the instr
-    if(cond_check == 1) {
+    if(cond_check == 1)
+    {
       //printf("in the if in do loop\n");
       decode_instr(arm_Ptr->pipeline->decoded);
     }
@@ -168,10 +169,12 @@ void decode_instr(int32_t word)
 /* helper function for decode_instr */
 void decode_checker(int32_t word)
 {
-  if(IS_SET(BIT_GET(word, 25))) {
+  if(IS_SET(BIT_GET(word, 25)))
+  {
     data_processing(word);
   } else {
-    if(IS_CLEAR(BIT_GET(word, 4))) {
+    if(IS_CLEAR(BIT_GET(word, 4)))
+    {
       data_processing(word);
     } else{
       (IS_SET(BIT_GET(word, 7))) ? multiply(word) : data_processing(word);
@@ -269,10 +272,12 @@ int32_t as_shifted_reg(int32_t value, int8_t setCond)
   	case LSL : // Arithmetic and logical shift left are equivalent
   	{
   		value = reg << Amt;
-  		if (Amt != 0) {
+  		if (Amt != 0)
+      {
 			  carryAmt = BIT_GET(reg, SIZE_OF_WORD - Amt );
 			}
-			if (IS_SET(setCond)) {
+			if (IS_SET(setCond))
+      {
 			  CPSR_PUT(C, carryAmt);
 			}
       break;
@@ -281,10 +286,12 @@ int32_t as_shifted_reg(int32_t value, int8_t setCond)
   	case LSR :
   	{
   		value = reg >> Amt;
-  		if (Amt != 0) {
+  		if (Amt != 0)
+      {
 			  carryAmt = BIT_GET(reg, Amt - 1);
 			}
-  		if (IS_SET(setCond)) {
+  		if (IS_SET(setCond))
+      {
 				CPSR_PUT(C, carryAmt);
 
 			}
@@ -294,10 +301,12 @@ int32_t as_shifted_reg(int32_t value, int8_t setCond)
   	case ASR :
   	{
   		value = reg >> Amt;
-  		if (Amt != 0){
+  		if (Amt != 0)
+      {
    			carryAmt = BIT_GET(reg, Amt - 1);
 			}
-  		if (setCond == 1) {
+  		if (setCond == 1)
+      {
 			  CPSR_PUT(C, carryAmt);
         int bit = BIT_GET(reg, 31);
         for (int j = 0; j < Amt; j++){
@@ -341,8 +350,6 @@ void data_processing(int32_t word)
 	Operand2     = IS_CLEAR(ImmOp) ? as_shifted_reg(Operand2, SetCond)
 	           		                 : as_immediate_reg(Operand2);
 
-// printf("Operand 2: %i\n",Operand2 );
-// printf("Opcode: %i\n",OpCode );
 	int result   = 0;
 
 
@@ -384,14 +391,17 @@ void data_processing(int32_t word)
   }
 
 
-	if (IS_SET(SetCond)) {
+	if (IS_SET(SetCond))
+  {
 	// set flags
   	CPSR_PUT(Z, (result == 0));
     CPSR_PUT(N, BIT_GET(result, 31));
 
-    switch (OpCode)  {
+    switch (OpCode)
+    {
   	  case SUB :
-        if(result <= 0){
+        if(result <= 0)
+        {
           CPSR_PUT(C, 0);
         } else {
           CPSR_PUT(C, 1);
@@ -416,7 +426,8 @@ int32_t convert(int32_t reg)
 {
   int mask = 1 >> 3;
   int32_t result = reg;
-  if((mask & (reg >> 3)) == 1) {
+  if((mask & (reg >> 3)) == 1)
+  {
     result = convert2complement(reg);
   }
   return result;
@@ -432,10 +443,7 @@ int32_t convert2complement(int32_t reg)
 
 void multiply(int32_t word)
 {
-  //int cpsrReg = arm_Ptr->registers[CPSR];
   MultiplyInstruct *MultiInst = (MultiplyInstruct *) &word;
-  //CPSR_STRUCT *cpsrStruct = (CPSR_STRUCT *) &cpsrReg;
-
 
   int Acc     = MultiInst->Acc;
   int SetCond = MultiInst->SetCond;
@@ -455,15 +463,14 @@ void multiply(int32_t word)
     mulResult += dataRn;
   }
 
+
   REG_WRITE(Rd, mulResult);
 
   if(IS_SET(SetCond))
   {
     int bit31 = BIT_GET(mulResult, 31); //N is the 31 bit of result
     CPSR_PUT(N, bit31);
-    //arm_Ptr->registers[CPSR] = bit31;
     (mulResult == 0) ? (CPSR_SET(Z)) : !(CPSR_SET(Z));
-    //(mulResult == 0) ? (cpsrStruct->bitZ = 1) : (cpsrStruct->bitZ = 0);
   }
 }
 
@@ -476,51 +483,53 @@ void single_data_transfer(int32_t word)
   int dataRn     = SDTInst->Rn;         // base register
   int dataRd     = SDTInst->Rd;
   int dataOffset = SDTInst->Offset;
-  int dataI      = SDTInst->I;
+  int dataI      = SDTInst->ImmOff;
   int dataP      = SDTInst->P;
-  int dataU      = SDTInst->U;
+  int dataU      = SDTInst->Up;
   int dataL      = SDTInst->L;
 
   int RegRn = arm_Ptr->registers[dataRn];
   int RegRd = arm_Ptr->registers[dataRd];
 
   //Check if I is setbranchOffset
- if (IS_SET(dataI)) {
+ if (IS_SET(dataI))
+ {
    dataOffset = as_shifted_reg(dataOffset, 0);
  } else {
    dataOffset = as_immediate_reg(dataOffset);
  }
 
   // Pre-Indexing
-  if (IS_SET(dataP)) {
+  if (IS_SET(dataP))
+  {
     RegRn += (IS_SET(dataU) ? dataOffset : -dataOffset);
   }
+
+  // gpio
 
   if (is_GPIO_addr(RegRn))
   {
     print_GPIO_addr(RegRn);
-
     if(IS_SET(dataL))
     {
       REG_WRITE(dataRd, RegRn);
     }
 
+  // Non-gpio
   } else {
-
-      if (RegRn < 0 || RegRn >= MEMORY_CAPACITY) {
-        printf("Error: Out of bounds memory access at address 0x%08x\n", RegRn);
-        return;
-      }
-
-      if(IS_SET(dataL))
-      {
-        REG_WRITE(dataRd, MEM_R_32bits(RegRn));
-      } else {
-        MEM_W_32bits(RegRn, RegRd);
-      }
-
+    if (RegRn < 0 || RegRn >= MEMORY_CAPACITY) {
+      printf("Error: Out of bounds memory access at address 0x%08x\n", RegRn);
+      return;
+    }
+    if(IS_SET(dataL))
+    {
+      REG_WRITE(dataRd, MEM_R_32bits(RegRn));
+    } else {
+      MEM_W_32bits(RegRn, RegRd);
+    }
   }
 
+  // Post-indexing
   if (IS_CLEAR(dataP)) {
     REG_WRITE(dataRn, RegRn += (IS_SET(dataU) ? dataOffset : -dataOffset));
   }
@@ -537,7 +546,8 @@ void branch(int32_t word)
   int Cond = BranchInst->Cond;
 
   //check for bne and bqe
-  if(resultforBranch == 0 && Cond == 0) { //beq
+  if(resultforBranch == 0 && Cond == 0)
+  { //beq
     goto branchCode;
   } else if(resultforBranch != 0 && Cond == 1) { //bne
     goto branchCode;
