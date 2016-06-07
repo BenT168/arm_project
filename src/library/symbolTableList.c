@@ -50,6 +50,7 @@ symbolTableNode *list_alloc_node(void) {
     perror("list_alloc_node");
     exit(EXIT_FAILURE);
   }
+
   return node;
 }
 
