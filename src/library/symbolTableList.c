@@ -39,7 +39,7 @@ symbolTableNode *list_alloc_node(void) {
     perror("list_alloc_node");
     exit(EXIT_FAILURE);
   }
-  //printf("We will return a node\n");
+
   return node;
 }
 
@@ -89,12 +89,18 @@ void list_insert_back(symbolTableList *list, char *val, uint16_t key) {
 
 
 void list_destroy(symbolTableList *list) {
+  //puts("in list_destroy");
   symbolTableNode *node = list->first;
+  //puts("node");
   while (node != NULL) {
+    //puts("while node not null");
     symbolTableNode *nextNode = node->next;
     list_free_node(node);
+    //puts("is it freeing node?");
     node = nextNode;
   }
+  //puts("before free list");
+  free(list);
 }
 
 void displayList(symbolTableList *list) {

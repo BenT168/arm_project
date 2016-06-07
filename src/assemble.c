@@ -62,7 +62,7 @@ int32_t ass_branch(TOKEN *, ASSEMBLER_STRUCT *);
 /* SpeciAL */
 int32_t andeq_func(TOKEN *, ASSEMBLER_STRUCT *);
 int32_t lsl_func(TOKEN *, ASSEMBLER_STRUCT *);
-int32_t lsr_func(TOKEN *, ASSEMBLER_STRUCT *);
+//int32_t lsr_func(TOKEN *, ASSEMBLER_STRUCT *);
 
 int mnemonic_to_Opcode(char* mnemonic);
 
@@ -71,6 +71,7 @@ int mnemonic_to_Opcode(char* mnemonic);
 
 //Add comma to buffer
 char* writeBuffer(char* buffer) {
+  //puts("in write file");
   for(int i = 0; i < strlen(buffer); i++) {
     if(buffer[i] == ' ') {
       buffer[i] = ',';
@@ -104,9 +105,12 @@ TOKEN *read_Source(const char *sourceFile)
 
 void write_File(ASSEMBLER_STRUCT *ass, const char *binaryFile)
 {
-  //printf("writefile\n");
   FILE *file = fopen(binaryFile, "wb"); //w = write b = binary
 
+  if(!file) {
+    perror("file did not open correctly");
+    goto end;
+  }
   //printf("after opening file (in write_file)\n");
   int32_t *program = assemble_generate_bin(ass);
   //get binary code from assembler program
@@ -117,10 +121,18 @@ void write_File(ASSEMBLER_STRUCT *ass, const char *binaryFile)
   assert(fwrite(program, 1, size, file) == size);
 
   //printf("after assertion (in write_file)\n");
-  fclose(file);
-  puts("print after fclose");
 
   free(program);
+
+  end: ;
+  //printf("after free program\n");
+  fclose(file);
+
+  //printf("after fclose\n");
+
+
+
+//  free(program);
 }
 
 //////////////////////////   Core     //////////////////////////////////////////
@@ -236,7 +248,7 @@ void funcArray(void) {
 
   function_Array[7] = lsl_func;
   function_Array[8] = andeq_func;
-  function_Array[9] = lsr_func;
+  //function_Array[9] = lsr_func;
 
 }
 
@@ -302,16 +314,16 @@ int mnemonic_to_Opcode(char* mnemonic) {
 
  int32_t ass_data_proc(TOKEN *line, int SetCond, int Rn, int Rd, int Operand_2)
 {
-  printf("start of data proccessing\n");
+  //printf("start of data proccessing\n");
 	char *Operand2 = line->tokens[Operand_2];
   //printf("\n");
   //printf("operand_2 position: %i\n", Operand_2);
-  //printf("Operand2 is....%s\n",Operand2);
+  printf("Operand2 is....%s\n",Operand2);
 	char *mnemonic = line->tokens[0];
-  //printf("mnemonic : %s\n", mnemonic);
+  printf("mnemonic : %s\n", mnemonic);
   //printf("destination reg: %s\n", line->tokens[1]);
   //printf("\n");
-
+  //puts("Do i get here????");
   DataProcessingInstruct DPInst;
 
 
@@ -330,6 +342,7 @@ int mnemonic_to_Opcode(char* mnemonic) {
 	DPInst.Operand2  = check_op2(line, Operand_2);
   //printf("Op2 (Data_proc): %i\n", DPInst.Operand2);
   //printf("%" PRId32 "\n", *((int32_t *) &DPInst));
+
 	return *((int32_t *) &DPInst);
 }
 
@@ -363,7 +376,7 @@ int32_t ass_data_proc_result(TOKEN *line, ASSEMBLER_STRUCT *ass)
 
 int32_t ass_data_proc_mov(TOKEN *line, ASSEMBLER_STRUCT *ass)
 {
-  printf("going to do data proccessing move!!!\n");
+  printf("going to do moving!!!\n");
   int CPSR_CLEAR =  0;
   int POS_OF_RD  =  1;
   int RN_IGNORED = -1;
@@ -433,6 +446,7 @@ static int32_t ass_multiply(TOKEN *line, int Acc, int Rd, int Rm, int Rs, int Rn
 	MulInst.Rm	     = PARSE_REG(Rm);
   //printf("Rm: %i\n", PARSE_REG(Rm));
   //printf("before return in ass_multiply\n");
+
 	return *((int32_t *) &MulInst);
 }
 
@@ -482,6 +496,7 @@ int32_t SDT_num_const(TOKEN *line, ASSEMBLER_STRUCT *ass) {
     // PC = 15
     asprintf(&newline, "ldr %s, [PC, #%d]", Regd, offset);
     TOKEN *newtoken = tokenise(newline, " ,");
+
     return ass_single_data_transfer(newtoken, ass);
   }
 
@@ -520,19 +535,31 @@ int32_t ass_single_data_transfer(TOKEN *line, ASSEMBLER_STRUCT *ass)
   // Case [Rn, <#expression>]
   } else if (Is_Expression(expr)) {
     RnNum = atoi(rn +1);
-    offset = expr_to_num(expr);
-    UpFlag = offset >= 0;
-
-  // Case Optional
-  } else {
-    Imm = 1;                                 // As shifted register
-
-    if (expr[0] == '+' || expr[0] == '-') {  // Check if there is sign
-      UpFlag = (expr[0] == '+') ;            // If U is set then + else -
-      expr++;                                // Remove the sign
+    printf("RnNum: %i\n", RnNum);
+    if(strcmp(adr, "[PC") != 0) {
+      offset = abs(expr_to_num(expr));
+      UpFlag = offset >= 0;
+      if(expr_to_num(expr) < 0) {
+        UpFlag = 0;
+      }
+    } else {                                // Case Rn, [PC, offset]
+      RnNum = PC;
+      offset = abs(expr_to_num(expr));
     }
 
-    offset = as_shifted_reg_ass(newline, 3); // As shifted register
+  // Case Optional
+
+  } else {                                   // Case Optional
+    Imm = 1;
+     printf("expr :%s\n", expr);
+    if (expr[0] == '+' || expr[0] == '-') {  // Check if there is sign
+    puts("in if statement");
+      UpFlag = (expr[0] == '+') ;                // If U is set then + else -
+      expr++;                                // Remove the sign
+    }
+    puts("in this shifted reg");
+    RnNum = atoi(rn +1);
+    offset = as_shifted_reg_ass(newline, 3);          // As shifted register
     UpFlag = (expr[0] == '+' || expr[0] == '-' ) ? UpFlag : ( offset >= 0 );
   }
 
@@ -546,6 +573,7 @@ int32_t ass_single_data_transfer(TOKEN *line, ASSEMBLER_STRUCT *ass)
   //char* indexing = (Pre_index == 1) ? "Pre-Indexing" : "Post-indexing";
   //printf("We are doing %s\n !", indexing);
   SDTinstr.Up	     = UpFlag;
+//    printf("Up: %i\n", UpFlag);
   SDTinstr._00	   = 0;
   SDTinstr.L	     = (strcmp(mnem, "ldr") == 0);  //ldr --> L is set
   //printf("mnem :%s\n",mnem);
@@ -555,9 +583,7 @@ int32_t ass_single_data_transfer(TOKEN *line, ASSEMBLER_STRUCT *ass)
   //printf("Rd: %i\n", PARSE_REG(1));
   SDTinstr.Offset = offset;
   //printf("Offset: %i\n", offset);
-
-  //tokens_free(line);
-
+ //puts("end of std");
   return *((int32_t *) &SDTinstr);
 
 }
@@ -602,7 +628,7 @@ int32_t ass_branch(TOKEN *line, ASSEMBLER_STRUCT *ass)
 //andeq is similar to and with cond set to 0000 (eq condition)
 //andeq r0, r0, r0
 //TOKEN *line is to get 'andeq from the line read'
-int32_t andeq_func(TOKEN *line, ASSEMBLER_STRUCT *ass){
+int32_t andeq_func(TOKEN *line, ASSEMBLER_STRUCT *ass) {
   return 0x00000000;
 }
 
@@ -617,11 +643,12 @@ asprintf(&new_line, "mov %s, %s, lsl %s", line->tokens[1],
                                           line->tokens[2]);
 TOKEN *new_token = (TOKEN*) malloc(sizeof(TOKEN));
 new_token = tokenise(new_line, " ,");
+
 return ass_data_proc_mov(new_token, ass);
 
 }
 
-/*lsr func */
+/*lsr func
 //note: asprintf() cAL the length of the string, ALlocate that amount of mem and
 //write the string into it. it is an implicit mALloc need to free afterward
 //Compile lsr Rn,<#expression> as mov Rn, Rn, lsr <#expression>
@@ -634,7 +661,7 @@ TOKEN *new_token = (TOKEN*) malloc(sizeof(TOKEN));
 new_token = tokenise(new_line, " ,");
 return ass_data_proc_mov(new_token, ass);
 
-}
+}*/
 
 ////////////////////A factoriAL program ////////////////////////////////////////
 //ARM stores instructions using Little-endian
@@ -652,28 +679,28 @@ int main(int argc, char **argv)
 
   //printf("before function_Array\n");
   funcArray();
-  //printf("after funcArray\n");
-
+  printf("after funcArray\n");
+  //puts("after func");
   TOKEN *lines = read_Source(argv[1]);
-  //printf("after read_source main\n");
+  printf("after read_source main\n");
   //printf("lines->tokenCount :%i\n",lines->tokenCount);
 
   //get lines of assembly codes
   ass = malloc(sizeof(ASSEMBLER_STRUCT));
-  //printf("after malloc ass\n");
+  printf("after malloc ass\n");
   ass = assemble(lines, &assembler_func, ",");
-  //printf("after ass main\n");
+  printf("after ass main\n");
 
   //assemble lines using assembler and get output to write to file
 
   write_File(ass, argv[2]);
-  //printf("after write main\n");
+  printf("after write main\n");
 
   tokens_free(lines);
-  //printf("after token_free main\n");
+  printf("after token_free main\n");
 
   assemble_free(ass);
-  //printf("after ass_free main\n");
+  printf("after ass_free main\n");
 
   return EXIT_SUCCESS;
 }

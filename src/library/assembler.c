@@ -16,15 +16,17 @@ extern ASSEMBLER_STRUCT *ass;
 
 void assemble_free(ASSEMBLER_STRUCT *ass)
 {
-  for(int i = 0; i < ass->TOTAL_line; i++)
-  {
+
+  for(int i = 0; i < ass->TOTAL_line; i++) {
+    //puts("in for loop in ass free");
     free(ass->instr[i]);
   }
   //printf("after for loop in assemble_free\n");
 
   //free(ass->instr);
 
-  //printf("after free ass->inster\n");
+    //list_destroy(ass->symbolTable);
+
   free(ass);
 }
 
@@ -100,7 +102,7 @@ char *delchr(char *buffer, char chr) {
 ASSEMBLER_STRUCT *assemble(TOKEN *lines, function_assPtr func, const char *delim)
 {
 
-  //printf("try this\n");
+  //printf("start assemble\n");
   symbolTableList* symbolTable = malloc(sizeof(symbolTableList));
   //printf("will this work\n");
 
@@ -134,8 +136,7 @@ ASSEMBLER_STRUCT *assemble(TOKEN *lines, function_assPtr func, const char *delim
 		tokens_free(line);
 
   }
-  list_destroy(symbolTable);
-  //printf("after list destroy?\n");
+  //printf("after for loop\n");
 
 
 //printf("after for loop in assemble\n");
@@ -146,6 +147,7 @@ ASSEMBLER_STRUCT *assemble(TOKEN *lines, function_assPtr func, const char *delim
 	ass->symbolTable       = symbolTable;
 	ass->current_address   = 0;
 
+  //printf("before pass 2\n");
 	// Pass #2
 	for (int i = 0; i < lines->tokenCount; i++)
 	{
@@ -161,10 +163,12 @@ ASSEMBLER_STRUCT *assemble(TOKEN *lines, function_assPtr func, const char *delim
 		assemble_write(ass, word);
 
     //printf("can i write in assemle????\n");
-
+    //printf("go to token_free\n");
     tokens_free(line);
+    //printf("token_freed?\n");
 	}
   //printf("assemble done\n");
+  //printf("let's return ass\n");
 	return ass;
 
 

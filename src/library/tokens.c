@@ -65,10 +65,6 @@ TOKEN* tokenise(char *str, const char *delim)
 	}
 	tokenStruct->tokenCount = Tokncount;
 
-  //free(tokenStruct->line);
-//	free(tokenStruct->tokens);
-	//free(tokenStruct->line);
-	//tokens_free(tokenStruct);
 	return tokenStruct;
 
 }

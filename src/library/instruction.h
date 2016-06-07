@@ -163,7 +163,7 @@ enum Mnemonic
     //Branch
     beq = 6, bne = 6, bge = 6, blt = 6, bgt = 6, ble = 6, b = 6,
     //Special
-    lsl = 7, andeq = 8, lsr = 9
+    lsl = 7, andeq = 8//, lsr = 9
 } Mnemonic;
 
 struct { /* Mnemoic_toString is implemented as */
