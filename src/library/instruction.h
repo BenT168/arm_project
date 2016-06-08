@@ -59,8 +59,7 @@ typedef struct SDTInstruct
 typedef struct BranchInstruct
 {
     unsigned int Offset : 24; /* Offset 24-bits */
-    unsigned int _0     :  1; /* Nullity field 1-bit */
-    unsigned int _101   :  3;
+    unsigned int _1010  :  4;
     unsigned int Cond   :  4; /* Condition field 4-bits */
 } BranchInstruct;
 
@@ -86,11 +85,11 @@ typedef struct ShiftReg
 
 typedef struct ShiftRegOptional
 {
-   unsigned int Rm       : 4;
-   unsigned int Flag1    : 1;
-   unsigned int Type     : 2;
-   unsigned int Flag2    : 1;
-   unsigned int Rs       : 4;
+  unsigned int Rm       : 4;
+  unsigned int Flag1    : 1;
+  unsigned int Type     : 2;
+  unsigned int Flag2    : 1;
+  unsigned int Rs       : 4;
 } ShiftRegOptional;
 
 
@@ -227,8 +226,9 @@ struct { /* ShiftType_toString is implemented as */
           {                                                 \
             return a##_array[i].num;                             \
 		}                                                      \
-	}                                                        \
-	return -1;                                               \
+    free(low_buffer); \
+	}                                                            \
+	return -1;                                                    \
 }
 
 STR_TO_ENUM(mnemonic)

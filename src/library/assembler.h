@@ -28,6 +28,8 @@ typedef int32_t (*function_assPtr)(TOKEN *, ASSEMBLER_STRUCT *);
 
 ASSEMBLER_STRUCT *assemble(TOKEN *, function_assPtr, const char *);
 
+void *assemble_chk(void *);
+
 void assemble_free(ASSEMBLER_STRUCT *);
 
 uint16_t assemble_constant_write(ASSEMBLER_STRUCT *, int32_t);
@@ -39,6 +41,8 @@ void assemble_print(ASSEMBLER_STRUCT *);
 int32_t *assemble_generate_bin(ASSEMBLER_STRUCT *);
 
 char *delchr(char *, char);
+
+
 
 
 

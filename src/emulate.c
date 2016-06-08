@@ -506,6 +506,7 @@ void single_data_transfer(int32_t word)
   }
 
   // gpio
+
   if (is_GPIO_addr(RegRn))
   {
     print_GPIO_addr(RegRn);
