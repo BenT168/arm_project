@@ -6,18 +6,6 @@
 #include "symbolTableList.h"
 
 
-int map_cmp_str(void *mic, void *mik)
-{
-	return strcmp((char *) mic, (char *) mik);
-}
-
-
-int map_cmp_int(void *mic, void *mik)
-{
-	return *((int *) mic) - *((int *) mik);
-}
-
-
 ///////////////////////////////Iterate/////////////////////////////////////////
 
 list_iter begin_list(symbolTableList *list) {
@@ -75,15 +63,7 @@ void list_insert(symbolTableList *list, list_iter iter, char* val, uint16_t key)
 
 }
 
-/*void list_insert_front(symbolTableList *list, char *val, uint16_t key) {
-  list_insert(list, begin_list(list), val, key);
 
-}
-
-void list_insert_back(symbolTableList *list, char *val, uint16_t key) {
-   list_insert(list, end_list(list), val, key);
- }
-*/
 
  void list_insert_ascending(symbolTableList *list, char *val, uint16_t key) {
 	 list_iter iter  = begin_list(list);
@@ -95,23 +75,6 @@ void list_insert_back(symbolTableList *list, char *val, uint16_t key) {
  }
 
 
-/*
-static void *entry_get(symbolTableNode *list, void *address, map_cmp cmp)
- {
-	 if ( list == NULL ) return NULL;
-
-	 int c = cmp( address, list->address);
-
-	 if (c == 0) return list->stringVal;
-	 else if (c < 0) return entry_get(list->next, address, cmp);
-	 else							return entry_get(list->prev, address, cmp);
- }
-
- void *map_get(symbolTableList *list, void* address)
- {
-	 return entry_get(list->first, address, list->cmp);
- }
-*/
  uint16_t list_get_address(symbolTableList *list, char* val) {
    assert(list != NULL); //TODO
    assert(val != NULL); //TODO
