@@ -226,8 +226,9 @@ struct { /* ShiftType_toString is implemented as */
           {                                                 \
             return a##_array[i].num;                             \
 		}                                                      \
-	}                                                        \
-	return -1;                                               \
+    free(low_buffer); \
+	}                                                            \
+	return -1;                                                    \
 }
 
 STR_TO_ENUM(mnemonic)

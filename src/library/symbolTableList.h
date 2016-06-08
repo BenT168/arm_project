@@ -6,11 +6,6 @@
 #include <string.h>
 #include <stdint.h>
 
-
-int cmp_str(void *, void *);
-
-int cmp_int(void *, void *);
-
 ////////////////////////////////////////////////////////////////////////////////
 
 
