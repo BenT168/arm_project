@@ -118,9 +118,8 @@ ASSEMBLER_STRUCT *assemble(TOKEN *lines, function_assPtr func, const char *delim
       label_count++;
 
       list_insert_ascending(symbolTable, delchr(label, ':'), address);
-<<<<<<< HEAD
       // add symbol at end of list each time
-=======
+
       displayList(symbolTable);
 
       if(current_Line[0] == '/') { //comment encountered
@@ -129,7 +128,6 @@ ASSEMBLER_STRUCT *assemble(TOKEN *lines, function_assPtr func, const char *delim
         Enqueue(comments, comment);
       }
 
->>>>>>> d63079f8f05ca2d1f5dac151ba23a3fbaea25aa6
       tokens_free(line);
       continue;
 

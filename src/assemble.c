@@ -182,10 +182,19 @@ void write_File(ASSEMBLER_STRUCT *ass, const char *binaryFile)
   //size of each element that will be written
   assert(fwrite(program, 1, size, file) == size);
 
+<<<<<<< HEAD
   fclose(file);
-  free(program);
-}
+=======
+  //printf("after assertion (in write_file)\n");
 
+>>>>>>> 91739c0112207803206fd60c3786822592c8ed0f
+  free(program);
+  //printf("after free program\n");
+  fclose(file);
+
+  //printf("after fclose\n");
+
+}
 //////////////////////////   SHIFTING     //////////////////////////////////////
 
 
@@ -486,7 +495,6 @@ int32_t ass_single_data_transfer(TOKEN *line, ASSEMBLER_STRUCT *ass)
 
   } else if (Is_Expression(expr)) {          // Case [Rn, <#expression>]
     RnNum = atoi(rn +1);
-
     if(strcmp(adr, "[PC") != 0) {
       offset = abs(expr_to_num(expr));
       UpFlag = offset >= 0;
@@ -501,12 +509,13 @@ int32_t ass_single_data_transfer(TOKEN *line, ASSEMBLER_STRUCT *ass)
 
   } else {                                   // Case Optional
     Imm = 1;
+     //printf("expr :%s\n", expr);
     if (expr[0] == '+' || expr[0] == '-') {  // Check if there is sign
+    //puts("in if statement");
       UpFlag = (expr[0] == '+') ;                // If U is set then + else -
       expr++;                                // Remove the sign
     }
     RnNum = atoi(rn + 1);
-    printf("    before as_shifted_reg\n");
     offset = as_shifted_reg_ass(newline, 3);          // As shifted register
     printf("offset(SDT proc): %i\n",offset );
     UpFlag = (expr[0] == '+' || expr[0] == '-' ) ? UpFlag : ( offset >= 0 );

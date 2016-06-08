@@ -5,6 +5,7 @@
 
 #include "symbolTableList.h"
 
+
 ///////////////////////////////Iterate/////////////////////////////////////////
 
 list_iter begin_list(symbolTableList *list) {
