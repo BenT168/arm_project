@@ -44,7 +44,7 @@ TOKEN* tokenise(char *str, const char *delim)
   int Tokncount = 0; // initial room for string
 	char *token = NULL;
   size_t space = 0;
-   // allocate space for tokenst
+   // allocate space for tokens
    // tokens are added to this array;
 
   token_struct->line = strdup(str);
@@ -60,7 +60,10 @@ TOKEN* tokenise(char *str, const char *delim)
   }
 
 	token_struct->tokenCount = Tokncount;
+<<<<<<< HEAD
 
+=======
+>>>>>>> d63079f8f05ca2d1f5dac151ba23a3fbaea25aa6
 	return token_struct;
 
 }
