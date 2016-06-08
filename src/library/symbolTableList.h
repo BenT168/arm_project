@@ -49,9 +49,6 @@ uint16_t list_get_address(symbolTableList *, char*);
 
 void list_destroy(symbolTableList *);
 
-
-void displayList(symbolTableList *);
-
 ///////////////////////////////Iterate/////////////////////////////////////////
 
 list_iter begin_list(symbolTableList *list);

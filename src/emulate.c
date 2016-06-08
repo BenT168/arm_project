@@ -120,31 +120,25 @@ void emulator()
   int cond_check = check_cond(fetched_code);
 
   //the emulator should terminate when it executes an all-0 instr
-  //printf("before while loop in print register\n");
   do {
-    //printf("start to do loop\n");
     //If the condition matched, we can execute the instr
     if(cond_check == 1)
     {
-      //printf("in the if in do loop\n");
       decode_instr(arm_Ptr->pipeline->decoded);
     }
 
   arm_Ptr->pipeline->decoded = arm_Ptr->pipeline->fetched;
   arm_Ptr->pipeline->fetched = MEM_R_32bits(REG_READ(PC));
   INC_PC(4);
-  //printf("after arm_Ptr->pipeline stuff\n" );
 
   fetched_code = arm_Ptr->pipeline->fetched;
   decoded_code = arm_Ptr->pipeline->decoded;
-  //printf("after fetch and decode in do loop\n");
 
   } while (decoded_code != 0);
 
   //for a cycle of pipeline, previously fetched instr is decoded and ancestor ints is executed.
   //the emulator should terminate when it executes an all-0 instr
   //Upon termination, output the state of all the registers
-  //printf("we want to print register\n");
   print_register_state();
 }
 
@@ -506,6 +500,7 @@ void single_data_transfer(int32_t word)
   }
 
   // gpio
+
   if (is_GPIO_addr(RegRn))
   {
     print_GPIO_addr(RegRn);

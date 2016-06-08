@@ -170,15 +170,17 @@ void write_File(ASSEMBLER_STRUCT *ass, const char *binaryFile)
 {
   FILE *file = fopen(binaryFile, "wb"); //w = write b = binary
 
-  //printf("after opening file (in write_file)\n");
+  if(!file) {
+     perror("file did not open correctly");
+     exit(EXIT_FAILURE);
+   }
+
   int32_t *program = assemble_generate_bin(ass);
   //get binary code from assembler program
-  //printf("program (in write_file)\n");
+
   size_t size = ass->TOTAL_line * sizeof(int32_t);
   //size of each element that will be written
   assert(fwrite(program, 1, size, file) == size);
-
-  //printf("after assertion (in write_file)\n");
 
   fclose(file);
   free(program);
@@ -217,6 +219,7 @@ int as_numeric_constant(int value){
 //TOKEN *elem is a pointer to elems in tokenized line
 int as_shifted_reg_ass(TOKEN *line, int Rm)
 {
+  printf("Rm start: %i\n",Rm );
   if(line->tokenCount == Rm + 1)
   {
     return PARSE_REG(Rm);
@@ -226,30 +229,34 @@ int as_shifted_reg_ass(TOKEN *line, int Rm)
 	ShiftRegOptional regOp;
 
 	char *shift_name = line->tokens[Rm + 1];
+  printf("shift_name: %s\n", line->tokens[Rm + 1]);
 	char *Operand2   = line->tokens[Rm + 2];
+  printf("operand2: %s\n", line->tokens[Rm + 2]);
   int shiftType    = str_to_shift(shift_name);
   int result       = 0;
 
 	//in the form <shiftname><#expression>
 	if(Is_Expression(Operand2))
 	{
-  	//+1 to get rid of 'r' but just getting the reg number
- 		shiftReg.Rm = PARSE_REG(Rm - 1);
+ 		shiftReg.Rm = PARSE_REG(Rm);
+    printf("shift op applied to Rm: r%i\n",shiftReg.Rm);
 		shiftReg.Flag = 0;
 		shiftReg.Type = shiftType;
 		shiftReg.Amount = expr_to_num(Operand2);
+    printf("amount to shift: %i\n", shiftReg.Amount);
 
 
   	result = *((int *) &shiftReg);
 
+
+
 	} else { //in the form <shiftname><register>
 
-		regOp.Rm = PARSE_REG(Rm + 2);
-		regOp.Flag = 0;
-		regOp.Type = shiftType;
-		regOp.Rs = PARSE_REG(Rm) | (1 << 4);
-
-  //regOp.Rs = atoi(line->tokens[Rm] + 1) << 3; //getting the last bit of Rs
+    regOp.Rm = PARSE_REG(Rm);
+    regOp.Flag1 = 1;
+    regOp.Type = shiftType;
+    regOp.Flag2 = 0;
+    regOp.Rs = PARSE_REG(Rm + 2) | (1 << 4); // the amount is specify 2 spaces after Rn
 
   	result = *((int *) &regOp);
 	}
@@ -298,7 +305,6 @@ int check_op2(TOKEN *line, int op2){
 
  int32_t ass_data_proc(TOKEN *line, int SetCond, int Rn, int Rd, int Operand_2)
 {
-  printf("start of data proccessing\n");
 	char *Operand2 = line->tokens[Operand_2];
 	char *mnemonic = line->tokens[0];
 
@@ -308,7 +314,7 @@ int check_op2(TOKEN *line, int op2){
 	DPInst.Cond	     = AL;
 	DPInst._00	     = 0;
 	DPInst.ImmOp	   = Is_Expression(Operand2);
-	DPInst.Opcode	   = str_to_opcode(mnemonic);
+	DPInst.Opcode	   = mnemonic_to_opcode(mnemonic);
 	DPInst.SetCond	 = SetCond;
 	DPInst.Rn        = PARSE_REG(Rn);
 	DPInst.Rd	       = PARSE_REG(Rd);
@@ -328,7 +334,6 @@ int check_op2(TOKEN *line, int op2){
 
 int32_t ass_data_proc_result(TOKEN *line, ASSEMBLER_STRUCT *ass)
 {
-  printf("going to do data proccessing result!!!\n");
   int CPSR_CLEAR  = 0;
   int POS_OF_RD   = 1;
   int POS_OF_RN   = 2;
@@ -347,7 +352,6 @@ int32_t ass_data_proc_result(TOKEN *line, ASSEMBLER_STRUCT *ass)
 
 int32_t ass_data_proc_mov(TOKEN *line, ASSEMBLER_STRUCT *ass)
 {
-  printf("going to do data proccessing move!!!\n");
   int CPSR_CLEAR =  0;
   int POS_OF_RD  =  1;
   int RN_IGNORED = -1;
@@ -365,7 +369,6 @@ int32_t ass_data_proc_mov(TOKEN *line, ASSEMBLER_STRUCT *ass)
 */
 int32_t ass_data_proc_cpsr(TOKEN *line, ASSEMBLER_STRUCT *ass)
 {
-  printf("going to do data proccessing CPSR!!!\n");
   int CPSR_SET   =  1;
   int RD_IGNORED = -1;
   int POS_OF_RN  =  1;
@@ -451,6 +454,84 @@ int32_t ass_multiply_mla(TOKEN *line, ASSEMBLER_STRUCT *ass)
 
 ////////* Single Data Transfer *////////
 
+int32_t ass_single_data_transfer(TOKEN *line, ASSEMBLER_STRUCT *ass)
+{
+  char *adr  = line->tokens[2];
+  char *mnem = line->tokens[0];
+  int RnNum = 0;
+
+  printf("address: %s\n", adr );
+
+  if (Is_Expression(adr)) {    // In <=expression> form
+    return SDT_num_const(line, ass);
+  }
+
+  //It's Pre-indexed address if the expression ends with ']'
+  int Pre_index = tokens_endc(line) == ']';
+  //initialise I, U, Offset
+  int Imm    = 0;
+  int UpFlag = 1;
+  int offset = 0;
+
+
+  // get arguements from <address>
+  TOKEN *newline = tokenise(strdup(line->line), " ,[]");
+  char *expr = newline->tokens[3];
+  char *rn = newline->tokens[2];
+
+  if (newline->tokenCount == 3) {    // Case [Rn]
+    RnNum = atoi(rn +1);
+    offset = 0;
+
+
+  } else if (Is_Expression(expr)) {          // Case [Rn, <#expression>]
+    RnNum = atoi(rn +1);
+
+    if(strcmp(adr, "[PC") != 0) {
+      offset = abs(expr_to_num(expr));
+      UpFlag = offset >= 0;
+      if(expr_to_num(expr) < 0) {
+        UpFlag = 0;
+      }
+    } else {                                // Case Rn, [PC, offset]
+      RnNum = PC;
+      offset = abs(expr_to_num(expr));
+    }
+
+
+  } else {                                   // Case Optional
+    Imm = 1;
+    if (expr[0] == '+' || expr[0] == '-') {  // Check if there is sign
+      UpFlag = (expr[0] == '+') ;                // If U is set then + else -
+      expr++;                                // Remove the sign
+    }
+    RnNum = atoi(rn + 1);
+    printf("    before as_shifted_reg\n");
+    offset = as_shifted_reg_ass(newline, 3);          // As shifted register
+    printf("offset(SDT proc): %i\n",offset );
+    UpFlag = (expr[0] == '+' || expr[0] == '-' ) ? UpFlag : ( offset >= 0 );
+
+    tokens_free(newline);
+
+}
+
+  SDTInstruct SDTinstr;
+
+  SDTinstr.Cond      = AL;
+  SDTinstr._01	     = 1;
+  SDTinstr.ImmOff    = Imm;
+  SDTinstr.P	       = Pre_index;
+  SDTinstr.Up	       = UpFlag;
+  SDTinstr._00	     = 0;
+  SDTinstr.L	       = (strcmp(mnem, "ldr") == 0);  //ldr --> L is set
+  SDTinstr.Rn        = RnNum;
+  SDTinstr.Rd	       = PARSE_REG(1);
+  SDTinstr.Offset    = offset;
+
+  return *((int32_t *) &SDTinstr);
+
+}
+
 int32_t SDT_num_const(TOKEN *line, ASSEMBLER_STRUCT *ass) {
   char *Regd = line->tokens[1];
   char *adr  = line->tokens[2];
@@ -473,91 +554,32 @@ int32_t SDT_num_const(TOKEN *line, ASSEMBLER_STRUCT *ass) {
 
 }
 
-int32_t ass_single_data_transfer(TOKEN *line, ASSEMBLER_STRUCT *ass)
-{
-  char *adr  = line->tokens[2];
-  char *mnem = line->tokens[0];
 
-  if (Is_Expression(adr)) {    // In <=expression> form
-    return SDT_num_const(line, ass);
-  }
-
-  //It's Pre-indexed address if the expression ends with ']'
-  int Pre_index = tokens_endc(line) == ']';
-  //initialise I, U, Offset
-  int Imm    = 0;
-  int UpFlag = 1;
-  int offset = 0;
-
-
-  // get arguements from <address>
-  TOKEN *newline = tokenise(strdup(line->line), " ,[]");
-  char *expr = newline->tokens[3];
-
-  //printf("Rn char: %s\n",rn + 1 );
-    //printf("expr: %s\n",  expr);
-
-  if (newline->tokenCount == 3) {    // Case [Rn]
-    offset = 0;
-  } else if (Is_Expression(expr)) {          // Case [Rn, <#expression>]
-    offset = expr_to_num(expr);
-    UpFlag = offset >= 0;
-
-  } else {                                   // Case Optional
-    Imm = 1;
-
-    if (expr[0] == '+' || expr[0] == '-') {  // Check if there is sign
-      UpFlag = (expr[0] == '+') ;                // If U is set then + else -
-      expr++;                                // Remove the sign
-    }
-
-    offset = as_shifted_reg_ass(newline, 3);          // As shifted register
-    UpFlag = (expr[0] == '+' || expr[0] == '-' ) ? UpFlag : ( offset >= 0 );
-
-}
-
-  SDTInstruct SDTinstr;
-
-  SDTinstr.Cond    = AL;
-  SDTinstr._01	   = 1;
-  SDTinstr.ImmOff	 = Imm;
-  SDTinstr.P	     = Pre_index;
-  SDTinstr.Up	     = UpFlag;
-  SDTinstr._00	   = 0;
-  SDTinstr.L	     = (strcmp(mnem, "ldr") == 0);  //ldr --> L is set
-  SDTinstr.Rn      = PARSE_REG(2);
-  SDTinstr.Rd	     = PARSE_REG(1);
-  SDTinstr.Offset  = offset;
-
-  tokens_free(line);
-
-  return *((int32_t *) &SDTinstr);
-
-}
-
-
+////////* Branch *////////
 
 int32_t ass_branch(TOKEN *line, ASSEMBLER_STRUCT *ass)
 {
-
-  char *suffix = (strcmp(line->tokens[0], "b") == 0) ? "AL" : (line->tokens[0] + 1);
+  char *suffix = (strcmp(line->tokens[0], "b") == 0) ? "al" : (line->tokens[0] + 1);
 
 	char *lbl   = line->tokens[1];
- //	char *address = PARSE_REG(expr_to_num(label));
-  uint16_t lbl_address = (void*)(uint16_t)(uint16_t *) map_get(ass->symbolTable, lbl);
+
+  uint16_t lbl_address = list_get_address(ass->symbolTable, lbl);
+  printf("lable address(in branch): %i\n", lbl_address );
+  printf("current address: %i\n", ass->current_address );
 
   int sign   = (lbl_address < ass->current_address) ? -1 : 1;
-	int offset = ((ass->current_address  - lbl_address + 8) * sign )  >> 2;  // compute offet
+  // compute offset
+	int offset = ( sign * (ass->current_address  - lbl_address + 8)) >> 2;
 
 	BranchInstruct Branchinstr;
 
-	Branchinstr.Cond   = str_to_cond(suffix);
-	Branchinstr._101   = 5;
-  Branchinstr._0     = 0;
-	Branchinstr.Offset = ( offset < 0 ? - (offset) : (offset) );
 
+	Branchinstr.Cond   = str_to_cond(suffix);
+	Branchinstr._1010  = 10;
+  Branchinstr.Offset = offset;
 
 	return *((int32_t *) &Branchinstr);
+
 }
 
 
@@ -581,6 +603,7 @@ char *new_line = NULL;
 asprintf(&new_line, "mov %s, %s, lsl %s", line->tokens[1],
                                           line->tokens[1],
                                           line->tokens[2]);
+printf("inside lsl_func, new_line: %s\n",new_line );
 TOKEN *new_token = (TOKEN*) malloc(sizeof(TOKEN));
 new_token = tokenise(new_line, " ,");
 return ass_data_proc_mov(new_token, ass);
@@ -601,30 +624,20 @@ int main(int argc, char **argv)
     exit(EXIT_FAILURE);
   }
 
-  //printf("before function_Array\n");
   funcArray();
-  //printf("after funcArray\n");
 
   TOKEN *lines = read_Source(argv[1]);
-  //printf("after read_source main\n");
-  //printf("lines->tokenCount :%i\n",lines->tokenCount);
 
   //get lines of assembly codes
   ass = malloc(sizeof(ASSEMBLER_STRUCT));
-  //printf("after malloc ass\n");
   ass = assemble(lines, &assembler_func, ",");
-  //printf("after ass main\n");
 
   //assemble lines using assembler and get output to write to file
-
   write_File(ass, argv[2]);
-  //printf("after write main\n");
 
   tokens_free(lines);
-  //printf("after token_free main\n");
 
   assemble_free(ass);
-  //printf("after ass_free main\n");
 
   return EXIT_SUCCESS;
 }

@@ -8,7 +8,6 @@ TOKEN *token_struct = NULL;
 
 ////////////////////////////////////////////////////////////////////////////
 
-
 void *tokens_chk(void *ass)
 {
   if (ass  == NULL)
@@ -25,14 +24,12 @@ void tokens_free(TOKEN *lines)
 	{
 		free(lines->tokens[i]);
 	}
-  //free(lines->tokens);
   free(lines->line);
 	free(lines);
 }
 
 void tokens_print(TOKEN *lines)
 {
-	printf("Printing %d tokens:\n", lines->tokenCount);
 	for (int i = 0; i < lines->tokenCount; i++)
 	{
 		printf("%s\n", lines->tokens[i]);
@@ -64,10 +61,6 @@ TOKEN* tokenise(char *str, const char *delim)
 
 	token_struct->tokenCount = Tokncount;
 
-  //free(tokenStruct->line);
-  //free(tokenStruct->tokens);
-	//free(tokenStruct->line);
-	//tokens_free(tokenStruct);
 	return token_struct;
 
 }

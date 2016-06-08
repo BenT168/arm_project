@@ -29,7 +29,6 @@ void assemble_free(ASSEMBLER_STRUCT *ass)
   {
     free(ass->instr[i]);
   }
-  //free(ass->instr);
   list_destroy(ass->symbolTable);
   free(ass);
 }
@@ -64,7 +63,7 @@ void assemble_write(ASSEMBLER_STRUCT *ass, int32_t word)
   int current_instruct = ass->current_address / sizeof(int32_t);
   ass->instr[current_instruct] = instr;
   ass->current_address += sizeof(int32_t);
-  //printf("current addr after add:%" PRIu32 "\n", ass->current_address);
+
 
 }
 
@@ -75,15 +74,13 @@ int32_t *assemble_generate_bin(ASSEMBLER_STRUCT *ass)
 
   for(int i = 0; i < (ass->TOTAL_line); i++)
   {
-    //printf("%i\n", ass->TOTAL_line );
-    //printf("ass->instr[i]->binary_word %c\n", (ass->instr[i])->binary_word);
     words[i] = (ass->instr[i])->binary_word;
-    //printf("words[i] after writing....%i\n",words[i]);
-   //printf("words generate: %i \n", words[i]);
+
   }
 
   return words;
 }
+
 
 char *delchr(char *buffer, char chr)
 {
@@ -110,30 +107,27 @@ ASSEMBLER_STRUCT *assemble(TOKEN *lines, function_assPtr func, const char *delim
   for (int i = 0; i < lines->tokenCount; i++)
   {
     char   *current_Line = strdup(lines->tokens[i]);
-    //printf("current line: %s\n", current_Line);
+    printf("current line: %s\n", current_Line);
     TOKEN *line          = tokenise(current_Line, delim);
     char   *label        = line->tokens[0];
-    //printf("label: %s\n", label);
+    printf("label: %s\n", label);
 
     if(strchr(label, ':')) { //label encountered
       label_count++;
 
       list_insert_ascending(symbolTable, delchr(label, ':'), address);
-      displayList(symbolTable);
       // add symbol at end of list each time
       tokens_free(line);
       continue;
 
     }
-    //printf("notlabel02: %s\n", label);
-    address += sizeof(uint16_t);
-    tokens_free(line);
+    printf("label count(in assemble): %i \n",label_count);
+		address += sizeof(int32_t);
+		tokens_free(line);
 
   }
-  //printf("after list destroy?\n")
 
 
-  //printf("after for loop in assemble\n");
   // Initialize Assembly Program
   int line_total         = lines->tokenCount - label_count;
   //ASSEMBLER_STRUCT *ass  = malloc(sizeof(ASSEMBLER_STRUCT));
@@ -146,20 +140,16 @@ ASSEMBLER_STRUCT *assemble(TOKEN *lines, function_assPtr func, const char *delim
   for (int i = 0; i < lines->tokenCount; i++)
   {
     char  *current_Line = strdup(lines->tokens[i]);
-    //printf("currl for tokenise: %s\n",current_Line);
     TOKEN *line = tokenise(current_Line, delim);
     char   *mnemonic = line->tokens[0];
     if (strchr(mnemonic, ':')) continue; // Label encountered
 
     int32_t word = func(line, ass);
-    //printf("word: %i\n", word );
 
     assemble_write(ass, word);
-    //printf("can i write in assemle????\n");
 
     tokens_free(line);
-  }
-  //printf("assemble done\n");
+	}
   return ass;
 
 }

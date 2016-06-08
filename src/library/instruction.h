@@ -64,6 +64,27 @@ typedef struct BranchInstruct
 } BranchInstruct;
 
 
+typedef struct BDTInstruct
+{
+    unsigned int RegList:  8; /* Register List 8-bits */
+    unsigned int Rn     :  4; /* Destination register 4-bits */
+    unsigned int L      :  1; /* Load/Store bit 1-bit */
+    unsigned int _0     :  1;
+    unsigned int SetCond:  1; /* Set Condition codes  1-bit */
+    unsigned int Up     :  1; /* Up bit 1-bit */
+    unsigned int P      :  1; /* Pre/Post indexing bit 1-bit */
+    unsigned int _100   :  3;
+    unsigned int Cond   :  4; /* Condition field 4-bits */
+} BDTInstruct;
+
+
+typedef struct SoftwareInterruptInstruct
+{
+    unsigned int Ignored : 24; /* Ignored by Processor 24-bits */
+    unsigned int _1111   :  4;
+    unsigned int Cond    :  4; /* Condition field 4-bits */
+} SoftwareInterruptInstruct;
+
 ///////////////////////////// Types of Shift /////////////////////////////////
 
 
@@ -226,8 +247,9 @@ struct { /* ShiftType_toString is implemented as */
           {                                                 \
             return a##_array[i].num;                             \
 		}                                                      \
-	}                                                        \
-	return -1;                                               \
+    free(low_buffer); \
+	}                                                            \
+	return -1;                                                    \
 }
 
 STR_TO_ENUM(mnemonic)
