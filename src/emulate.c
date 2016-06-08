@@ -54,7 +54,8 @@ void read_ARM(const char *);
 void emulator(void);
 int  check_cond(int32_t);
 void decode_instr(int32_t);
-void decode_checker(int32_t);
+static void decode_checker_1(int32_t);
+static void decode_checker_2(int32_t);
 void print_register_state(void);
 
 
@@ -69,6 +70,8 @@ int32_t convert2complement();
 void multiply(int32_t);
 void single_data_transfer(int32_t);
 void branch(int32_t);
+void block_data_transfer(int32_t);
+void software_interrupt(int32_t);
 
 
 ////////////////////////// BINARY FILE LOADER ////////////////////////////////
@@ -120,31 +123,25 @@ void emulator()
   int cond_check = check_cond(fetched_code);
 
   //the emulator should terminate when it executes an all-0 instr
-  //printf("before while loop in print register\n");
   do {
-    //printf("start to do loop\n");
     //If the condition matched, we can execute the instr
     if(cond_check == 1)
     {
-      //printf("in the if in do loop\n");
       decode_instr(arm_Ptr->pipeline->decoded);
     }
 
   arm_Ptr->pipeline->decoded = arm_Ptr->pipeline->fetched;
   arm_Ptr->pipeline->fetched = MEM_R_32bits(REG_READ(PC));
   INC_PC(4);
-  //printf("after arm_Ptr->pipeline stuff\n" );
 
   fetched_code = arm_Ptr->pipeline->fetched;
   decoded_code = arm_Ptr->pipeline->decoded;
-  //printf("after fetch and decode in do loop\n");
 
   } while (decoded_code != 0);
 
   //for a cycle of pipeline, previously fetched instr is decoded and ancestor ints is executed.
   //the emulator should terminate when it executes an all-0 instr
   //Upon termination, output the state of all the registers
-  //printf("we want to print register\n");
   print_register_state();
 }
 
@@ -155,19 +152,26 @@ void decode_instr(int32_t word)
   switch (BIT_GET(word, 27))
   {
     case 1:
-      branch(word);
+      IS_SET(BIT_GET(word,26)) ? software_interrupt(word)
+                               : decode_checker_1(word);
       break;
     case 0:
       IS_SET(BIT_GET(word, 26)) ? single_data_transfer(word)
-                                : decode_checker(word);
+                                : decode_checker_2(word);
       break;
     default:
       break;
 	}
 }
 
-/* helper function for decode_instr */
-void decode_checker(int32_t word)
+/* first helper function for decode_instr */
+static void decode_checker_1(int32_t word)
+{
+  IS_SET(BIT_GET(word, 25)) ? branch(word) : block_data_transfer(word);
+}
+
+/* second helper function for decode_instr */
+static void decode_checker_2(int32_t word)
 {
   if(IS_SET(BIT_GET(word, 25)))
   {
@@ -566,6 +570,17 @@ void branch(int32_t word)
   end: ;
 }
 
+/*block data transfer */
+void block_data_transfer(int32_t word)
+{
+  //to do
+}
+
+/*software interrupt */
+void software_interrupt(int32_t word)
+{
+  //to do
+}
 
 /////////////////////////MAIN  FUNCTION//////////////////////////////////////
 

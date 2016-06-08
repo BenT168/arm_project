@@ -24,15 +24,12 @@ void tokens_free(TOKEN *lines)
 	{
 		free(lines->tokens[i]);
 	}
-
-  //free(lines->tokens);
   free(lines->line);
 	free(lines);
 }
 
 void tokens_print(TOKEN *lines)
 {
-	printf("Printing %d tokens:\n", lines->tokenCount);
 	for (int i = 0; i < lines->tokenCount; i++)
 	{
 		printf("%s\n", lines->tokens[i]);
@@ -65,6 +62,10 @@ TOKEN* tokenise(char *str, const char *delim)
   }
 
 	token_struct->tokenCount = Tokncount;
+<<<<<<< HEAD
+
+=======
+>>>>>>> d63079f8f05ca2d1f5dac151ba23a3fbaea25aa6
 	return token_struct;
 
 }

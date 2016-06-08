@@ -5,6 +5,7 @@
 
 #include "symbolTableList.h"
 
+
 ///////////////////////////////Iterate/////////////////////////////////////////
 
 list_iter begin_list(symbolTableList *list) {
@@ -33,19 +34,14 @@ uint16_t list_iter_addr(list_iter iter) {
 
 symbolTableNode *list_alloc_node(void) {
   symbolTableNode *node = malloc(sizeof(symbolTableNode));
-  node->next = NULL;
-  node->prev = NULL;
   if (node == NULL) {
     perror("list_alloc_node");
     exit(EXIT_FAILURE);
   }
+
   return node;
 }
 
-void list_free_node(symbolTableNode *node) {
-  free(node->stringVal);
-  free(node);
-}
 
 void list_initialise(symbolTableList *list) {
 list->first = list_alloc_node();
@@ -57,27 +53,16 @@ list->last->prev = list->first;
 }
 
 void list_insert(symbolTableList *list, list_iter iter, char* val, uint16_t key) {
-  symbolTableNode *newNode = list_alloc_node();
-
+  struct symbolTableNode *newNode = list_alloc_node();
   newNode->stringVal = val;
   newNode->address = key;
 
-  list_iter prev = iter->prev;
-  prev->next     = newNode;
-  newNode->prev  = prev;
-  iter->prev     = newNode;
-  newNode->next  = iter;
-}
-
-void list_insert_front(symbolTableList *list, char *val, uint16_t key) {
-  list_insert(list, begin_list(list), val, key);
+  newNode->prev = iter->prev;
+  newNode->next = iter;
+  iter->prev->next = newNode;
+  iter->prev = newNode;
 
 }
-
-void list_insert_back(symbolTableList *list, char *val, uint16_t key) {
-   list_insert(list, end_list(list), val, key);
- }
-
 
  void list_insert_ascending(symbolTableList *list, char *val, uint16_t key) {
 	 list_iter iter  = begin_list(list);
@@ -88,18 +73,14 @@ void list_insert_back(symbolTableList *list, char *val, uint16_t key) {
  	list_insert(list, iter, val, key);
  }
 
-
  uint16_t list_get_address(symbolTableList *list, char* val) {
    assert(list != NULL); //TODO
    assert(val != NULL); //TODO
 
 	 if (list == NULL) exit(EXIT_FAILURE);
 
-	 printf("value expecting (in list_get_address): %s\n", val);
-
    for(list_iter i = begin_list(list); i != end_list(list); i = list_iter_next(i)) {
      if(strcmp(list_iter_value(i), val) == 0) {
-			 printf("iter_value: %s\n", list_iter_value(i));
        return list_iter_addr(i);
      }
    }
@@ -107,6 +88,14 @@ void list_insert_back(symbolTableList *list, char *val, uint16_t key) {
    perror("string value not found in symbolTableList");
    exit(EXIT_FAILURE);
  }
+
+
+void list_free_node(symbolTableNode *node) {
+
+ 	if (node == NULL) return;
+	free(node->stringVal);
+ 	free(node);
+}
 
 void list_destroy(symbolTableList *list) {
   symbolTableNode *node = list->first;
@@ -116,18 +105,4 @@ void list_destroy(symbolTableList *list) {
     node = nextNode;
   }
 	free(list);
-}
-
-void displayList(symbolTableList *list) {
-
-   //start from the beginning
-  symbolTableNode* node = list->first;
-   //navigate till the end of the list
-   printf("[ ");
-   while(node != NULL) {
-     symbolTableNode *next = node->next;
-      printf("(%s,%i)", node->stringVal ,node->address);
-      node = next;
-   }
-   printf(" ]\n");
 }

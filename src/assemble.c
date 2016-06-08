@@ -63,6 +63,12 @@ int32_t ass_branch(TOKEN *, ASSEMBLER_STRUCT *);
 int32_t andeq_func(TOKEN *, ASSEMBLER_STRUCT *);
 int32_t lsl_func(TOKEN *, ASSEMBLER_STRUCT *);
 
+/* Block Data Transfer */
+int32_t ass_block_data_transfer(TOKEN *, ASSEMBLER_STRUCT *);
+
+/* Software Interrupt */
+int32_t ass_software_interrupt(TOKEN *, ASSEMBLER_STRUCT *);
+
 int mnemonic_to_Opcode(char* mnemonic);
 
 
@@ -70,7 +76,7 @@ int mnemonic_to_Opcode(char* mnemonic);
 
 void funcArray(void);
 
-function_assPtr function_Array[9];
+function_assPtr function_Array[11];
 
 void funcArray(void) {
   function_Array[0] = ass_data_proc_result;
@@ -84,8 +90,12 @@ void funcArray(void) {
 
   function_Array[6] = ass_branch;
 
-  function_Array[7] = lsl_func;
-  function_Array[8] = andeq_func;
+  function_Array[7] = ass_block_data_transfer;
+
+  function_Array[8] = ass_software_interrupt;
+
+  function_Array[9] = lsl_func;
+  function_Array[10] = andeq_func;
 
 }
 
@@ -175,21 +185,15 @@ void write_File(ASSEMBLER_STRUCT *ass, const char *binaryFile)
      exit(EXIT_FAILURE);
    }
 
-  //printf("after opening file (in write_file)\n");
   int32_t *program = assemble_generate_bin(ass);
   //get binary code from assembler program
-  //printf("program (in write_file)\n");
+
   size_t size = ass->TOTAL_line * sizeof(int32_t);
   //size of each element that will be written
   assert(fwrite(program, 1, size, file) == size);
 
-  //printf("after assertion (in write_file)\n");
-
   free(program);
-  //printf("after free program\n");
   fclose(file);
-
-  //printf("after fclose\n");
 
 }
 //////////////////////////   SHIFTING     //////////////////////////////////////
@@ -253,8 +257,6 @@ int as_shifted_reg_ass(TOKEN *line, int Rm)
 
 
   	result = *((int *) &shiftReg);
-
-
 
 	} else { //in the form <shiftname><register>
 
@@ -532,7 +534,7 @@ int32_t ass_single_data_transfer(TOKEN *line, ASSEMBLER_STRUCT *ass)
   SDTinstr.L	       = (strcmp(mnem, "ldr") == 0);  //ldr --> L is set
   SDTinstr.Rn        = RnNum;
   SDTinstr.Rd	       = PARSE_REG(1);
-  SDTinstr.Offset    = ( offset < 0 ? - (offset) : (offset) );
+  SDTinstr.Offset    = offset;
 
   return *((int32_t *) &SDTinstr);
 
@@ -560,27 +562,6 @@ int32_t SDT_num_const(TOKEN *line, ASSEMBLER_STRUCT *ass) {
 
 }
 
-/*
-  char first_letter_token = line->tokens[0][0];
-  printf("first letter of tok: %c\n", first_letter_token );
-  printf("%s\n", line->tokens[0] + 1 );
-
-  char *suffix = (first_letter_token != 'b') ? "AL" : (line->tokens[0] + 1);
-	char *lbl    = line->tokens[1];
-  printf("suffix (in branch): %s\n", suffix);
-  printf("lbl (in branch): %s\n", lbl);
-
-  //uint16_t lbl_address = get_lbl_addr(line, ass, lbl);
-
-
-  uint16_t lbl_address = list_get_address(ass->symbolTable,lbl);
-  printf("%u\n", lbl_address);
-
-  int sign   = (lbl_address > ass->current_address) ? -1 : 1;
-  // compute offet
-	int offset = ((ass->current_address - lbl_address + 8) * sign ) >> 2;
-  printf("offset: %i\n",offset);
-*/
 
 ////////* Branch *////////
 
@@ -595,8 +576,8 @@ int32_t ass_branch(TOKEN *line, ASSEMBLER_STRUCT *ass)
   printf("current address: %i\n", ass->current_address );
 
   int sign   = (lbl_address < ass->current_address) ? -1 : 1;
-	int offset = ( sign * (ass->current_address  - lbl_address + 8)) >> 2;  // compute offset
-  //int newOffset = (offset > 0) ? - offset : offset;
+  // compute offset
+	int offset = ( sign * (ass->current_address  - lbl_address + 8)) >> 2;
 
 	BranchInstruct Branchinstr;
 
@@ -604,10 +585,23 @@ int32_t ass_branch(TOKEN *line, ASSEMBLER_STRUCT *ass)
 	Branchinstr.Cond   = str_to_cond(suffix);
 	Branchinstr._1010  = 10;
   Branchinstr.Offset = offset;
-	//Branchinstr.Offset = newOffset + 2;
 
 	return *((int32_t *) &Branchinstr);
 
+}
+
+////////* Block Data Transfer *////////
+
+int32_t ass_block_data_transfer(TOKEN *line, ASSEMBLER_STRUCT *ass)
+{
+  //todo
+}
+
+////////* software Interrupt *////////
+
+int32_t ass_software_interrupt(TOKEN *line, ASSEMBLER_STRUCT *ass)
+{
+  //todo
 }
 
 
@@ -653,28 +647,19 @@ int main(int argc, char **argv)
   }
 
   funcArray();
-  //printf("after funcArray\n");
 
   TOKEN *lines = read_Source(argv[1]);
-  //printf("after read_source main\n");
-  //printf("lines->tokenCount :%i\n",lines->tokenCount);
 
   //get lines of assembly codes
   ass = malloc(sizeof(ASSEMBLER_STRUCT));
-  //printf("after malloc ass\n");
   ass = assemble(lines, &assembler_func, ",");
-  //printf("after ass main\n");
 
   //assemble lines using assembler and get output to write to file
-
   write_File(ass, argv[2]);
-  //printf("after write main\n");
 
   tokens_free(lines);
-  //printf("after token_free main\n");
 
   assemble_free(ass);
-  printf("End of main\n");
 
   return EXIT_SUCCESS;
 }
