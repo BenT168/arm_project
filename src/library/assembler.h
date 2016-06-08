@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include "tokens.h"
 #include "symbolTableList.h"
+#include "queue.h"
 
 
 typedef struct binary_instruct
@@ -20,6 +21,7 @@ typedef struct ASSEMBLER_STRUCT
   symbolTableList* symbolTable; //array of symbol table
   int TOTAL_line;   // total of the line
   uint16_t current_address; //address of the current instruction
+  Queue* comments; //added comments to assembly instruction
 } ASSEMBLER_STRUCT;
 
 

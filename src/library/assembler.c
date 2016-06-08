@@ -9,6 +9,7 @@
 #include "tokens.h"
 #include "bitwise.h"
 #include "symbolTableList.h"
+#include "queue.h"
 
 
 extern ASSEMBLER_STRUCT *ass;
@@ -105,18 +106,19 @@ char *delchr(char *buffer, char chr)
 ASSEMBLER_STRUCT *assemble(TOKEN *lines, function_assPtr func, const char *delim)
 {
   symbolTableList* symbolTable = assemble_chk(malloc(sizeof(symbolTableList)));
-
+  Queue* comments              = createQueue();
   list_initialise(symbolTable);
-  // 1st Pass : Check for labels
+
+  // 1st Pass : Check for labels and comments
   uint16_t  address        = 0;
   int       label_count    = 0;
 
   for (int i = 0; i < lines->tokenCount; i++)
   {
-    char   *current_Line = strdup(lines->tokens[i]);
+    char *current_Line   = strdup(lines->tokens[i]);
     printf("current line: %s\n", current_Line);
     TOKEN *line          = tokenise(current_Line, delim);
-    char   *label        = line->tokens[0];
+    char *label          = line->tokens[0];
     printf("label: %s\n", label);
 
     if(strchr(label, ':')) { //label encountered
@@ -124,7 +126,13 @@ ASSEMBLER_STRUCT *assemble(TOKEN *lines, function_assPtr func, const char *delim
 
       list_insert_ascending(symbolTable, delchr(label, ':'), address);
       displayList(symbolTable);
-      // add symbol at end of list each time
+
+      if(current_Line[0] == '/') { //comment encountered
+        char* comment = delchr(delchr(current_Line, '/'), '/');
+        //remove "//" in comment
+        Enqueue(comments, comment);
+      }
+
       tokens_free(line);
       continue;
 
@@ -135,17 +143,15 @@ ASSEMBLER_STRUCT *assemble(TOKEN *lines, function_assPtr func, const char *delim
 		tokens_free(line);
 
   }
-  //printf("after list destroy?\n")
 
 
-  //printf("after for loop in assemble\n");
   // Initialize Assembly Program
   int line_total         = lines->tokenCount - label_count;
-  //ASSEMBLER_STRUCT *ass  = malloc(sizeof(ASSEMBLER_STRUCT));
   ass->instr             = malloc(sizeof(binary_instruct));
   ass->TOTAL_line        = line_total;
   ass->symbolTable       = symbolTable;
   ass->current_address   = 0;
+  ass->comments          = comments;
 
   // Pass #2
   for (int i = 0; i < lines->tokenCount; i++)
@@ -163,7 +169,6 @@ ASSEMBLER_STRUCT *assemble(TOKEN *lines, function_assPtr func, const char *delim
     //printf("can i write in assemle????\n");
 
     tokens_free(line);
-    //free(ass->instr);
 	}
   //printf("assemble done\n");
   return ass;
