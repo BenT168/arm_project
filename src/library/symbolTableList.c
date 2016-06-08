@@ -5,7 +5,18 @@
 
 #include "symbolTableList.h"
 
-///////////////////// ADT Double-Linked List //////////////////////////////////
+
+int map_cmp_str(void *mic, void *mik)
+{
+	return strcmp((char *) mic, (char *) mik);
+}
+
+
+int map_cmp_int(void *mic, void *mik)
+{
+	return *((int *) mic) - *((int *) mik);
+}
+
 
 ///////////////////////////////Iterate/////////////////////////////////////////
 
@@ -80,24 +91,30 @@ void list_insert_back(symbolTableList *list, char *val, uint16_t key) {
    list_insert(list, end_list(list), val, key);
  }
 
- void list_insert_ascending(symbolTableList *list, char* val, uint16_t key) {
-   list_iter iter = begin_list(list);
-   while(iter != end_list(list) && list_iter_addr(iter) < key) {
-     iter = list_iter_next(iter);
-   }
-   list_insert(list, iter, val, key);
+
+ void list_insert_ascending(symbolTableList *list, char *val, uint16_t key) {
+	 list_iter iter  = begin_list(list);
+
+ 	 while(iter != end_list(list) && list_iter_addr(iter) < key)	{
+ 	  	iter = list_iter_next(iter);
+ 	}
+ 	list_insert(list, iter, val, key);
  }
 
+
  uint16_t list_get_address(symbolTableList *list, char* val) {
+
+	 if (list == NULL) exit(EXIT_FAILURE);
+
    for(list_iter i = begin_list(list); i != end_list(list); i = list_iter_next(i)) {
      if(strcmp(list_iter_value(i), val) == 0) {
        return list_iter_addr(i);
      }
    }
+
    perror("string value not found in symbolTableList");
    exit(EXIT_FAILURE);
  }
-
 
 void list_destroy(symbolTableList *list) {
   symbolTableNode *node = list->first;
@@ -106,8 +123,10 @@ void list_destroy(symbolTableList *list) {
     list_free_node(node);
     node = nextNode;
   }
-  free(list);
+	free(list);
 }
+
+
 
 void displayList(symbolTableList *list) {
 
