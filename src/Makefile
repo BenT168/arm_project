@@ -11,7 +11,7 @@ all	: 	assemble emulate
 #assemble.c,library/token.c, library/bitwise.c and library/assembler.c
 #library/symbolTableADT.c
 #
-assemble: 	assemble.c library/tokens.c library/bitwise.c library/assembler.c library/symbolTableList.c
+assemble: 	assemble.c library/tokens.c library/bitwise.c library/assembler.c library/symbolTableList.c library/queue.c
 
 #To create an executable file emulate, we need sources files
 #emulate.c, library/bitwise.c, library/gpio.c
