@@ -54,7 +54,8 @@ void read_ARM(const char *);
 void emulator(void);
 int  check_cond(int32_t);
 void decode_instr(int32_t);
-void decode_checker(int32_t);
+static void decode_checker_1(int32_t);
+static void decode_checker_2(int32_t);
 void print_register_state(void);
 
 
@@ -69,8 +70,13 @@ int32_t convert2complement();
 void multiply(int32_t);
 void single_data_transfer(int32_t);
 void branch(int32_t);
+<<<<<<< HEAD
 void block_data_transfer(int32_t); //extension
 
+=======
+void block_data_transfer(int32_t);
+void software_interrupt(int32_t);
+>>>>>>> 14845f3ef14bf32f9e850891e806a34d2de246b6
 
 
 ////////////////////////// BINARY FILE LOADER ////////////////////////////////
@@ -151,19 +157,26 @@ void decode_instr(int32_t word)
   switch (BIT_GET(word, 27))
   {
     case 1:
-      branch(word);
+      IS_SET(BIT_GET(word,26)) ? software_interrupt(word)
+                               : decode_checker_1(word);
       break;
     case 0:
       IS_SET(BIT_GET(word, 26)) ? single_data_transfer(word)
-                                : decode_checker(word);
+                                : decode_checker_2(word);
       break;
     default:
       break;
 	}
 }
 
-/* helper function for decode_instr */
-void decode_checker(int32_t word)
+/* first helper function for decode_instr */
+static void decode_checker_1(int32_t word)
+{
+  IS_SET(BIT_GET(word, 25)) ? branch(word) : block_data_transfer(word);
+}
+
+/* second helper function for decode_instr */
+static void decode_checker_2(int32_t word)
 {
   if(IS_SET(BIT_GET(word, 25)))
   {
@@ -567,13 +580,16 @@ void block_data_transfer(int32_t word){
 
   BDTInstruct *BDTInst = (BDTInstruct *) &word;
 
-  int dataRn     = BDTInst->Rn;         // base register
-  int dataL      = BDTInst->L;
-  int dataS      = BDTInst->SetCond;
-  int dataU      = BDTInst->Up;
-  int dataP      = BDTInst->P;
+  int dataRegList = BDTInst->RegList;
+  int dataRn      = BDTInst->Rn;         // base register
+  int dataL       = BDTInst->L;
+  int dataS       = BDTInst->SetCond;
+  int dataU       = BDTInst->Up;
+  int dataP       = BDTInst->P;
 
   int RegRn = arm_Ptr->registers[dataRn];
+
+  PC_bit = BIT_GET(dataRegList, 15);
 
   // Pre-Indexing
   if (IS_SET(dataP))
@@ -590,6 +606,12 @@ void block_data_transfer(int32_t word){
 
 
 
+
+/*software interrupt */
+void software_interrupt(int32_t word)
+{
+  //to do
+}
 
 /////////////////////////MAIN  FUNCTION//////////////////////////////////////
 

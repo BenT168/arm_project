@@ -66,7 +66,7 @@ typedef struct BranchInstruct
 
 typedef struct BDTInstruct //Block Data Transfer Instructions (extension)
 {
-    unsigned int RegList:  8; /* Register List 8-bits */
+    unsigned int RegList: 16; /* Register List 16-bits */
     unsigned int Rn     :  4; /* Destination register 4-bits */
     unsigned int L      :  1; /* Load/Store bit 1-bit */
     unsigned int _0     :  1;
@@ -164,7 +164,8 @@ typedef enum ShiftType
 #define mnemonic_toString(f) \
         f(add) f(sub) f(rsb) f(and) f(eor) f(orr) f(mov) f(tst) \
         f(teq) f(cmp) f(mul) f(mla) f(ldr) f(str) f(beq) f(bne) \
-        f(bge) f(blt) f(bgt) f(ble) f(b)   f(lsl) f(andeq)
+        f(bge) f(blt) f(bgt) f(ble) f(b)   f(lsl) f(andeq) f(ldm) \
+        f(stm) f(swi)
 
 enum Mnemonic
 {
@@ -182,8 +183,12 @@ enum Mnemonic
     ldr = 5, str = 5,
     //Branch
     beq = 6, bne = 6, bge = 6, blt = 6, bgt = 6, ble = 6, b = 6,
+    // Block Data Transfer
+    ldm = 7, stm = 7,
+    // Software Interrupt
+    swi = 8,
     //Special
-    lsl = 7, andeq = 8,
+    lsl = 9, andeq = 10,
 } Mnemonic;
 
 struct { /* Mnemoic_toString is implemented as */

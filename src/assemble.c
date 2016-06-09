@@ -63,6 +63,12 @@ int32_t ass_branch(TOKEN *, ASSEMBLER_STRUCT *);
 int32_t andeq_func(TOKEN *, ASSEMBLER_STRUCT *);
 int32_t lsl_func(TOKEN *, ASSEMBLER_STRUCT *);
 
+/* Block Data Transfer */
+int32_t ass_block_data_transfer(TOKEN *, ASSEMBLER_STRUCT *);
+
+/* Software Interrupt */
+int32_t ass_software_interrupt(TOKEN *, ASSEMBLER_STRUCT *);
+
 int mnemonic_to_Opcode(char* mnemonic);
 
 
@@ -70,7 +76,7 @@ int mnemonic_to_Opcode(char* mnemonic);
 
 void funcArray(void);
 
-function_assPtr function_Array[9];
+function_assPtr function_Array[11];
 
 void funcArray(void) {
   function_Array[0] = ass_data_proc_result;
@@ -84,8 +90,12 @@ void funcArray(void) {
 
   function_Array[6] = ass_branch;
 
-  function_Array[7] = lsl_func;
-  function_Array[8] = andeq_func;
+  function_Array[7] = ass_block_data_transfer;
+
+  function_Array[8] = ass_software_interrupt;
+
+  function_Array[9] = lsl_func;
+  function_Array[10] = andeq_func;
 
 }
 
@@ -185,7 +195,10 @@ void write_File(ASSEMBLER_STRUCT *ass, const char *binaryFile)
   free(program);
   fclose(file);
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 14845f3ef14bf32f9e850891e806a34d2de246b6
 }
 //////////////////////////   SHIFTING     //////////////////////////////////////
 
@@ -248,8 +261,6 @@ int as_shifted_reg_ass(TOKEN *line, int Rm)
 
 
   	result = *((int *) &shiftReg);
-
-
 
 	} else { //in the form <shiftname><register>
 
@@ -581,6 +592,20 @@ int32_t ass_branch(TOKEN *line, ASSEMBLER_STRUCT *ass)
 
 	return *((int32_t *) &Branchinstr);
 
+}
+
+////////* Block Data Transfer *////////
+
+int32_t ass_block_data_transfer(TOKEN *line, ASSEMBLER_STRUCT *ass)
+{
+  //todo
+}
+
+////////* software Interrupt *////////
+
+int32_t ass_software_interrupt(TOKEN *line, ASSEMBLER_STRUCT *ass)
+{
+  //todo
 }
 
 
