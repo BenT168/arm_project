@@ -45,5 +45,34 @@ typedef enum
     V   = 28  /* overflowed */
 }  CPSR_Flag;
 
+typedef enum
+{
+   T = 0x20,      /* thumb */
+   F = 0x40,      /* FIQ disable */
+   I = 0x80,      /* IRQ disable */
+   A = 0x100,     /* Abort disable */
+   E = 0x200,     /* Endianness */
+   Q = 0x8000000, /* Saturation */
+}  SPSR_Flag;
+
+//////////////////////////////// MODE ////////////////////////////////////////
+
+typedef enum
+{
+   User       = 0x10,
+   FIQ        = 0x11,
+   IRQ        = 0X12,
+   Supervisor = 0x13,
+   Abort      = 0x17,
+   Undefined  = 0x1b,
+   System     = 0x1f
+} ARM_Mode;
+///////////////////////////// MACROS /////////////////////////////////////////
+
+/* FLAG SET/CLEAR */
+#define FLAG_CLR(Flag)    ((CPSR & (uint)Flag) != 0 )
+#define FLAG_SET(Flag)    ((CPSR & (uint)Flag) == 0 )
+#define FLAG_PUT(Flag, V) {(IS_SET(V)) ? (CPSR |= (uint)Flag) \
+                                            : (CPSR &= ~(uint)Flag)}
 
 #endif

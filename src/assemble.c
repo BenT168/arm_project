@@ -64,7 +64,10 @@ int32_t andeq_func(TOKEN *, ASSEMBLER_STRUCT *);
 int32_t lsl_func(TOKEN *, ASSEMBLER_STRUCT *);
 
 /* Block Data Transfer */
-int32_t ass_block_data_transfer(TOKEN *, ASSEMBLER_STRUCT *);
+int32_t ass_block_data_transfer_ldm(TOKEN *, ASSEMBLER_STRUCT *);
+int32_t ass_block_data_transfer_stm(TOKEN *, ASSEMBLER_STRUCT *);
+//int32_t push(char* regv) ;
+//int32_t pop(char* regv) ;
 
 /* Software Interrupt */
 int32_t ass_software_interrupt(TOKEN *, ASSEMBLER_STRUCT *);
@@ -90,7 +93,7 @@ void funcArray(void) {
 
   function_Array[6] = ass_branch;
 
-  function_Array[7] = ass_block_data_transfer;
+  function_Array[7] = ass_block_data_transfer;//TODO:declared wrong
 
   function_Array[8] = ass_software_interrupt;
 
@@ -195,10 +198,6 @@ void write_File(ASSEMBLER_STRUCT *ass, const char *binaryFile)
   free(program);
   fclose(file);
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 14845f3ef14bf32f9e850891e806a34d2de246b6
 }
 //////////////////////////   SHIFTING     //////////////////////////////////////
 
@@ -571,41 +570,150 @@ int32_t SDT_num_const(TOKEN *line, ASSEMBLER_STRUCT *ass) {
 
 int32_t ass_branch(TOKEN *line, ASSEMBLER_STRUCT *ass)
 {
-  char *suffix = (strcmp(line->tokens[0], "b") == 0) ? "al" : (line->tokens[0] + 1);
-
-	char *lbl   = line->tokens[1];
+  char *suffix = (strcmp(line->tokens[0], "b") == 0) ? "al"
+                                            : (line->tokens[0] + 1);
+	char *lbl    = line->tokens[1];
 
   uint16_t lbl_address = list_get_address(ass->symbolTable, lbl);
-  printf("lable address(in branch): %i\n", lbl_address );
-  printf("current address: %i\n", ass->current_address );
+  printf("lable address(in branch): %i\n", lbl_address ); printf("current address: %i\n", ass->current_address );
 
   int sign   = (lbl_address < ass->current_address) ? -1 : 1;
   // compute offset
 	int offset = ( sign * (ass->current_address  - lbl_address + 8)) >> 2;
 
-	BranchInstruct Branchinstr;
+	BranchInstruct BranchInstr;
 
+	BranchInstr.Cond   = str_to_cond(suffix);
+	BranchInstr._1010  = 10;
+  BranchInstr.Offset = offset;
 
-	Branchinstr.Cond   = str_to_cond(suffix);
-	Branchinstr._1010  = 10;
-  Branchinstr.Offset = offset;
-
-	return *((int32_t *) &Branchinstr);
+	return *((int32_t *) &BranchInstr);
 
 }
 
 ////////* Block Data Transfer *////////
 
-int32_t ass_block_data_transfer(TOKEN *line, ASSEMBLER_STRUCT *ass)
+int32_t ass_block_data_transfer(TOKEN *line, int L, int P, int Up)
 {
-  //todo
+  char *reg_list  = strtok(line->tokens[2], "^"); // remove "^"
+  char *rn        = strtok(line->tokens[1], "!"); // remove "!"
+  char *next_reg  = strtok(reg_list, " {, }"); // remove "{, }"
+
+  uint16_t RegList = 0;
+  uint16_t mask;
+
+  while (next_reg != NULL) {
+    if (strchr(next_reg, '-') == NULL) {                    // ...,Rn,...
+      mask = (uint16_t) 1 << PARSE_REG(next_reg);
+    } else {                                              //...,Ra-Rb,...
+      uint8_t first_reg = PARSE_REG(strtok(next_reg, "-"));
+      uint8_t last_reg   = PARSE_REG(strtok(NULL, "\n"));
+      if (last_reg > 15) {
+        //TODO: handle some kind of error, possibly introduce some
+        // kind of halting mechanism (maybe the spec says something about it)
+      }
+      mask = (uint16_t) ((uint16_t) ~0 >> (15 - last_reg)) << first_reg;
+   }
+
+    RegList |= mask;
+    next_reg = strtok (NULL, " {, ]!^");
+  }
+
+  BDTInstruct BDTInst;
+
+  BDTInst.Cond    = AL;
+  BDTInst._100    = 4;
+  BDTInst.P       = P;
+  BDTInst.Up      = Up;
+  BDTInst.S       = (reg_list[strlen(reg_list) - 1] == '^');
+  BDTInst.W       = (rn[strlen(rn) - 1] == '!');
+  BDTInst.L       = L;
+  BDTInst.Rn      = PARSE_REG(rn);
+  BDTInst.RegList = RegList;
+
+  return *((int32_t *) &BDTInst);
+
 }
+
+/*
+Load/Store bit [L]
+0 = Store to memory
+1 = Load from memory
+
+Up/Down bit [Up]
+0 = down : subtract offset from base
+1 = up   : add offset to base
+
+Pre/Post indexing bit [P]
+0 = post : add offset after transfer
+1 = pre  : add offset before transfer
+*/
+
+int32_t ass_block_data_transfer_ldm(TOKEN *line, ASSEMBLER_STRUCT *ass)
+{
+  char *suffix    = line->tokens[0] + 3;
+  int L; int P; int Up;
+
+  if (strcmp(suffix, "ed") == 0) {
+    L = 1; P = 1; Up = 1;
+  } else if (strcmp(suffix, "fd") == 0) {
+    L = 1; P = 0; Up = 1;
+  } else if (strcmp(suffix, "ea") == 0) {
+    L = 1; P = 1; Up = 0;
+  }  else if (strcmp(suffix, "fa") == 0) {
+    L = 1; P = 0; Up = 0;
+  }
+
+  return ass_block_data_transfer(line, L, P, Up);
+}
+
+int32_t ass_block_data_transfer_stm(TOKEN *line, ASSEMBLER_STRUCT *ass)
+{
+  char *suffix    = line->tokens[0] + 3;
+  int L; int P; int Up;
+
+  if (strcmp(suffix, "fa") == 0) {
+    L = 0; P = 1; Up = 1;
+  } else if (strcmp(suffix, "ea") == 0) {
+    L = 0; P = 0; Up = 1;
+  } else if (strcmp(suffix, "fd") == 0) {
+    L = 0; P = 1; Up = 0;
+  }  else if (strcmp(suffix, "ed") == 0) {
+    L = 0; P = 0; Up = 0;
+  }
+
+  return ass_block_data_transfer(line, L, P, Up);
+}
+
+/* int32_t push(char* regv)
+{
+  char sp[4] = "sp!";
+  return stmfd(sp, regv);
+}
+
+int32_t pop(char* regv)
+{
+  char sp[4] = "sp!";
+  return ldmfd(sp, regv);
+}
+*/
 
 ////////* software Interrupt *////////
 
 int32_t ass_software_interrupt(TOKEN *line, ASSEMBLER_STRUCT *ass)
 {
-  //todo
+  char *suffix = (strcmp(line->tokens[0], "swi") == 0) ? "al"
+                                      : (line->tokens[0] + 3);
+
+
+
+  SoftwareInterruptInstruct SWInstr;
+
+	SWInstr.Cond   = str_to_cond(suffix);
+	SWInstr._1111  = 15;
+
+	return *((int32_t *) &SWInstr);
+
 }
 
 
@@ -667,3 +775,4 @@ int main(int argc, char **argv)
 
   return EXIT_SUCCESS;
 }
+
