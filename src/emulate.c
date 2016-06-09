@@ -70,9 +70,8 @@ int32_t convert2complement();
 void multiply(int32_t);
 void single_data_transfer(int32_t);
 void branch(int32_t);
-void block_data_transfer(int32_t);
-void software_interrupt(int32_t);
-
+void block_data_transfer(int32_t); //extension
+void software_interrupt(int32_t); //extension
 
 ////////////////////////// BINARY FILE LOADER ////////////////////////////////
 
@@ -571,9 +570,79 @@ void branch(int32_t word)
 }
 
 /*block data transfer */
-void block_data_transfer(int32_t word)
-{
-  //to do
+
+uint get_address_for_BDT(){
+  int dataRegList = BDTInst->RegList;  //each bit corresponding to a register
+  int dataRn      = BDTInst->Rn;         // base register
+  int dataU       = BDTInst->Up;
+  int dataP       = BDTInst->P;
+
+  int RegRn = arm_Ptr->registers[dataRn];
+
+  PC_bit = BIT_GET(dataRegList, 15);
+
+//If P is set(pre-indexing), offset is +- to Rn BEFORE transferring data.
+//If P is not set(post-indextin), offset is +- to rn AFTER transfering data.
+// So if P is set, we increment addr by 4 so we can deal with the offset first
+//(as illustrated in the diagram p.41, 42 http://bear.ces.cwru.edu/eecs_382/ARM7-TDMI-manual-pt2.pdf)
+
+uint Address;
+if(IS_SET(dataU)){
+  Address = RegRn + (IS_SET(dataP) ? 4 : 0);
+} else {
+  Address = RegRn - (IS_SET(dataP) ? 0 : 4);
+}
+
+  return  Address;
+
+}
+
+
+void LDM(){
+  BDTInstruct *BDTInst = (BDTInstruct *) &word;
+
+  int dataRegList = BDTInst->RegList;  //each bit corresponding to a register
+  int dataRn      = BDTInst->Rn;         // base register
+  int dataL       = BDTInst->L;
+  int dataS       = BDTInst->SetCond;
+  int dataU       = BDTInst->Up;
+  int dataP       = BDTInst->P;
+
+  int RegRn = arm_Ptr->registers[dataRn];
+
+  uint Address = get_address_for_BDT();
+  //The registers are transferred in the order lowest to highest
+    for(int reg = 0; reg < 15; reg++){
+      registers[reg] = Address;
+      Address += 4;
+    }
+
+  if(IS_SET(PC_bit) && IS_SET(S)){
+    REG_WRITE(registers[PC], registers[Address]); //R15 is loaded
+    Register.CPSR = Register.SPSR;
+  }
+}
+
+
+void block_data_transfer(int32_t){
+  BDTInstruct *BDTInst = (BDTInstruct *) &word;
+
+  int dataRegList = BDTInst->RegList;  //each bit corresponding to a register
+  int dataRn      = BDTInst->Rn;         // base register
+  int dataL       = BDTInst->L;
+  int dataS       = BDTInst->SetCond;
+  int dataU       = BDTInst->Up;
+  int dataP       = BDTInst->P;
+
+  int RegRn = arm_Ptr->registers[dataRn];
+
+  if(IS_SET(dataL)){
+    LDM();
+  } else {
+    if(IS_SET(dataS)){
+      Register.Mode = ARM_Mode.User;
+    }
+  }
 }
 
 /*software interrupt */

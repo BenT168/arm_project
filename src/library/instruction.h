@@ -69,7 +69,7 @@ typedef struct BDTInstruct
     unsigned int RegList: 16; /* Register List 16-bits */
     unsigned int Rn     :  4; /* Destination register 4-bits */
     unsigned int L      :  1; /* Load/Store bit 1-bit */
-    unsigned int _0     :  1;
+    unsigned int W      :  1;/* Write-back bit */
     unsigned int SetCond:  1; /* Set Condition codes  1-bit */
     unsigned int Up     :  1; /* Up bit 1-bit */
     unsigned int P      :  1; /* Pre/Post indexing bit 1-bit */
