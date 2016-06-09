@@ -24,6 +24,7 @@
 #define CPSR_SET(posf)    (BIT_SET(REG_READ(CPSR), (posf)))
 #define CPSR_GET(posf)    (BIT_GET(REG_READ(CPSR), (posf)))
 #define CPSR_PUT(posf, i) {(IS_SET(i)) ? CPSR_SET(posf): CPSR_CLR(posf);}
+
 /* PC INCREMENT */
 #define INC_PC(i) (REG_READ(PC) += (i))
 

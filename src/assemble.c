@@ -67,8 +67,9 @@ int32_t lsl_func(TOKEN *, ASSEMBLER_STRUCT *);
 /* Block Data Transfer */
 int32_t ass_block_data_transfer_ldm(TOKEN *, ASSEMBLER_STRUCT *);
 int32_t ass_block_data_transfer_stm(TOKEN *, ASSEMBLER_STRUCT *);
-//int32_t push(char* regv) ;
-//int32_t pop(char* regv) ;
+
+int32_t push(TOKEN *) ;
+int32_t pop(TOKEN *) ;
 
 /* Software Interrupt */
 int32_t ass_software_interrupt(TOKEN *, ASSEMBLER_STRUCT *);
@@ -481,7 +482,6 @@ int32_t ass_single_data_transfer(TOKEN *line, ASSEMBLER_STRUCT *ass)
   /* initialise content of base register */
   int RnNum  = 0;
 
-  //printf("address: %s\n", adr );
 
   /* In the case <=expression> */
   if (Is_Expression(adr)) {
@@ -520,6 +520,7 @@ int32_t ass_single_data_transfer(TOKEN *line, ASSEMBLER_STRUCT *ass)
 
 
   } else {   // Case Optional
+
     Imm = 1;
      //printf("expr :%s\n", expr);
     /* Check if there is sign */
@@ -530,7 +531,7 @@ int32_t ass_single_data_transfer(TOKEN *line, ASSEMBLER_STRUCT *ass)
       /* Remove the sign */
       expr++;
     }
-    RnNum = atoi(rn + 1);
+    RnNum = atoi(rn+1);
     /* As shifted register */
     offset = as_shifted_reg_ass(newline, 3);
     //printf("offset(SDT proc): %i\n",offset );
@@ -538,7 +539,9 @@ int32_t ass_single_data_transfer(TOKEN *line, ASSEMBLER_STRUCT *ass)
     UpFlag = (expr[0] == '+' || expr[0] == '-' ) ? UpFlag : ( offset >= 0 );
 
     tokens_free(newline);
-}
+  }
+
+
 
   SDTInstruct SDTinstr;
 
@@ -548,7 +551,7 @@ int32_t ass_single_data_transfer(TOKEN *line, ASSEMBLER_STRUCT *ass)
   SDTinstr.P	       = Pre_index;
   SDTinstr.Up	       = UpFlag;
   SDTinstr._00	     = 0;
-  SDTinstr.L	       = (strcmp(mnem, "ldr") == 0);  //ldr --> L is set
+  SDTinstr.L	       = (strcmp(mnem, "ldr") == 0);  //ldr --> L is se
   SDTinstr.Rn        = RnNum;
   SDTinstr.Rd	       = PARSE_REG(1);
   SDTinstr.Offset    = offset;
@@ -772,9 +775,6 @@ int32_t lsl_func(TOKEN *line, ASSEMBLER_STRUCT *ass){
   new_token = tokenise(new_line, " ,");
   return ass_data_proc_mov(new_token, ass);
 }
-
-////////////////////A factoriAL program ////////////////////////////////////////
-//ARM stores instructions using Little-endian
 
 
 ///////////////////////// Main /////////////////////////////////////////////////
