@@ -6,11 +6,6 @@
 #include <string.h>
 #include <stdint.h>
 
-
-int cmp_str(void *, void *);
-
-int cmp_int(void *, void *);
-
 ////////////////////////////////////////////////////////////////////////////////
 
 
@@ -45,12 +40,11 @@ void list_insert_front(symbolTableList *, char *, uint16_t);
 
 void list_insert_back(symbolTableList *, char *, uint16_t);
 
+void list_insert_ascending(symbolTableList *list, char* val, uint16_t key);
+
 uint16_t list_get_address(symbolTableList *, char*);
 
 void list_destroy(symbolTableList *);
-
-
-void displayList(symbolTableList *);
 
 ///////////////////////////////Iterate/////////////////////////////////////////
 
