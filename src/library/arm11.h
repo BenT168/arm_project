@@ -67,6 +67,7 @@ typedef enum
    Undefined  = 0x1b,
    System     = 0x1f
 } ARM_Mode;
+
 ///////////////////////////// MACROS /////////////////////////////////////////
 
 /* FLAG SET/CLEAR */

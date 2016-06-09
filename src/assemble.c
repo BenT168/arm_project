@@ -16,6 +16,7 @@
 #include "library/tokens.h"
 #include "library/bitwise.h"
 #include "library/symbolTableList.h"
+#include "library/ADTStack.h"
 
 
 
@@ -79,7 +80,7 @@ int mnemonic_to_Opcode(char* mnemonic);
 
 void funcArray(void);
 
-function_assPtr function_Array[11];
+function_assPtr function_Array[12];
 
 /* Call the proper function */
 void funcArray(void) {
@@ -94,12 +95,14 @@ void funcArray(void) {
 
   function_Array[6] = ass_branch;
 
-  function_Array[7] = ass_block_data_transfer;//TODO:declared wrong
 
-  function_Array[8] = ass_software_interrupt;
+  function_Array[7] = ass_block_data_transfer_ldm;
+  function_Array[8] = ass_block_data_transfer_stm;
 
-  function_Array[9] = lsl_func;
-  function_Array[10] = andeq_func;
+  function_Array[9] = ass_software_interrupt;
+
+  function_Array[10] = lsl_func;
+  function_Array[11] = andeq_func;
 
 }
 
@@ -611,6 +614,7 @@ int32_t ass_branch(TOKEN *line, ASSEMBLER_STRUCT *ass)
 
 int32_t ass_block_data_transfer(TOKEN *line, int L, int P, int Up)
 {
+  char *reglist   = line->tokens[2];
   char *reg_list  = strtok(line->tokens[2], "^"); // remove "^"
   char *rn        = strtok(line->tokens[1], "!"); // remove "!"
   char *next_reg  = strtok(reg_list, " {, }"); // remove "{, }"
@@ -638,13 +642,12 @@ int32_t ass_block_data_transfer(TOKEN *line, int L, int P, int Up)
 
   BDTInstruct BDTInst;
 
-  BDTInst.Cond    = AL;  //TODO: do we not need to check condition??
+  BDTInst.Cond    = AL;
   BDTInst._100    = 4;
   BDTInst.P       = P;
   BDTInst.Up      = Up;
-  BDTInst.S       = (reg_list[strlen(reg_list) - 1] == '^');
+  BDTInst.S       = (reglist[strlen(reglist) - 1] == '^');
   BDTInst.W       = (rn[strlen(rn) - 1] == '!');
-  //BDTInst.W       = (line->tokens[strlen(line->tokens[3]) - 1] == '^');
   BDTInst.L       = L;
   BDTInst.Rn      = PARSE_REG(expr_to_num(rn));
   BDTInst.RegList = RegList;
@@ -702,18 +705,31 @@ int32_t ass_block_data_transfer_stm(TOKEN *line, ASSEMBLER_STRUCT *ass)
   return ass_block_data_transfer(line, L, P, Up);
 }
 
-/* int32_t push(char* regv)
+
+TOKEN* concat(TOKEN *line, char *s2)
 {
-  char sp[4] = "sp!";
-  return stmfd(sp, regv);
+    char *new_line;
+    new_line = (char *) malloc(sizeof(line) + 4 );
+
+    strcpy(new_line, line->tokens[0]);
+    strcat(new_line, s2);
+    strcat(new_line, line->tokens[1]);
+    return (TOKEN *) new_line;
 }
 
-int32_t pop(char* regv)
+
+int32_t push(TOKEN *line)
 {
-  char sp[4] = "sp!";
-  return ldmfd(sp, regv);
+  line = concat(line, "sp!");
+  return ass_block_data_transfer(line, 0, 1, 0); //stmfd
 }
-*/
+
+int32_t pop(TOKEN *line)
+{
+  line = concat(line, "sp!");
+  return ass_block_data_transfer(line, 1, 0, 1); //ldmfd
+}
+
 
 ////////* software Interrupt *////////
 

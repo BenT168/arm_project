@@ -356,7 +356,7 @@ void data_processing(int32_t word)
 	int Operand1 = arm_Ptr->registers[Rn];
 
   /* The second operand depends on I flag being set or not */
-	Operand2     = IS_CLEAR(ImmOp) ? as_shifted_reg(Operand2, SetCond)
+	int Operand2 = IS_CLEAR(ImmOp) ? as_shifted_reg(Operand2, SetCond)
 	           		                 : as_immediate_reg(Operand2);
 
   /* initialise the result */
@@ -589,15 +589,15 @@ void branch(int32_t word)
 
 /*block data transfer */
 
-uint get_address_for_BDT(){
-  int dataRegList = BDTInst->RegList;  //each bit corresponding to a register
+uint get_address_for_BDT(int32_t word){
+
+  BDTInstruct *BDTInst = (BDTInstruct *) &word;
+
   int dataRn      = BDTInst->Rn;         // base register
   int dataU       = BDTInst->Up;
   int dataP       = BDTInst->P;
 
   int RegRn = arm_Ptr->registers[dataRn];
-
-  PC_bit = BIT_GET(dataRegList, 15);
 
 //If P is set(pre-indexing), offset is +- to Rn BEFORE transferring data.
 //If P is not set(post-indextin), offset is +- to rn AFTER transfering data.
@@ -615,48 +615,40 @@ if(IS_SET(dataU)){
 }
 
 
-void LDM(){
+void LDM(int32_t word){
   BDTInstruct *BDTInst = (BDTInstruct *) &word;
 
   int dataRegList = BDTInst->RegList;  //each bit corresponding to a register
   int dataRn      = BDTInst->Rn;         // base register
-  int dataL       = BDTInst->L;
-  int dataS       = BDTInst->SetCond;
-  int dataU       = BDTInst->Up;
-  int dataP       = BDTInst->P;
+  int dataS       = BDTInst->S;
 
   int RegRn = arm_Ptr->registers[dataRn];
 
-  PC_bit = BIT_GET(dataRegList, 15);
+  int PC_bit = BIT_GET(dataRegList, 15);
 
-  uint Address = get_address_for_BDT();
+  uint Address = get_address_for_BDT(word);
   //The registers are transferred in the order lowest to highest
     for(int reg = 0; reg < 15; reg++){
-      registers[reg] = Address;
+      REG_WRITE(RegRn, Address);
       Address += 4;
     }
 
-  if(IS_SET(PC_bit) && IS_SET(S)){
-    REG_WRITE(registers[PC], registers[Address]); //R15 is loaded
+  if(IS_SET(PC_bit) && IS_SET(dataS)){
+    REG_WRITE(arm_Ptr->registers[PC], MEM_R_32bits(Address)); //R15 is loaded
     Register.CPSR = Register.SPSR;
   }
 }
 
 
-void block_data_transfer(int32_t){
+void block_data_transfer(int32_t word){
   BDTInstruct *BDTInst = (BDTInstruct *) &word;
 
-  int dataRegList = BDTInst->RegList;  //each bit corresponding to a register
-  int dataRn      = BDTInst->Rn;         // base register
   int dataL       = BDTInst->L;
-  int dataS       = BDTInst->SetCond;
-  int dataU       = BDTInst->Up;
-  int dataP       = BDTInst->P;
+  int dataS       = BDTInst->S;
 
-  int RegRn = arm_Ptr->registers[dataRn];
 
   if(IS_SET(dataL)){
-    LDM();
+    LDM(word);
   } else {
     if(IS_SET(dataS)){
       Register.Mode = ARM_Mode.User;
