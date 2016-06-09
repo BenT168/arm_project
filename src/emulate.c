@@ -635,7 +635,7 @@ void LDM(int32_t word){
 
   if(IS_SET(PC_bit) && IS_SET(dataS)){
     REG_WRITE(arm_Ptr->registers[PC], MEM_R_32bits(Address)); //R15 is loaded
-    Register.CPSR = Register.SPSR;
+    arm_Ptr->registers[CPSR] = arm_Ptr->SPSR;
   }
 }
 
@@ -651,7 +651,7 @@ void block_data_transfer(int32_t word){
     LDM(word);
   } else {
     if(IS_SET(dataS)){
-      Register.Mode = ARM_Mode.User;
+      arm_Ptr->mode = User;
     }
   }
 
@@ -660,21 +660,27 @@ void block_data_transfer(int32_t word){
 /* software interrupt */
 void software_interrupt(int32_t word)
 {
-  uint SPSR = Register.CPSR;
-  Register.Mode = ARM_Mode.Supervisor;
-  Register[14]  = Register[15] - 2;
-  Register.SPSR = SPSR;
-  Register.FLAG_PUT(SPSR_Flag.T, false);
-  Register.FLAG_PUT(SPSR_Flag.I, true);
-  Register.FLAG_PUT(SPSR_Flag.E, false);
+  int32_t SPSR = arm_Ptr->registers[CPSR]; // Registers[16] = CPSR
+  arm_Ptr->mode = Supervisor;
+  arm_Ptr->registers[14]  = arm_Ptr->registers[PC] - 2;
+  arm_Ptr->SPSR = SPSR;
 
-  Register[15] = HighVectors ? 0xffff0008 : 8;
+  arm_Ptr->registers[PC] = 0xffff0008; // Registers[15] = PC
+/*
+int32_t *OnSoftwareInterrupt;
 
-  if (OnSoftwareInterrupt != null)
+  FLAG_PUT(T, 0);
+  FLAG_PUT(I, 1);
+  FLAG_PUT(E, 0);
+
+  arm_Ptr->registers[15] = 0xffff0008; // Registers[15] = PC
+
+  if(OnSoftwareInterrupt != NULL)
   {
-      uint Code = Opcode & 0xff;
-      OnSoftwareInterrupt(this, new SoftwareInterruptEventArgs(Code));
+    int Code = Opcode & 0xff;
+    REG_WRITE(arm_Ptr, code);
   }
+*/
 }
 
 
