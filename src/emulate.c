@@ -579,7 +579,21 @@ void block_data_transfer(int32_t word)
 /*software interrupt */
 void software_interrupt(int32_t word)
 {
-  //to do
+  uint SPSR = Register.CPSR;
+  Register.Mode = ARM_Mode.Supervisor;
+  Register[14]  = Register[15] - 2;
+  Register.SPSR = SPSR;
+  Register.FLAG_PUT(SPSR_Flag.T, false);
+  Register.FLAG_PUT(SPSR_Flag.I, true);
+  Register.FLAG_PUT(SPSR_Flag.E, false);
+
+  Register[15] = HighVectors ? 0xffff0008 : 8;
+
+  if (OnSoftwareInterrupt != null)
+  {
+      uint Code = Opcode & 0xff;
+      OnSoftwareInterrupt(this, new SoftwareInterruptEventArgs(Code));
+  }
 }
 
 /////////////////////////MAIN  FUNCTION//////////////////////////////////////
@@ -611,3 +625,4 @@ int main(int argc, char **argv)
 
   return EXIT_SUCCESS;
 }
+
