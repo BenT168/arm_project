@@ -354,10 +354,14 @@ void data_processing(int32_t word)
 
   /* The rst operand is always the content of register Rn */
 	int Operand1 = arm_Ptr->registers[Rn];
+  int Operand2 = 0;
 
   /* The second operand depends on I flag being set or not */
-	int Operand2 = IS_CLEAR(ImmOp) ? as_shifted_reg(Operand2, SetCond)
-	           		                 : as_immediate_reg(Operand2);
+  if(IS_CLEAR(ImmOp)){
+    Operand2 = as_shifted_reg(Operand2, SetCond);
+  } else {
+    Operand2 = as_immediate_reg(Operand2);
+  }
 
   /* initialise the result */
 	int result   = 0;
