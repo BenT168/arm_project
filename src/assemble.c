@@ -79,7 +79,7 @@ int mnemonic_to_Opcode(char* mnemonic);
 
 void funcArray(void);
 
-function_assPtr function_Array[11];
+function_assPtr function_Array[12];
 
 /* Call the proper function */
 void funcArray(void) {
@@ -94,12 +94,13 @@ void funcArray(void) {
 
   function_Array[6] = ass_branch;
 
-  function_Array[7] = ass_block_data_transfer;
+  function_Array[7] = ass_block_data_transfer_ldm;
+  function_Array[8] = ass_block_data_transfer_stm;
 
-  function_Array[8] = ass_software_interrupt;
+  function_Array[9] = ass_software_interrupt;
 
-  function_Array[9] = lsl_func;
-  function_Array[10] = andeq_func;
+  function_Array[10] = lsl_func;
+  function_Array[11] = andeq_func;
 
 }
 
@@ -613,6 +614,7 @@ int32_t ass_branch(TOKEN *line, ASSEMBLER_STRUCT *ass)
 
 int32_t ass_block_data_transfer(TOKEN *line, int L, int P, int Up)
 {
+  char *reglist   = line->tokens[2];
   char *reg_list  = strtok(line->tokens[2], "^"); // remove "^"
   char *rn        = strtok(line->tokens[1], "!"); // remove "!"
   char *next_reg  = strtok(reg_list, " {, }"); // remove "{, }"
@@ -622,10 +624,10 @@ int32_t ass_block_data_transfer(TOKEN *line, int L, int P, int Up)
 
   while (next_reg != NULL) {
     if (strchr(next_reg, '-') == NULL) {                    // ...,Rn,...
-      mask = (uint16_t) 1 << PARSE_REG(next_reg);
+      mask = (uint16_t) 1 << PARSE_REG(expr_to_num(next_reg));
     } else {                                              //...,Ra-Rb,...
-      uint8_t first_reg = PARSE_REG(strtok(next_reg, "-"));
-      uint8_t last_reg   = PARSE_REG(strtok(NULL, "\n"));
+      uint8_t first_reg = PARSE_REG(expr_to_num(strtok(next_reg, "-")));
+      uint8_t last_reg   = PARSE_REG(expr_to_num(strtok(NULL, "\n")));
       if (last_reg > 15) {
         //TODO: handle some kind of error, possibly introduce some
         // kind of halting mechanism (maybe the spec says something about it)
@@ -643,10 +645,10 @@ int32_t ass_block_data_transfer(TOKEN *line, int L, int P, int Up)
   BDTInst._100    = 4;
   BDTInst.P       = P;
   BDTInst.Up      = Up;
-  BDTInst.S       = (reg_list[strlen(reg_list) - 1] == '^');
+  BDTInst.S       = (reglist[strlen(reglist) - 1] == '^');
   BDTInst.W       = (rn[strlen(rn) - 1] == '!');
   BDTInst.L       = L;
-  BDTInst.Rn      = PARSE_REG(rn);
+  BDTInst.Rn      = PARSE_REG(expr_to_num(rn));
   BDTInst.RegList = RegList;
 
   return *((int32_t *) &BDTInst);

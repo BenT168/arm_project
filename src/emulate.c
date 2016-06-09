@@ -354,7 +354,7 @@ void data_processing(int32_t word)
 	int Operand1 = arm_Ptr->registers[Rn];
 
   /* The second operand depends on I flag being set or not */
-	Operand2     = IS_CLEAR(ImmOp) ? as_shifted_reg(Operand2, SetCond)
+	int Operand2 = IS_CLEAR(ImmOp) ? as_shifted_reg(Operand2, SetCond)
 	           		                 : as_immediate_reg(Operand2);
 
   /* initialise the result */
@@ -639,7 +639,7 @@ void LDM(){
 }
 
 
-void block_data_transfer(int32_t){
+void block_data_transfer(int32_t word){
   BDTInstruct *BDTInst = (BDTInstruct *) &word;
 
   int dataRegList = BDTInst->RegList;  //each bit corresponding to a register

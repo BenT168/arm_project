@@ -184,11 +184,11 @@ enum Mnemonic
     /* Branch */
     beq = 6, bne = 6, bge = 6, blt = 6, bgt = 6, ble = 6, b = 6,
     /* Block Data Transfer */
-    ldm = 7, stm = 7,
+    ldm = 7, stm = 8,
     /* Software Interrupt */
-    swi = 8,
+    swi = 9,
     /* Special */
-    lsl = 9, andeq = 10,
+    lsl = 10, andeq = 11,
 } Mnemonic;
 
 struct { /* Mnemoic_toString is implemented as */

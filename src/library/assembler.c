@@ -120,7 +120,7 @@ ASSEMBLER_STRUCT *assemble(TOKEN *lines, function_assPtr func, const char *delim
       list_insert_ascending(symbolTable, delchr(label, ':'), address);
       // add symbol at end of list each time
 
-      displayList(symbolTable);
+      //displayList(symbolTable);
 
       if(current_Line[0] == '/') { //comment encountered
         char* comment = delchr(delchr(current_Line, '/'), '/');
