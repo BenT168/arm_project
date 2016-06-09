@@ -67,7 +67,6 @@ typedef enum
    Undefined  = 0x1b,
    System     = 0x1f
 } ARM_Mode;
-
 ///////////////////////////// MACROS /////////////////////////////////////////
 
 /* FLAG SET/CLEAR */
@@ -75,6 +74,5 @@ typedef enum
 #define FLAG_SET(Flag)    ((CPSR & (uint)Flag) == 0 )
 #define FLAG_PUT(Flag, V) {(IS_SET(V)) ? (CPSR |= (uint)Flag) \
                                             : (CPSR &= ~(uint)Flag)}
-
 
 #endif
