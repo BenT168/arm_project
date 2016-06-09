@@ -67,8 +67,9 @@ int32_t lsl_func(TOKEN *, ASSEMBLER_STRUCT *);
 /* Block Data Transfer */
 int32_t ass_block_data_transfer_ldm(TOKEN *, ASSEMBLER_STRUCT *);
 int32_t ass_block_data_transfer_stm(TOKEN *, ASSEMBLER_STRUCT *);
-//int32_t push(char* regv) ;
-//int32_t pop(char* regv) ;
+
+int32_t push(TOKEN *) ;
+int32_t pop(TOKEN *) ;
 
 /* Software Interrupt */
 int32_t ass_software_interrupt(TOKEN *, ASSEMBLER_STRUCT *);
@@ -250,7 +251,7 @@ int as_shifted_reg_ass(TOKEN *line, int Rm)
 	ShiftRegOptional regOp;
 
 	char *shift_name = line->tokens[Rm + 1];
-  //printf("shift_name: %s\n", line->tokens[Rm + 1]);
+  printf("shift_name: %s\n", line->tokens[Rm + 1]);
 	char *Operand2   = line->tokens[Rm + 2];
   //printf("operand2: %s\n", line->tokens[Rm + 2]);
   int shiftType    = str_to_shift(shift_name);
@@ -260,7 +261,6 @@ int as_shifted_reg_ass(TOKEN *line, int Rm)
 	if(Is_Expression(Operand2))
 	{
  		shiftReg.Rm = PARSE_REG(Rm);
-    //printf("shift op applied to Rm: r%i\n",shiftReg.Rm);
 		shiftReg.Flag = 0;
 		shiftReg.Type = shiftType;
 		shiftReg.Amount = expr_to_num(Operand2);
@@ -481,7 +481,6 @@ int32_t ass_single_data_transfer(TOKEN *line, ASSEMBLER_STRUCT *ass)
   /* initialise content of base register */
   int RnNum  = 0;
 
-  //printf("address: %s\n", adr );
 
   /* In the case <=expression> */
   if (Is_Expression(adr)) {
@@ -500,13 +499,15 @@ int32_t ass_single_data_transfer(TOKEN *line, ASSEMBLER_STRUCT *ass)
   TOKEN *newline = tokenise(strdup(line->line), " ,[]");
   char *expr = newline->tokens[3];
   char *rn = newline->tokens[2];
+  printf("rn: %s\n", rn);
 
   if (newline->tokenCount == 3) {   // Case [Rn]
     RnNum = atoi(rn +1);
     offset = 0;
 
   } else if (Is_Expression(expr)) {   // Case [Rn, <#expr>] or [Rn] <#expr>
-    RnNum = atoi(rn +1);
+    RnNum = atoi(rn + 1);
+    printf("RnNum: %i\n", RnNum );
     if(strcmp(adr, "[PC") != 0) {
       offset = abs(expr_to_num(expr));
       UpFlag = offset >= 0;
@@ -520,6 +521,7 @@ int32_t ass_single_data_transfer(TOKEN *line, ASSEMBLER_STRUCT *ass)
 
 
   } else {   // Case Optional
+
     Imm = 1;
      //printf("expr :%s\n", expr);
     /* Check if there is sign */
@@ -531,6 +533,7 @@ int32_t ass_single_data_transfer(TOKEN *line, ASSEMBLER_STRUCT *ass)
       expr++;
     }
     RnNum = atoi(rn + 1);
+    //printf("RnNum: %i\n", RnNum );
     /* As shifted register */
     offset = as_shifted_reg_ass(newline, 3);
     //printf("offset(SDT proc): %i\n",offset );
@@ -538,7 +541,9 @@ int32_t ass_single_data_transfer(TOKEN *line, ASSEMBLER_STRUCT *ass)
     UpFlag = (expr[0] == '+' || expr[0] == '-' ) ? UpFlag : ( offset >= 0 );
 
     tokens_free(newline);
-}
+  }
+
+
 
   SDTInstruct SDTinstr;
 
@@ -548,7 +553,7 @@ int32_t ass_single_data_transfer(TOKEN *line, ASSEMBLER_STRUCT *ass)
   SDTinstr.P	       = Pre_index;
   SDTinstr.Up	       = UpFlag;
   SDTinstr._00	     = 0;
-  SDTinstr.L	       = (strcmp(mnem, "ldr") == 0);  //ldr --> L is set
+  SDTinstr.L	       = (strcmp(mnem, "ldr") == 0);  //ldr --> L is se
   SDTinstr.Rn        = RnNum;
   SDTinstr.Rd	       = PARSE_REG(1);
   SDTinstr.Offset    = offset;
@@ -630,8 +635,7 @@ int32_t ass_block_data_transfer(TOKEN *line, int L, int P, int Up)
       uint8_t first_reg = PARSE_REG(expr_to_num(strtok(next_reg, "-")));
       uint8_t last_reg   = PARSE_REG(expr_to_num(strtok(NULL, "\n")));
       if (last_reg > 15) {
-        //TODO: handle some kind of error, possibly introduce some
-        // kind of halting mechanism (maybe the spec says something about it)
+        exit(EXIT_FAILURE);
       }
       mask = (uint16_t) ((uint16_t) ~0 >> (15 - last_reg)) << first_reg;
    }
@@ -772,9 +776,6 @@ int32_t lsl_func(TOKEN *line, ASSEMBLER_STRUCT *ass){
   new_token = tokenise(new_line, " ,");
   return ass_data_proc_mov(new_token, ass);
 }
-
-////////////////////A factoriAL program ////////////////////////////////////////
-//ARM stores instructions using Little-endian
 
 
 ///////////////////////// Main /////////////////////////////////////////////////
