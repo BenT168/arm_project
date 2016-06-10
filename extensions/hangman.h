@@ -6,4 +6,5 @@
 void showHangman(int choice);
 void questions(int i);
 char* answers(int ans);
+void hangman();
 #endif
