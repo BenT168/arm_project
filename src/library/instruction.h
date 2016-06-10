@@ -1,4 +1,4 @@
-fndef _INSTRUCTION_TYPE
+#ifndef _INSTRUCTION_TYPE
 #define _INSTRUCTION_TYPE
 
 #include <stdint.h>
