@@ -1,3 +1,5 @@
+
+
 #include <stdlib.h>
 #include <stdint.h>
 #include <assert.h>
@@ -56,7 +58,6 @@ void read_ARM(const char *);
 void emulator(void);
 int  check_cond(int32_t);
 void decode_instr(int32_t);
-static void decode_checker_2(int32_t);
 static void decode_checker(int32_t);
 void print_register_state(void);
 
@@ -75,7 +76,6 @@ void branch(int32_t);
 
 void block_data_transfer(int32_t); //extension
 void software_interrupt(int32_t); //extension
-
 
 
 ////////////////////////// BINARY FILE LOADER ////////////////////////////////
