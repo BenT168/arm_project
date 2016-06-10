@@ -1,30 +1,26 @@
-ldr r0, =0x20200000
-mov r1, #1
-lsl r1, #18
-str r1, [r0, #4]
+ldr r0,=0x20200000 ; base address
+mov r1,#1
+lsl r1,#18
+str r1,[r0,#4] ; set GPIO 16 as output pin
 
-mov r1, #1
-lsl r1, #16
-str r1, [r0, #0x1c]
-mov r2, #0
-
-endless:
-
-cmp r2, #0
-bne else
-str r1, [r0, #0x28]
-mov r2, #1
-b wait
-else:
-str r1, [r0, #0x1c]
-mov r2, #0
-
-wait:
-mov r4, #0x00c00000
+mov r1,r1,lsr #2 ; set bit 16
 
 loop:
-sub r4, r4, #1
-cmp r4, #1
-bge loop
 
-b endless
+str r1,[r0,#40] ; clear GPIO 16
+
+mov r2,#0xF0000
+wait1:
+sub r2,r2,#1
+cmp r2,#0
+bne wait1
+
+str r1,[r0,#28] ; set GPIO 16
+
+mov r2,#0xF0000
+wait2:
+sub r2,r2,#1
+cmp r2,#0
+bne wait2
+
+b loop

@@ -574,6 +574,105 @@ void branch(int32_t word)
 }
 
 
+// extension //
+
+/* Block Data Transfer */
+
+uint get_address_for_BDT(int32_t word){
+
+  BDTInstruct *BDTInst = (BDTInstruct *) &word;
+
+  int dataRn      = BDTInst->Rn;         // base register
+  int dataU       = BDTInst->Up;
+  int dataP       = BDTInst->P;
+
+  int RegRn = arm_Ptr->registers[dataRn];
+
+//If P is set(pre-indexing), offset is +- to Rn BEFORE transferring data.
+//If P is not set(post-indextin), offset is +- to rn AFTER transfering data.
+// So if P is set, we increment addr by 4 so we can deal with the offset first
+//(as illustrated in the diagram p.41, 42 http://bear.ces.cwru.edu/eecs_382/ARM7-TDMI-manual-pt2.pdf)
+uint Address;
+if(IS_SET(dataU)){
+  Address = RegRn + (IS_SET(dataP) ? 4 : 0);
+} else {
+  Address = RegRn - (IS_SET(dataP) ? 0 : 4);
+}
+
+  return  Address;
+
+}
+
+
+void LDM(int32_t word){
+  BDTInstruct *BDTInst = (BDTInstruct *) &word;
+
+  int dataRegList = BDTInst->RegList;  //each bit corresponding to a register
+  int dataRn      = BDTInst->Rn;         // base register
+  int dataS       = BDTInst->S;
+
+  int RegRn = arm_Ptr->registers[dataRn];
+
+  int PC_bit = BIT_GET(dataRegList, 15);
+
+  uint Address = get_address_for_BDT(word);
+  //The registers are transferred in the order lowest to highest
+    for(int reg = 0; reg < 15; reg++){
+      REG_WRITE(RegRn, Address);
+      Address += 4;
+    }
+
+  if(IS_SET(PC_bit) && IS_SET(dataS)){
+    REG_WRITE(arm_Ptr->registers[PC], MEM_R_32bits(Address)); //R15 is loaded
+    arm_Ptr->registers[CPSR] = arm_Ptr->SPSR;
+  }
+}
+
+
+void block_data_transfer(int32_t word){
+  BDTInstruct *BDTInst = (BDTInstruct *) &word;
+
+  int dataL       = BDTInst->L;
+  int dataS       = BDTInst->S;
+
+
+  if(IS_SET(dataL)){
+    LDM(word);
+  } else {
+    if(IS_SET(dataS)){
+      arm_Ptr->mode = User;
+    }
+  }
+
+}
+
+/* software interrupt */
+void software_interrupt(int32_t word)
+{
+  int32_t SPSR = arm_Ptr->registers[CPSR];
+  arm_Ptr->mode = Supervisor;
+  arm_Ptr->registers[14]  = arm_Ptr->registers[PC] - 2;
+  arm_Ptr->SPSR = SPSR;
+
+  arm_Ptr->registers[PC] = 0xffff0008;
+}
+/*
+int32_t *OnSoftwareInterrupt;
+
+  FLAG_PUT(T, 0);
+  FLAG_PUT(I, 1);
+  FLAG_PUT(E, 0);
+
+  arm_Ptr->registers[15] = 0xffff0008; // Registers[15] = PC
+
+  if(OnSoftwareInterrupt != NULL)
+  {
+    int Code = Opcode & 0xff;
+    REG_WRITE(arm_Ptr, code);
+  }
+*/
+
+
 /////////////////////////MAIN  FUNCTION//////////////////////////////////////
 
 
