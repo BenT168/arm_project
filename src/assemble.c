@@ -64,24 +64,34 @@ int32_t ass_branch(TOKEN *, ASSEMBLER_STRUCT *);
 int32_t andeq_func(TOKEN *, ASSEMBLER_STRUCT *);
 int32_t lsl_func(TOKEN *, ASSEMBLER_STRUCT *);
 
+int mnemonic_to_Opcode(char* mnemonic);
+
+
+/////// EXTENSION ///////
+
 /* Block Data Transfer */
-int32_t ass_block_data_transfer_ldm(TOKEN *, ASSEMBLER_STRUCT *);
-int32_t ass_block_data_transfer_stm(TOKEN *, ASSEMBLER_STRUCT *);
+int32_t ass_block_data_transfer_ldm(TOKEN *);
+int32_t ass_block_data_transfer_stm(TOKEN *);
 
 int32_t push(TOKEN *) ;
 int32_t pop(TOKEN *) ;
 
+/* Branch and Exchange */
+int32_t ass_branch_exchange_bx(TOKEN *);
+
+/*  Branch With Link */
+int32_t ass_branch_w_link_bl(TOKEN *, ASSEMBLER_STRUCT *);
+
 /* Software Interrupt */
 int32_t ass_software_interrupt(TOKEN *, ASSEMBLER_STRUCT *);
 
-int mnemonic_to_Opcode(char* mnemonic);
 
 
 //////////////////// INITIALISING FUNCTION ARRAY //////////////////////////////
 
 void funcArray(void);
 
-function_assPtr function_Array[12];
+function_assPtr function_Array[14];
 
 /* Call the proper function */
 void funcArray(void) {
@@ -96,14 +106,16 @@ void funcArray(void) {
 
   function_Array[6] = ass_branch;
 
+  function_Array[7] = lsl_func;
+  function_Array[8] = andeq_func;
 
-  function_Array[7] = ass_block_data_transfer_ldm;
-  function_Array[8] = ass_block_data_transfer_stm;
+  function_Array[9]  = ass_block_data_transfer_ldm;
+  function_Array[10] = ass_block_data_transfer_stm;
 
-  function_Array[9] = ass_software_interrupt;
+  function_Array[11] = ass_branch_exchange_bx;
+  function_Array[12] = ass_branch_w_link_bl;
 
-  function_Array[10] = lsl_func;
-  function_Array[11] = andeq_func;
+  function_Array[13] = ass_software_interrupt;
 
 }
 
@@ -205,6 +217,36 @@ void write_File(ASSEMBLER_STRUCT *ass, const char *binaryFile)
   fclose(file);
 }
 
+///////////////////////// Main /////////////////////////////////////////////////
+
+int main(int argc, char **argv)
+{
+  /* Need two files (+ executer) */
+  if(argc < 3) {
+    printf("Incomplete number of arguments in input!\n");
+    printf("Please type in as first argument : ARM source file\n");
+    printf("And as aecond argument : an output ARM binary code file\n");
+    exit(EXIT_FAILURE);
+  }
+
+  funcArray();
+
+  TOKEN *lines = read_Source(argv[1]);
+
+  /* get lines of assembly codes */
+  ass = malloc(sizeof(ASSEMBLER_STRUCT));
+  ass = assemble(lines, &assembler_func, ",");
+
+  /* assemble lines using assembler and get output to write to file */
+  write_File(ass, argv[2]);
+
+  tokens_free(lines);
+
+  assemble_free(ass);
+
+  return EXIT_SUCCESS;
+}
+
 
 //////////////////////////   SHIFTING    //////////////////////////////////////
 
@@ -251,7 +293,7 @@ int as_shifted_reg_ass(TOKEN *line, int Rm)
 	ShiftRegOptional regOp;
 
 	char *shift_name = line->tokens[Rm + 1];
-  printf("shift_name: %s\n", line->tokens[Rm + 1]);
+  //printf("shift_name: %s\n", line->tokens[Rm + 1]);
 	char *Operand2   = line->tokens[Rm + 2];
   //printf("operand2: %s\n", line->tokens[Rm + 2]);
   int shiftType    = str_to_shift(shift_name);
@@ -261,6 +303,7 @@ int as_shifted_reg_ass(TOKEN *line, int Rm)
 	if(Is_Expression(Operand2))
 	{
  		shiftReg.Rm = PARSE_REG(Rm);
+    //printf("shift op applied to Rm: r%i\n",shiftReg.Rm);
 		shiftReg.Flag = 0;
 		shiftReg.Type = shiftType;
 		shiftReg.Amount = expr_to_num(Operand2);
@@ -499,15 +542,13 @@ int32_t ass_single_data_transfer(TOKEN *line, ASSEMBLER_STRUCT *ass)
   TOKEN *newline = tokenise(strdup(line->line), " ,[]");
   char *expr = newline->tokens[3];
   char *rn = newline->tokens[2];
-  printf("rn: %s\n", rn);
 
   if (newline->tokenCount == 3) {   // Case [Rn]
     RnNum = atoi(rn +1);
     offset = 0;
 
   } else if (Is_Expression(expr)) {   // Case [Rn, <#expr>] or [Rn] <#expr>
-    RnNum = atoi(rn + 1);
-    printf("RnNum: %i\n", RnNum );
+    RnNum = atoi(rn +1);
     if(strcmp(adr, "[PC") != 0) {
       offset = abs(expr_to_num(expr));
       UpFlag = offset >= 0;
@@ -532,8 +573,7 @@ int32_t ass_single_data_transfer(TOKEN *line, ASSEMBLER_STRUCT *ass)
       /* Remove the sign */
       expr++;
     }
-    RnNum = atoi(rn + 1);
-    //printf("RnNum: %i\n", RnNum );
+    RnNum = atoi(rn+1);
     /* As shifted register */
     offset = as_shifted_reg_ass(newline, 3);
     //printf("offset(SDT proc): %i\n",offset );
@@ -603,17 +643,48 @@ int32_t ass_branch(TOKEN *line, ASSEMBLER_STRUCT *ass)
 
   /* compute offset */
   int sign   = (lbl_address < ass->current_address) ? -1 : 1;
-  /* off-by-8 bytes effect and shift right by 2 bits */
+  /* oﬀ-by-8 bytes eﬀect and shift right by 2 bits */
 	int offset = ( sign * (ass->current_address - lbl_address + 8)) >> 2;
 
 	BranchInstruct BranchInstr;
 
 	BranchInstr.Cond   = str_to_cond(suffix);
-	BranchInstr._1010  = 10;
+  BranchInstr.Link   = 0;
+	BranchInstr._101   = 5;
   BranchInstr.Offset = offset;
 
 	return *((int32_t *) &BranchInstr);
 }
+
+//////////////////Special Instruction //////////////////////////////////////////
+
+/*andeq func */
+//for instr that compute results, the syntax is <opcode> Rd, Rn, <Operand 2>
+//andeq is similar to and with cond set to 0000 (eq condition)
+//andeq r0, r0, r0
+//TOKEN *line is to get 'andeq from the line read'
+int32_t andeq_func(TOKEN *line, ASSEMBLER_STRUCT *ass){
+  return 0x00000000;
+}
+
+/*lsl func */
+//note: asprintf() cAL the length of the string, ALlocate that amount of mem and
+//write the string into it. it is an implicit mALloc need to free afterward
+//Compile lsl Rn,<#expression> as mov Rn, Rn, lsl <#expression>
+int32_t lsl_func(TOKEN *line, ASSEMBLER_STRUCT *ass){
+  char *new_line = NULL;
+  asprintf(&new_line, "mov %s, %s, lsl %s", line->tokens[1],
+                                            line->tokens[1],
+                                            line->tokens[2]);
+  //printf("inside lsl_func, new_line: %s\n",new_line );
+  TOKEN *new_token = (TOKEN*) malloc(sizeof(TOKEN));
+  new_token = tokenise(new_line, " ,");
+  return ass_data_proc_mov(new_token, ass);
+}
+
+
+//////////////////Extension : Instruction //////////////////////////////////////////
+
 
 ////////* Block Data Transfer *////////
 
@@ -623,7 +694,6 @@ int32_t ass_block_data_transfer(TOKEN *line, int L, int P, int Up)
   char *reg_list  = strtok(line->tokens[2], "^"); // remove "^"
   char *rn        = strtok(line->tokens[1], "!"); // remove "!"
   char *next_reg  = strtok(reg_list, " {, }"); // remove "{, }"
-
 
   uint16_t RegList = 0;
   uint16_t mask;
@@ -635,7 +705,8 @@ int32_t ass_block_data_transfer(TOKEN *line, int L, int P, int Up)
       uint8_t first_reg = PARSE_REG(expr_to_num(strtok(next_reg, "-")));
       uint8_t last_reg   = PARSE_REG(expr_to_num(strtok(NULL, "\n")));
       if (last_reg > 15) {
-        exit(EXIT_FAILURE);
+        //TODO: handle some kind of error, possibly introduce some
+        // kind of halting mechanism (maybe the spec says something about it)
       }
       mask = (uint16_t) ((uint16_t) ~0 >> (15 - last_reg)) << first_reg;
    }
@@ -673,7 +744,7 @@ Pre/Post indexing bit [P]
 1 = pre  : add offset before transfer
 */
 
-int32_t ass_block_data_transfer_ldm(TOKEN *line, ASSEMBLER_STRUCT *ass)
+int32_t ass_block_data_transfer_ldm(TOKEN *line)
 {
   char *suffix    = line->tokens[0] + 3;
   int L; int P; int Up;
@@ -691,7 +762,7 @@ int32_t ass_block_data_transfer_ldm(TOKEN *line, ASSEMBLER_STRUCT *ass)
   return ass_block_data_transfer(line, L, P, Up);
 }
 
-int32_t ass_block_data_transfer_stm(TOKEN *line, ASSEMBLER_STRUCT *ass)
+int32_t ass_block_data_transfer_stm(TOKEN *line)
 {
   char *suffix    = line->tokens[0] + 3;
   int L; int P; int Up;
@@ -734,8 +805,37 @@ int32_t pop(TOKEN *line)
   return ass_block_data_transfer(line, 1, 0, 1); //ldmfd
 }
 
+////////* Branch And Exchange *///////
 
-////////* software Interrupt *////////
+int32_t ass_branch_exchange_bx(TOKEN *line)
+{
+  char *suffix = (strcmp(line->tokens[0], "bx") == 0) ? "al"
+                                                     : (line->tokens[0] + 2);
+  char *rn    = line->tokens[1];
+
+  BXInstruct BXInstr;
+
+  BXInstr.Cond    = str_to_cond(suffix);
+  BXInstr._24bits = 0x12fff1;
+  BXInstr.Rn      = parse_reg((expr_to_num(rn)));
+
+  return  *((int32_t *) &BXInstr);
+}
+
+///////*  Branch With Link */////////
+
+int32_t ass_branch_w_link_bl(TOKEN *line, ASSEMBLER_STRUCT *ass)
+{
+  int32_t normal_branch = ass_branch(line, ass);
+
+  BranchInstruct BranchwLinkInstr = (BranchInstruct *) &normal_branch;
+  BranchwLinkInstr->Link = 1; /* link bit is set */
+
+  return BranchwLinkInstr;
+}
+
+
+////////* Software Interrupt *////////
 
 int32_t ass_software_interrupt(TOKEN *line, ASSEMBLER_STRUCT *ass)
 {
@@ -750,59 +850,3 @@ int32_t ass_software_interrupt(TOKEN *line, ASSEMBLER_STRUCT *ass)
 	return *((int32_t *) &SWInstr);
 }
 
-
-//////////////////SpeciAL Instruction //////////////////////////////////////////
-
-/*andeq func */
-//for instr that compute results, the syntax is <opcode> Rd, Rn, <Operand 2>
-//andeq is similar to and with cond set to 0000 (eq condition)
-//andeq r0, r0, r0
-//TOKEN *line is to get 'andeq from the line read'
-int32_t andeq_func(TOKEN *line, ASSEMBLER_STRUCT *ass){
-  return 0x00000000;
-}
-
-/*lsl func */
-//note: asprintf() cAL the length of the string, ALlocate that amount of mem and
-//write the string into it. it is an implicit mALloc need to free afterward
-//Compile lsl Rn,<#expression> as mov Rn, Rn, lsl <#expression>
-int32_t lsl_func(TOKEN *line, ASSEMBLER_STRUCT *ass){
-  char *new_line = NULL;
-  asprintf(&new_line, "mov %s, %s, lsl %s", line->tokens[1],
-                                            line->tokens[1],
-                                            line->tokens[2]);
-  //printf("inside lsl_func, new_line: %s\n",new_line );
-  TOKEN *new_token = (TOKEN*) malloc(sizeof(TOKEN));
-  new_token = tokenise(new_line, " ,");
-  return ass_data_proc_mov(new_token, ass);
-}
-
-
-///////////////////////// Main /////////////////////////////////////////////////
-int main(int argc, char **argv)
-{
-  /* Need two files (+ executer) */
-  if(argc < 3) {
-    printf("Incomplete number of arguments in input!\n");
-    printf("Please type in as first argument : ARM source file\n");
-    printf("And as aecond argument : an output ARM binary code file\n");
-    exit(EXIT_FAILURE);
-  }
-
-  funcArray();
-
-  TOKEN *lines = read_Source(argv[1]);
-
-  /* get lines of assembly codes */
-  ass = malloc(sizeof(ASSEMBLER_STRUCT));
-  ass = assemble(lines, &assembler_func, ",");
-
-  /* assemble lines using assembler and get output to write to file */
-  write_File(ass, argv[2]);
-
-  tokens_free(lines);
-
-  assemble_free(ass);
-
-  return EXIT_SUCCESS;
-}
