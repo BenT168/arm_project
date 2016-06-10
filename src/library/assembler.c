@@ -107,10 +107,8 @@ ASSEMBLER_STRUCT *assemble(TOKEN *lines, function_assPtr func, const char *delim
   for (int i = 0; i < lines->tokenCount; i++)
   {
     char *current_Line   = strdup(lines->tokens[i]);
-    printf("current line: %s\n", current_Line);
     TOKEN *line          = tokenise(current_Line, delim);
     char *label          = line->tokens[0];
-    printf("label: %s\n", label);
 
     if(strchr(label, ':')) { //label encountered
       label_count++;
@@ -130,7 +128,6 @@ ASSEMBLER_STRUCT *assemble(TOKEN *lines, function_assPtr func, const char *delim
       continue;
 
     }
-    printf("label count(in assemble): %i \n",label_count);
 		address += sizeof(int32_t);
 		tokens_free(line);
 
