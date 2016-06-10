@@ -64,26 +64,26 @@ typedef struct BranchInstruct
 } BranchInstruct;
 
 
-typedef struct BDTInstruct
-{
-    unsigned int RegList: 16; /* Register List 16-bits */
-    unsigned int Rn     :  4; /* Destination register 4-bits */
-    unsigned int L      :  1; /* Load/Store bit 1-bit */
-    unsigned int _0     :  1;
-    unsigned int SetCond:  1; /* Set Condition codes  1-bit */
-    unsigned int Up     :  1; /* Up bit 1-bit */
-    unsigned int P      :  1; /* Pre/Post indexing bit 1-bit */
-    unsigned int _100   :  3;
-    unsigned int Cond   :  4; /* Condition field 4-bits */
-} BDTInstruct;
+//typedef struct BDTInstruct
+//{
+  //  unsigned int RegList: 16; /* Register List 16-bits */
+    //unsigned int Rn     :  4; /* Destination register 4-bits */
+    //unsigned int L      :  1; /* Load/Store bit 1-bit */
+    ////unsigned int _0     :  1;
+    //unsigned int SetCond:  1; /* Set Condition codes  1-bit */
+    //unsigned int Up     :  1; /* Up bit 1-bit */
+    //unsigned int P      :  1; /* Pre/Post indexing bit 1-bit */
+    //unsigned int _100   :  3;
+    //unsigned int Cond   :  4; /* Condition field 4-bits */
+//} BDTInstruct; */
 
 
-typedef struct SoftwareInterruptInstruct
-{
-    unsigned int Ignored : 24; /* Ignored by Processor 24-bits */
-    unsigned int _1111   :  4;
-    unsigned int Cond    :  4; /* Condition field 4-bits */
-} SoftwareInterruptInstruct;
+//typedef struct SoftwareInterruptInstruct
+//{
+  //  unsigned int Ignored : 24; /* Ignored by Processor 24-bits */
+    //unsigned int _1111   :  4;
+    //unsigned int Cond    :  4; /* Condition field 4-bits */
+//} SoftwareInterruptInstruct;
 
 ///////////////////////////// Types of Shift /////////////////////////////////
 
@@ -164,8 +164,8 @@ typedef enum ShiftType
 #define mnemonic_toString(f) \
         f(add) f(sub) f(rsb) f(and) f(eor) f(orr) f(mov) f(tst) \
         f(teq) f(cmp) f(mul) f(mla) f(ldr) f(str) f(beq) f(bne) \
-        f(bge) f(blt) f(bgt) f(ble) f(b)   f(lsl) f(andeq) f(ldm) \
-        f(stm) f(swi)
+        f(bge) f(blt) f(bgt) f(ble) f(b)   f(lsl) f(andeq) //*f(ldm)*/ 
+      //  f(stm) f(swi)
 
 enum Mnemonic
 {
@@ -184,11 +184,11 @@ enum Mnemonic
     //Branch
     beq = 6, bne = 6, bge = 6, blt = 6, bgt = 6, ble = 6, b = 6,
     // Block Data Transfer
-    ldm = 7, stm = 7,
+    //ldm = 7, stm = 7,
     // Software Interrupt
-    swi = 8,
+    //swi = 8,
     //Special
-    lsl = 9, andeq = 10,
+    lsl = 7, andeq = 8,
 } Mnemonic;
 
 struct { /* Mnemoic_toString is implemented as */

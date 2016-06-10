@@ -64,10 +64,10 @@ int32_t andeq_func(TOKEN *, ASSEMBLER_STRUCT *);
 int32_t lsl_func(TOKEN *, ASSEMBLER_STRUCT *);
 
 /* Block Data Transfer */
-int32_t ass_block_data_transfer(TOKEN *, ASSEMBLER_STRUCT *);
+//int32_t ass_block_data_transfer(TOKEN *, ASSEMBLER_STRUCT *);
 
 /* Software Interrupt */
-int32_t ass_software_interrupt(TOKEN *, ASSEMBLER_STRUCT *);
+//int32_t ass_software_interrupt(TOKEN *, ASSEMBLER_STRUCT *);
 
 int mnemonic_to_Opcode(char* mnemonic);
 
@@ -76,7 +76,7 @@ int mnemonic_to_Opcode(char* mnemonic);
 
 void funcArray(void);
 
-function_assPtr function_Array[11];
+function_assPtr function_Array[9];
 
 void funcArray(void) {
   function_Array[0] = ass_data_proc_result;
@@ -90,12 +90,12 @@ void funcArray(void) {
 
   function_Array[6] = ass_branch;
 
-  function_Array[7] = ass_block_data_transfer;
+  //function_Array[7] = ass_block_data_transfer;
 
-  function_Array[8] = ass_software_interrupt;
+  //function_Array[8] = ass_software_interrupt;
 
-  function_Array[9] = lsl_func;
-  function_Array[10] = andeq_func;
+  function_Array[7] = lsl_func;
+  function_Array[8] = andeq_func;
 
 }
 
@@ -592,17 +592,16 @@ int32_t ass_branch(TOKEN *line, ASSEMBLER_STRUCT *ass)
 
 ////////* Block Data Transfer *////////
 
-int32_t ass_block_data_transfer(TOKEN *line, ASSEMBLER_STRUCT *ass)
+/*int32_t ass_block_data_transfer(TOKEN *line, ASSEMBLER_STRUCT *ass)
 {
   //todo
 }
 
-////////* software Interrupt *////////
+software Interrupt */
 
-int32_t ass_software_interrupt(TOKEN *line, ASSEMBLER_STRUCT *ass)
-{
-  //todo
-}
+//int32_t ass_software_interrupt(TOKEN *line, ASSEMBLER_STRUCT *ass)
+//{
+  //todo//
 
 
 //////////////////SpeciAL Instruction //////////////////////////////////////////

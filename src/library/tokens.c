@@ -62,10 +62,7 @@ TOKEN* tokenise(char *str, const char *delim)
   }
 
 	token_struct->tokenCount = Tokncount;
-<<<<<<< HEAD
 
-=======
->>>>>>> d63079f8f05ca2d1f5dac151ba23a3fbaea25aa6
 	return token_struct;
 
 }

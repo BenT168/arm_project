@@ -54,7 +54,7 @@ void read_ARM(const char *);
 void emulator(void);
 int  check_cond(int32_t);
 void decode_instr(int32_t);
-static void decode_checker_1(int32_t);
+//static void decode_checker_1(int32_t);
 static void decode_checker_2(int32_t);
 void print_register_state(void);
 
@@ -70,8 +70,8 @@ int32_t convert2complement();
 void multiply(int32_t);
 void single_data_transfer(int32_t);
 void branch(int32_t);
-void block_data_transfer(int32_t);
-void software_interrupt(int32_t);
+//void block_data_transfer(int32_t);
+//void software_interrupt(int32_t);
 
 
 ////////////////////////// BINARY FILE LOADER ////////////////////////////////
@@ -152,8 +152,9 @@ void decode_instr(int32_t word)
   switch (BIT_GET(word, 27))
   {
     case 1:
-      IS_SET(BIT_GET(word,26)) ? software_interrupt(word)
-                               : decode_checker_1(word);
+      //IS_SET(BIT_GET(word,26)) ? software_interrupt(word)
+      //                         : decode_checker_1(word);
+      branch(word);
       break;
     case 0:
       IS_SET(BIT_GET(word, 26)) ? single_data_transfer(word)
@@ -165,10 +166,10 @@ void decode_instr(int32_t word)
 }
 
 /* first helper function for decode_instr */
-static void decode_checker_1(int32_t word)
+/*static void decode_checker_1(int32_t word)
 {
   IS_SET(BIT_GET(word, 25)) ? branch(word) : block_data_transfer(word);
-}
+}*/
 
 /* second helper function for decode_instr */
 static void decode_checker_2(int32_t word)
@@ -571,16 +572,16 @@ void branch(int32_t word)
 }
 
 /*block data transfer */
-void block_data_transfer(int32_t word)
-{
-  //to do
-}
+//void block_data_transfer(int32_t word)
+//{
+  //to do/
+//}
 
 /*software interrupt */
-void software_interrupt(int32_t word)
-{
+//void software_interrupt(int32_t word)
+//{
   //to do
-}
+//}
 
 /////////////////////////MAIN  FUNCTION//////////////////////////////////////
 
