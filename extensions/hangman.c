@@ -227,9 +227,9 @@ void hangman() {
       printf("                                                                \n");
       printf("               Sorry! You have been hanged.                   \n");
       printf("---------------------------------------------------------------\n");
-      printf("  To start again               TYPE ----------------  a \n");
-    	printf("  To go to next question       TYPE ----------------  y \n");
-    	printf("  To quit                      TYPE ----------------  n \n");
+      printf("   To start again               TYPE ----------------  a \n");
+    	printf("   To go to next question       TYPE ----------------  y \n");
+    	printf("   To quit                      TYPE ----------------  n \n");
       printf("---------------------------------------------------------------\n");
 
       wrong : ;
