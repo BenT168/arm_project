@@ -12,6 +12,7 @@
 
 //////////////////// Structure of Instruction //////////////////////////////
 
+/* Data Processing Instruction */
 
 typedef struct DataProcessingInstruct
 {
@@ -25,21 +26,22 @@ typedef struct DataProcessingInstruct
     unsigned int Cond     :  4; /* Condition field 4-bits */
 } DataProcessingInstruct;
 
+/* Multiply Instruction */
 
 typedef struct MultiplyInstruct
 {
-  //Operand registers 4-bits each
-    unsigned int Rm      : 4;
+    unsigned int Rm      : 4; /* Operand register Rm 4-bits */
     unsigned int _1001   : 4;
-    unsigned int Rs      : 4;
-    unsigned int Rn      : 4;
-    unsigned int Rd      : 4; /* Destination registers 4-bits */
+    unsigned int Rs      : 4; /* Operand register Rs 4-bits */
+    unsigned int Rn      : 4; /* Operand register Rn 4-bits */
+    unsigned int Rd      : 4; /* Destination register 4-bits */
     unsigned int SetCond : 1; /* Set Condition codes  1-bit */
-    unsigned int Acc 	   : 1; /* Accumulate 1-bit */
+    unsigned int Acc 	 : 1; /* Accumulate 1-bit */
     unsigned int _000000 : 6;
     unsigned int Cond 	 : 4; /* Condition field 4-bits */
 } MultiplyInstruct;
 
+/* Single Data Transfer Instruction */
 
 typedef struct SDTInstruct
 {
@@ -55,14 +57,19 @@ typedef struct SDTInstruct
     unsigned int Cond   :  4; /* Condition field 4-bits */
 } SDTInstruct;
 
+/* Branch Instruction */
 
 typedef struct BranchInstruct
 {
     unsigned int Offset : 24; /* Offset 24-bits */
-    unsigned int _1010  :  4;
+    unsigned int Link   :  1; /* Link 1-bit */
+    unsigned int _101   :  3;
     unsigned int Cond   :  4; /* Condition field 4-bits */
 } BranchInstruct;
 
+//extension//
+
+/* Block Data Transfer Instruction */
 
 //typedef struct BDTInstruct
 //{
@@ -84,39 +91,69 @@ typedef struct BranchInstruct
     //unsigned int _1111   :  4;
     //unsigned int Cond    :  4; /* Condition field 4-bits */
 //} SoftwareInterruptInstruct;
+typedef struct BDTInstruct
+{
+    unsigned int RegList: 16; /* Register List 16-bits */
+    unsigned int Rn     :  4; /* Destination register 4-bits */
+    unsigned int L      :  1; /* Load/Store bit 1-bit */
+    unsigned int W      :  1; /* Write back 1-bit */
+    unsigned int S      :  1; /* PSR & Force User codes  1-bit */
+    unsigned int Up     :  1; /* Up bit 1-bit */
+    unsigned int P      :  1; /* Pre/Post indexing bit 1-bit */
+    unsigned int _100   :  3;
+    unsigned int Cond   :  4; /* Condition field 4-bits */
+} BDTInstruct;
+
+/*Branch and Exchange Instruction */
+
+typedef struct BXInstruct
+{
+  unsigned int Rn      :  4; /* Operand Register 4-bits */
+  unsigned int _24bits : 24;
+  unsigned int Cond    :  4; /* Condition field 4-bits */
+} BXInstruct;
+
+/* Software Interrupt Instruction */
+
+typedef struct SoftwareInterruptInstruct
+{
+    unsigned int Ignored : 24; /* Ignored by Processor 24-bits */
+    unsigned int _1111   :  4;
+    unsigned int Cond    :  4; /* Condition field 4-bits */
+} SoftwareInterruptInstruct;
 
 ///////////////////////////// Types of Shift /////////////////////////////////
 
 
 typedef struct ImmReg
 {
-    unsigned int Imm      : 8;
-    unsigned int Rotate   : 4;
+    unsigned int Imm     : 8; /* Immediate value 8-bits in 2nd Operand */
+    unsigned int Rotate  : 4; /* Rotation amount value 4-bits in 2nd Operand */
 } ImmReg;
 
 
 typedef struct ShiftReg
 {
-    unsigned int Rm       : 4;
-    unsigned int Flag     : 1;
-    unsigned int Type     : 2;
-    unsigned int Amount   : 5;
+    unsigned int Rm      : 4; /* Register need shift 4-bits in 2nd Operand */
+    unsigned int Flag    : 1; /* Flag for shift value 1-bit in Shift */
+    unsigned int Type    : 2; /* Shift type 2-bits in Shift */
+    unsigned int Amount  : 5; /* Shift value (constant) 5-bits in Shift */
 } ShiftReg;
 
 
 typedef struct ShiftRegOptional
 {
-  unsigned int Rm       : 4;
-  unsigned int Flag1    : 1;
-  unsigned int Type     : 2;
-  unsigned int Flag2    : 1;
-  unsigned int Rs       : 4;
+  unsigned int Rm        : 4; /* Register need shift 4-bits in 2nd Operand */
+  unsigned int Flag1     : 1; /* Flag for shift value 1-bit in Shift */
+  unsigned int Type      : 2; /* Shift type 2-bits in Shift */
+  unsigned int Flag2     : 1; /* Another flag for shift value 1-bit in Shift */
+  unsigned int Rs        : 4; /* Shift value (register) 4-bits in Shift */
 } ShiftRegOptional;
 
 
 ////////////////////////// Definition of Mnemonic ////////////////////////////
 
-
+/* suffixes and their code */
 typedef enum Cond
 {
     EQ =  0,
@@ -128,7 +165,7 @@ typedef enum Cond
     AL = 14
 } Cond;
 
-
+/* mnemonics and their code */
 typedef enum Opcode
 {
     AND =  0,
@@ -145,7 +182,7 @@ typedef enum Opcode
     BNE = 15
 } Opcode;
 
-
+/* Shift types in data processing and their code */
 typedef enum ShiftType
 {
     LSL = 0, /* logical left */
@@ -164,31 +201,35 @@ typedef enum ShiftType
 #define mnemonic_toString(f) \
         f(add) f(sub) f(rsb) f(and) f(eor) f(orr) f(mov) f(tst) \
         f(teq) f(cmp) f(mul) f(mla) f(ldr) f(str) f(beq) f(bne) \
-        f(bge) f(blt) f(bgt) f(ble) f(b)   f(lsl) f(andeq) //*f(ldm)*/ 
+        f(bge) f(blt) f(bgt) f(ble) f(b)   f(lsl) f(andeq) //*f(ldm)*/
       //  f(stm) f(swi)
 
 enum Mnemonic
 {
-    //Data Processing_RESULT
+    /* Data Processing_RESULT */
     and = 0, eor = 0, sub = 0, rsb = 0, add = 0, orr = 0,
-    //Data_Processing_MOV
+    /* Data_Processing_MOV */
     mov = 1,
-    //Data_Processing_CPSR
+    /* Data_Processing_CPSR */
     tst = 2, teq = 2, cmp = 2,
-    //Multiply_MUL
+    /* Multiply_MUL */
     mul = 3,
-    //Multiply_MLA
+    /* Multiply_MLA */
     mla = 4,
-    //Single Data Transfer
+    /* Single Data Transfer */
     ldr = 5, str = 5,
-    //Branch
+    /* Branch */
     beq = 6, bne = 6, bge = 6, blt = 6, bgt = 6, ble = 6, b = 6,
-    // Block Data Transfer
-    //ldm = 7, stm = 7,
-    // Software Interrupt
-    //swi = 8,
-    //Special
+    /* Special */
     lsl = 7, andeq = 8,
+    /* Block Data Transfer */
+    ldm = 9, stm = 10,
+    /* Branch and Exchange */
+    bx = 11,
+    /* Branch with Link */
+    bl = 12,
+    /* Software Interrupt */
+    swi = 13
 } Mnemonic;
 
 struct { /* Mnemoic_toString is implemented as */
@@ -235,32 +276,30 @@ struct { /* ShiftType_toString is implemented as */
 
 /////////////////////////// String_to_Enum ////////////////////////////////////
 
-
-#define STR_TO_ENUM(a) int str_to_##a(char *buffer)        \
-{                                                          \
- 	int len = sizeof(a##_array)/sizeof(a##_array[0]);        \
-  	for (int i = 0; i < len; i++)                          \
-	{	        					                                     \
-    char *low_buffer = strdup(a##_array[i].str);           \
-          for (int j = 0 ; j < strlen(low_buffer) ; j++ )  \
-          {                                                 \
+#define STR_TO_ENUM(a) int str_to_##a(char *buffer)            \
+{                                                              \
+ 	int len = sizeof(a##_array)/sizeof(a##_array[0]);            \
+  	for (int i = 0; i < len; i++)                              \
+	{	        					                                         \
+    char *low_buffer = strdup(a##_array[i].str);               \
+          for (int j = 0 ; j < strlen(low_buffer) ; j++ )      \
+          {                                                    \
             if ( low_buffer[j] > 'z' || low_buffer[j] < 'a') { \
-              low_buffer[j] = tolower(low_buffer[j]);           \
+              low_buffer[j] = tolower(low_buffer[j]);          \
             }                                                  \
-          }                                                     \
-          if (strcmp(buffer, low_buffer) == 0)                   \
-          {                                                 \
-            return a##_array[i].num;                             \
-		}                                                      \
-    free(low_buffer); \
+          }                                                    \
+          if (strcmp(buffer, low_buffer) == 0)                 \
+          {                                                    \
+            return a##_array[i].num;                           \
+		}                                                          \
+    free(low_buffer);                                          \
 	}                                                            \
-	return -1;                                                    \
+	return -1;                                                   \
 }
 
 STR_TO_ENUM(mnemonic)
 STR_TO_ENUM(opcode)
 STR_TO_ENUM(cond)
 STR_TO_ENUM(shift)
-
 
 #endif

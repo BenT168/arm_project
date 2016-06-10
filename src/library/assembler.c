@@ -76,9 +76,7 @@ int32_t *assemble_generate_bin(ASSEMBLER_STRUCT *ass)
   for(int i = 0; i < (ass->TOTAL_line); i++)
   {
     words[i] = (ass->instr[i])->binary_word;
-
   }
-
   return words;
 }
 
@@ -117,8 +115,10 @@ ASSEMBLER_STRUCT *assemble(TOKEN *lines, function_assPtr func, const char *delim
     if(strchr(label, ':')) { //label encountered
       label_count++;
 
-      list_insert_ascending(symbolTable, delchr(label, ':'), address);
       // add symbol at end of list each time
+      list_insert_ascending(symbolTable, delchr(label, ':'), address);
+
+
 
       if(current_Line[0] == '/') { //comment encountered
         char* comment = delchr(delchr(current_Line, '/'), '/');
