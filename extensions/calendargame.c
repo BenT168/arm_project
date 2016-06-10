@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
+#include <ctype.h>
 
 #include "historyeasylevel.h"
 #include "historymediumlevel.h"
@@ -204,10 +205,10 @@ void Dateprogram() {
 	printf("Would you like to play again [y/n]:");
 	char ans;
 	scanf(" %c", &ans);
-	if(ans == 'y')
+	if(tolower(ans) == 'y')
 	{
 		Dateprogram();
-	} else if(ans == 'n') {
+	} else if(tolower(ans) == 'n') {
 	  printf("Goodbye! We hope you enjoyed the game!\n");
   } else {
 	  printf("Sorry, you have typed in an invalid letter!\n");
@@ -298,10 +299,10 @@ void Holidayrogram() {
 	printf("Would you like to play again [y/n]:");
 	char ans;
 	scanf(" %c", &ans);
-	if(ans == 'y')
+	if(tolower(ans) == 'y')
 	{
 		Dateprogram();
-	} else if(ans == 'n') {
+	} else if(tolower(ans) == 'n') {
 		printf("Goodbye! We hope you enjoyed the game!\n");
 	} else {
 		printf("Sorry, you have typed in an invalid letter!\n");
@@ -327,10 +328,10 @@ void nextques() {
 	printf("Would you like to go to the next question? [y/n]\n");
   char c;
 	scanf(" %c", &c);
-	if(c == 'y')
+	if(tolower(c) == 'y')
 	{
 		system("clear");
-	} else if(c == 'n') {
+	} else if(tolower(c) == 'n') {
 		printf("Thank you for playing the History game! We hope you enjoyed it!\n");
 		exit(EXIT_SUCCESS);
 	} else {
@@ -342,14 +343,13 @@ void nextques() {
 
 /* ask whether go to next level or not */
 void nextlevel() {
-	printf("                                                               \n");
 	printf("Would you like to go to the next level? [y/n]\n");
   char c;
 	scanf(" %c", &c);
-	if(c == 'y')
+	if(tolower(c) == 'y')
 	{
 		system("clear");
-	} else if(c == 'n') {
+	} else if(tolower(c) == 'n') {
 		printf("Thank you for playing the History game! We hope you enjoyed it!\n");
 		exit(EXIT_SUCCESS);
 	} else {
@@ -384,22 +384,86 @@ void Historyprogram() {
 	easylevel();
 
 	/* easy -> medium */
-	nextlevel();
+	int newScore = score;  // save current score
+
+	if (score >= 2) {
+		printf("                                                               \n");
+		printf("All the questions in easy level are done\n");
+		nextlevel();
+	} else {  // If score is not enough
+		printf("                                                               \n");
+		printf("All the questions in easy level are done\n");
+		printf("Sorry you didn't have enough score to go to medium level.\n");
+		printf("Would you like to go to start again? [y/n]\n");
+
+		E_to_M: ;
+		/* get input */
+		char input;
+		scanf(" %c", &input);
+		char c = tolower(input);
+
+    if(c == 'y') {
+			Historyprogram();
+		} else if(c == 'n') {
+			printf("Thank you for playing the History game! We hope you enjoyed it!\n");
+			exit(EXIT_SUCCESS);
+		} else {
+			printf("Sorry, you have typed in an invalid letter!\n");
+			printf("Please type in a, y or n.\n");
+			goto E_to_M;
+		}
+	}
+
 	printf("------------------------- Level: MEDIUM -----------------------------\n");
   printf("                                                               \n");
 
   mediumlevel();
 
 	/* medium -> hard */
-	nextlevel();
+	if ((score - newScore) >= 2) {
+		printf("                                                               \n");
+		printf("All the questions in medium level are done\n");
+		nextlevel();
+	} else {  // If score is not enough
+		printf("                                                               \n");
+		printf("All the questions in medium level are done\n");
+		printf("Sorry you didn't have enough score to go to hard level.\n");
+		printf("Would you like to go to start again? [y/n]\n");
+
+		M_to_H: ;
+		/* get input */
+		char input;
+		scanf(" %c", &input);
+		char c = tolower(input);
+
+    if(c == 'y') {
+			Historyprogram();
+		} else if(c == 'n') {
+			printf("                                                               \n");
+			printf("Thank you for playing the History game! We hope you enjoyed it!\n");
+			exit(EXIT_SUCCESS);
+		} else {
+			printf("                                                               \n");
+			printf("Sorry, you have typed in an invalid letter!\n");
+			printf("Please type in a, y or n.\n");
+			goto M_to_H;
+		}
+	}
+
 	printf("------------------------- Level: HARD -----------------------------\n");
   printf("                                                               \n");
 
 	hardlevel();
 
   printf("                 You have a total of %i points!!            \n",score);
+
+
+	if (score == 10) {  // check if all questions are correct
+		printf("             WOW You have got the full marks !!\n");
+	}
 	printf("                                                               \n");
 	printf("Thank you for playing the History game! We hope you enjoyed it!\n");
+	exit(EXIT_SUCCESS);
 }
 
 ////////////////////////////// Hangman Game ///////////////////////////////////
@@ -410,13 +474,8 @@ void Hangmanprogram() {
   printf("                                                               \n");
 	printf("--------------------------------INFO---------------------------------\n");
 	printf("                                                               \n");
-	printf("      In this game, you will be asked about different dates in\n");
-	printf("             which historical events took place.\n");
-	printf("                                                               \n");
-	printf("------------------------        ~~~        --------------------------\n");
-	printf("                                                               \n");
-	printf("      You will have to guess which historical events\n");
-	printf("            happened (or holidays are on the day) \n");
+	printf("      In this game, you will be asked about names of  \n");
+	printf("             historical events took place.\n");
 	printf("                                                               \n");
 	printf("------------------------        ~~~        --------------------------\n");
 	printf("                                                               \n");
@@ -424,7 +483,7 @@ void Hangmanprogram() {
 	printf("             ,you can write the whole word in the game! \n");
 	printf("                                                               \n");
 	printf("-------------------------------ENJOY--------------------------------\n");
-	//hangman();
+	hangman();
 }
 
 
@@ -441,13 +500,13 @@ int main(void) {
 	char buffer[11];
 	scanf("%s", buffer);
 	checkbuffer:;
-	if(strcmp(buffer, "DATE") == 0)
+	if(strcasecmp(buffer, "DATE") == 0)
 	{
 		Dateprogram();
-	} else if(strcmp(buffer, "HISTORY") == 0) {
+	} else if(strcasecmp(buffer, "HISTORY") == 0) {
 		Historyprogram();
-	}	else if(strcmp(buffer, "HANGMAN") == 0) {
-			Hangmanprogram();
+	}	else if(strcasecmp(buffer, "HANGMAN") == 0) {
+		Hangmanprogram();
 	} else {
 		printf("Sorry, you have typed in an invalid game!\n");
 		printf("Please type in a game.\n");

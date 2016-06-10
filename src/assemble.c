@@ -64,20 +64,20 @@ int32_t ass_branch(TOKEN *, ASSEMBLER_STRUCT *);
 int32_t andeq_func(TOKEN *, ASSEMBLER_STRUCT *);
 int32_t lsl_func(TOKEN *, ASSEMBLER_STRUCT *);
 
-int mnemonic_to_Opcode(char* mnemonic);
+int mnemonic_to_Opcode(char*);
 
 
 /////// EXTENSION ///////
 
 /* Block Data Transfer */
-int32_t ass_block_data_transfer_ldm(TOKEN *);
-int32_t ass_block_data_transfer_stm(TOKEN *);
+int32_t ass_block_data_transfer_ldm(TOKEN *, ASSEMBLER_STRUCT *);
+int32_t ass_block_data_transfer_stm(TOKEN *, ASSEMBLER_STRUCT *);
 
 int32_t push(TOKEN *) ;
 int32_t pop(TOKEN *) ;
 
 /* Branch and Exchange */
-int32_t ass_branch_exchange_bx(TOKEN *);
+int32_t ass_branch_exchange_bx(TOKEN *, ASSEMBLER_STRUCT *);
 
 /*  Branch With Link */
 int32_t ass_branch_w_link_bl(TOKEN *, ASSEMBLER_STRUCT *);
@@ -744,7 +744,7 @@ Pre/Post indexing bit [P]
 1 = pre  : add offset before transfer
 */
 
-int32_t ass_block_data_transfer_ldm(TOKEN *line)
+int32_t ass_block_data_transfer_ldm(TOKEN *line, ASSEMBLER_STRUCT *ass)
 {
   char *suffix    = line->tokens[0] + 3;
   int L; int P; int Up;
@@ -762,7 +762,7 @@ int32_t ass_block_data_transfer_ldm(TOKEN *line)
   return ass_block_data_transfer(line, L, P, Up);
 }
 
-int32_t ass_block_data_transfer_stm(TOKEN *line)
+int32_t ass_block_data_transfer_stm(TOKEN *line, ASSEMBLER_STRUCT *ass)
 {
   char *suffix    = line->tokens[0] + 3;
   int L; int P; int Up;
@@ -807,7 +807,7 @@ int32_t pop(TOKEN *line)
 
 ////////* Branch And Exchange *///////
 
-int32_t ass_branch_exchange_bx(TOKEN *line)
+int32_t ass_branch_exchange_bx(TOKEN *line, ASSEMBLER_STRUCT *ass)
 {
   char *suffix = (strcmp(line->tokens[0], "bx") == 0) ? "al"
                                                      : (line->tokens[0] + 2);
@@ -817,7 +817,7 @@ int32_t ass_branch_exchange_bx(TOKEN *line)
 
   BXInstr.Cond    = str_to_cond(suffix);
   BXInstr._24bits = 0x12fff1;
-  BXInstr.Rn      = parse_reg((expr_to_num(rn)));
+  BXInstr.Rn      = PARSE_REG((expr_to_num(rn)));
 
   return  *((int32_t *) &BXInstr);
 }
@@ -828,10 +828,10 @@ int32_t ass_branch_w_link_bl(TOKEN *line, ASSEMBLER_STRUCT *ass)
 {
   int32_t normal_branch = ass_branch(line, ass);
 
-  BranchInstruct BranchwLinkInstr = (BranchInstruct *) &normal_branch;
+  BranchInstruct *BranchwLinkInstr = (BranchInstruct *) &normal_branch;
   BranchwLinkInstr->Link = 1; /* link bit is set */
 
-  return BranchwLinkInstr;
+  return *((int32_t *) BranchwLinkInstr);
 }
 
 
