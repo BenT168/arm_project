@@ -1,4 +1,4 @@
-#ifndef _INSTRUCTION_TYPE
+fndef _INSTRUCTION_TYPE
 #define _INSTRUCTION_TYPE
 
 #include <stdint.h>
@@ -12,6 +12,7 @@
 
 //////////////////// Structure of Instruction //////////////////////////////
 
+/* Data Processing Instruction */
 
 typedef struct DataProcessingInstruct
 {
@@ -25,21 +26,22 @@ typedef struct DataProcessingInstruct
     unsigned int Cond     :  4; /* Condition field 4-bits */
 } DataProcessingInstruct;
 
+/* Multiply Instruction */
 
 typedef struct MultiplyInstruct
 {
-    /* Operand registers 4-bits each */
-    unsigned int Rm      : 4;
+    unsigned int Rm      : 4; /* Operand register Rm 4-bits */
     unsigned int _1001   : 4;
-    unsigned int Rs      : 4;
-    unsigned int Rn      : 4;
-    unsigned int Rd      : 4; /* Destination registers 4-bits */
+    unsigned int Rs      : 4; /* Operand register Rs 4-bits */
+    unsigned int Rn      : 4; /* Operand register Rn 4-bits */
+    unsigned int Rd      : 4; /* Destination register 4-bits */
     unsigned int SetCond : 1; /* Set Condition codes  1-bit */
     unsigned int Acc 	   : 1; /* Accumulate 1-bit */
     unsigned int _000000 : 6;
     unsigned int Cond 	 : 4; /* Condition field 4-bits */
 } MultiplyInstruct;
 
+/* Single Data Transfer Instruction */
 
 typedef struct SDTInstruct
 {
@@ -55,16 +57,21 @@ typedef struct SDTInstruct
     unsigned int Cond   :  4; /* Condition field 4-bits */
 } SDTInstruct;
 
+/* Branch Instruction */
 
 typedef struct BranchInstruct
 {
     unsigned int Offset : 24; /* Offset 24-bits */
-    unsigned int _1010  :  4;
+    unsigned int Link   :  1; /* Link 1-bit */
+    unsigned int _101   :  3;
     unsigned int Cond   :  4; /* Condition field 4-bits */
 } BranchInstruct;
 
+//extension//
 
-typedef struct BDTInstruct //Block Data Transfer Instructions (extension)
+/* Block Data Transfer Instruction */
+
+typedef struct BDTInstruct
 {
     unsigned int RegList: 16; /* Register List 16-bits */
     unsigned int Rn     :  4; /* Destination register 4-bits */
@@ -77,6 +84,16 @@ typedef struct BDTInstruct //Block Data Transfer Instructions (extension)
     unsigned int Cond   :  4; /* Condition field 4-bits */
 } BDTInstruct;
 
+/*Branch and Exchange Instruction */
+
+typedef struct BXInstruct
+{
+  unsigned int Rn      :  4; /* Operand Register 4-bits */
+  unsigned int _24bits : 24;
+  unsigned int Cond    :  4; /* Condition field 4-bits */
+} BXInstruct;
+
+/* Software Interrupt Instruction */
 
 typedef struct SoftwareInterruptInstruct
 {
@@ -183,12 +200,16 @@ enum Mnemonic
     ldr = 5, str = 5,
     /* Branch */
     beq = 6, bne = 6, bge = 6, blt = 6, bgt = 6, ble = 6, b = 6,
-    /* Block Data Transfer */
-    ldm = 7, stm = 8,
-    /* Software Interrupt */
-    swi = 9,
     /* Special */
-    lsl = 10, andeq = 11,
+    lsl = 7, andeq = 8,
+    /* Block Data Transfer */
+    ldm = 9, stm = 10,
+    /* Branch and Exchange */
+    bx = 11,
+    /* Branch with Link */
+    bl = 12,
+    /* Software Interrupt */
+    swi = 13
 } Mnemonic;
 
 struct { /* Mnemoic_toString is implemented as */
@@ -262,3 +283,4 @@ STR_TO_ENUM(cond)
 STR_TO_ENUM(shift)
 
 #endif
+
