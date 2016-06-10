@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <ctype.h>
 
+
 #include "hangman.h"
 
 int longestWord = 23;
@@ -27,6 +28,7 @@ char* dashes(char* answer) {
   }
   return dash;
 }
+
 
 /* 10 perpared questions */
 void questions(int i) {
@@ -132,11 +134,15 @@ void questions(int i) {
       printf("                            %s                              \n   ", dash);
       printf("                                                              \n");
       break;
+
 		default:
 		  break;
 	}
   free(dash);
 }
+
+
+
 
 /* answers for the 10 questions */
 char* answers(int ans) {
@@ -156,6 +162,7 @@ char* answers(int ans) {
   return answer;
 }
 
+
 /* check if the input is contained in correct answer */
 int isinAnswer(char c, char* answer) {
   if(strchr(answer, c) != NULL) {
@@ -174,6 +181,7 @@ char* checkanswer(char c, char* answer, char* updateDash) {
   return updateDash;
 }
 
+
 /* ask whether go to next question or not */
 void nextquesHang() {
 	printf("                                                               \n");
@@ -181,7 +189,6 @@ void nextquesHang() {
   char c;
 	scanf(" %c", &c);
 	if(tolower(c) == 'y')
-	{
 		system("clear");
 	} else if(tolower(c) == 'n') {
 		printf("Thank you for playing Hangman! We hope you enjoyed it!\n");
@@ -201,7 +208,6 @@ void hangman() {
   int count = 0;
   printf("Write a letter:\n ");
   repeat: ;
-
   /* create the dash line */
   char answer;
   if(count > 0) goto scan;
@@ -256,6 +262,8 @@ void hangman() {
     	}
     }
   }
+
+
   /* we completed the word! */
   if(strcmp(dash, answers(ques)) == 0) {
     passQues++;
@@ -270,7 +278,6 @@ void hangman() {
       printf("                                                               \n");
       exit(EXIT_SUCCESS);
     }
-
     /* answered all questions but with some error */
     if(ques == 10) {
       printf("                                                               \n");
@@ -285,7 +292,6 @@ void hangman() {
     hangman();
   }
 
-  count++;
   if(ques == 10) {
     printf("                                                               \n");
     printf("              You have done the last question!                \n");
@@ -294,8 +300,6 @@ void hangman() {
     exit(EXIT_SUCCESS);
   }
   goto repeat;
-
-  exit(EXIT_SUCCESS);
 }
 
 

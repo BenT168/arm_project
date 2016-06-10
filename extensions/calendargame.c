@@ -205,6 +205,7 @@ void Dateprogram() {
 	printf("Would you like to play again [y/n]:");
 	char ans;
 	scanf(" %c", &ans);
+
 	if(tolower(ans) == 'y')
 	{
 		Dateprogram();
@@ -299,6 +300,7 @@ void Holidayrogram() {
 	printf("Would you like to play again [y/n]:");
 	char ans;
 	scanf(" %c", &ans);
+
 	if(tolower(ans) == 'y')
 	{
 		Dateprogram();
@@ -328,6 +330,7 @@ void nextques() {
 	printf("Would you like to go to the next question? [y/n]\n");
   char c;
 	scanf(" %c", &c);
+
 	if(tolower(c) == 'y')
 	{
 		system("clear");
@@ -343,6 +346,7 @@ void nextques() {
 
 /* ask whether go to next level or not */
 void nextlevel() {
+	printf("                                                               \n");
 	printf("Would you like to go to the next level? [y/n]\n");
   char c;
 	scanf(" %c", &c);
@@ -384,6 +388,7 @@ void Historyprogram() {
 	easylevel();
 
 	/* easy -> medium */
+	nextlevel();
 	int newScore = score;  // save current score
 
 	if (score >= 2) {
@@ -414,12 +419,15 @@ void Historyprogram() {
 		}
 	}
 
+
 	printf("------------------------- Level: MEDIUM -----------------------------\n");
   printf("                                                               \n");
 
   mediumlevel();
 
 	/* medium -> hard */
+	nextlevel();
+
 	if ((score - newScore) >= 2) {
 		printf("                                                               \n");
 		printf("All the questions in medium level are done\n");
@@ -450,13 +458,15 @@ void Historyprogram() {
 		}
 	}
 
+
 	printf("------------------------- Level: HARD -----------------------------\n");
   printf("                                                               \n");
 
 	hardlevel();
 
   printf("                 You have a total of %i points!!            \n",score);
-
+	printf("                                                               \n");
+	printf("Thank you for playing the History game! We hope you enjoyed it!\n");
 
 	if (score == 10) {  // check if all questions are correct
 		printf("             WOW You have got the full marks !!\n");
@@ -474,8 +484,18 @@ void Hangmanprogram() {
   printf("                                                               \n");
 	printf("--------------------------------INFO---------------------------------\n");
 	printf("                                                               \n");
+
+	printf("      In this game, you will be asked about different dates in\n");
+	printf("             which historical events took place.\n");
+	printf("                                                               \n");
+	printf("------------------------        ~~~        --------------------------\n");
+	printf("                                                               \n");
+	printf("      You will have to guess which historical events\n");
+	printf("            happened (or holidays are on the day) \n");
+
 	printf("      In this game, you will be asked about names of  \n");
 	printf("             historical events took place.\n");
+
 	printf("                                                               \n");
 	printf("------------------------        ~~~        --------------------------\n");
 	printf("                                                               \n");
@@ -500,6 +520,7 @@ int main(void) {
 	char buffer[11];
 	scanf("%s", buffer);
 	checkbuffer:;
+
 	if(strcasecmp(buffer, "DATE") == 0)
 	{
 		Dateprogram();
