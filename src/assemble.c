@@ -12,12 +12,9 @@
 
 ////////////////////////////////////MACROS/////////////////////////////////////
 
-#include "library/register.h"
 #include "library/tokens.h"
 #include "library/bitwise.h"
 #include "library/symbolTableList.h"
-#include "library/ADTStack.h"
-
 
 
 // for numerica constant it's in the form "#x" where x is a naturAL number
@@ -86,8 +83,67 @@ int32_t ass_branch_w_link_bl(TOKEN *, ASSEMBLER_STRUCT *);
 int32_t ass_software_interrupt(TOKEN *, ASSEMBLER_STRUCT *);
 
 
+///////////////////////BINARY FILE READER //////////////////////////////////////
 
-//////////////////// INITIALISING FUNCTION ARRAY //////////////////////////////
+/* Add comma at scape to buffer */
+char* writeBuffer(char* buffer) {
+  for(int i = 0; i < strlen(buffer); i++) {
+    if(buffer[i] == ' ') {
+      buffer[i] = ',';
+    }
+  }
+  return buffer;
+}
+
+/* Get token from input file */
+TOKEN *read_Source(const char *sourceFile)
+{
+  FILE *file = fopen(sourceFile, "rt");
+
+  fseek(file, 0, SEEK_END);
+  /* Size of file in bytes */
+  long size = ftell(file);
+  fseek(file, 0, SEEK_SET); //go back to start
+  char buffer[size];
+
+  fread(buffer, 1, size, file);
+
+  /* Check the file */
+  if(ferror(file)) {
+    perror("Error reading from sourceFile.\n");
+  }
+
+  buffer[size - 1]= '\0';
+
+  return tokenise(writeBuffer(buffer), "\n");
+}
+
+void write_File(ASSEMBLER_STRUCT *ass, const char *binaryFile)
+{
+  FILE *file = fopen(binaryFile, "wb");  //w = write, b = binary
+
+  /* Check the file */
+  if(!file) {
+     perror("file did not open correctly");
+     exit(EXIT_FAILURE);
+   }
+
+   /* get binary code from assembler program */
+  int32_t *program = assemble_generate_bin(ass);
+
+  /* size of each element that will be written */
+  size_t size = ass->TOTAL_line * sizeof(int32_t);
+
+  /* Check size */
+  assert(fwrite(program, 1, size, file) == size);
+
+  free(program);
+  fclose(file);
+}
+
+/////////////////////////////// CORE ////////////////////////////////////////
+
+/* Initialising Function Array */
 
 void funcArray(void);
 
@@ -149,9 +205,6 @@ int mnemonic_to_opcode(char* mnemonic) {
   return 0;
 }
 
-
-//////////////////////////   Core     //////////////////////////////////////////
-
 int32_t assembler_func(TOKEN *line, ASSEMBLER_STRUCT *ass) {
   char *mnemonic = line->tokens[0];
   int i = str_to_mnemonic(mnemonic);
@@ -159,65 +212,7 @@ int32_t assembler_func(TOKEN *line, ASSEMBLER_STRUCT *ass) {
 }
 
 
-///////////////////////Binary file reader //////////////////////////////////////
-
-/* Add comma at scape to buffer */
-char* writeBuffer(char* buffer) {
-  for(int i = 0; i < strlen(buffer); i++) {
-    if(buffer[i] == ' ') {
-      buffer[i] = ',';
-    }
-  }
-  return buffer;
-}
-
-/* Get token from input file */
-TOKEN *read_Source(const char *sourceFile)
-{
-  FILE *file = fopen(sourceFile, "rt");
-
-  fseek(file, 0, SEEK_END);
-  /* Size of file in bytes */
-  long size = ftell(file);
-  fseek(file, 0, SEEK_SET); //go back to start
-  char buffer[size];
-
-  fread(buffer, 1, size, file);
-
-  /* Check the file */
-  if(ferror(file)) {
-    perror("Error reading from sourceFile.\n");
-  }
-
-  buffer[size - 1]= '\0';
-
-  return tokenise(writeBuffer(buffer), "\n");
-}
-
-void write_File(ASSEMBLER_STRUCT *ass, const char *binaryFile)
-{
-  FILE *file = fopen(binaryFile, "wb");  //w = write, b = binary
-
-  /* Check the file */
-  if(!file) {
-     perror("file did not open correctly");
-     exit(EXIT_FAILURE);
-   }
-
-   /* get binary code from assembler program */
-  int32_t *program = assemble_generate_bin(ass);
-
-  /* size of each element that will be written */
-  size_t size = ass->TOTAL_line * sizeof(int32_t);
-
-  /* Check size */
-  assert(fwrite(program, 1, size, file) == size);
-
-  free(program);
-  fclose(file);
-}
-
-///////////////////////// Main /////////////////////////////////////////////////
+//////////////////////////////// MAIN ////////////////////////////////////////
 
 int main(int argc, char **argv)
 {
@@ -342,7 +337,7 @@ int check_op2(TOKEN *line, int op2){
 }
 
 
-////////////////////// Assemble Instructions //////////////////////////////////
+////////////////////// ASEMBLE INSTRUCTIONS //////////////////////////////////
 
 ///////* Data Processing *////////
 
@@ -656,7 +651,7 @@ int32_t ass_branch(TOKEN *line, ASSEMBLER_STRUCT *ass)
 	return *((int32_t *) &BranchInstr);
 }
 
-//////////////////Special Instruction //////////////////////////////////////////
+//////* Special Instruction *///////
 
 /*andeq func */
 //for instr that compute results, the syntax is <opcode> Rd, Rn, <Operand 2>
@@ -683,7 +678,7 @@ int32_t lsl_func(TOKEN *line, ASSEMBLER_STRUCT *ass){
 }
 
 
-//////////////////Extension : Instruction //////////////////////////////////////////
+///////////////////// EXTENSION : INSTRUCTIONS ////////////////////////////////
 
 
 ////////* Block Data Transfer *////////
@@ -849,4 +844,3 @@ int32_t ass_software_interrupt(TOKEN *line, ASSEMBLER_STRUCT *ass)
 
 	return *((int32_t *) &SWInstr);
 }
-
