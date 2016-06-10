@@ -283,7 +283,6 @@ int as_numeric_constant(int value){
 
 int as_shifted_reg_ass(TOKEN *line, int Rm)
 {
-  //printf("Rm start: %i\n",Rm );
   if(line->tokenCount == Rm + 1)
   {
     return PARSE_REG(Rm);
@@ -293,9 +292,7 @@ int as_shifted_reg_ass(TOKEN *line, int Rm)
 	ShiftRegOptional regOp;
 
 	char *shift_name = line->tokens[Rm + 1];
-  //printf("shift_name: %s\n", line->tokens[Rm + 1]);
 	char *Operand2   = line->tokens[Rm + 2];
-  //printf("operand2: %s\n", line->tokens[Rm + 2]);
   int shiftType    = str_to_shift(shift_name);
   int result       = 0;
 
@@ -303,11 +300,9 @@ int as_shifted_reg_ass(TOKEN *line, int Rm)
 	if(Is_Expression(Operand2))
 	{
  		shiftReg.Rm = PARSE_REG(Rm);
-    //printf("shift op applied to Rm: r%i\n",shiftReg.Rm);
 		shiftReg.Flag = 0;
 		shiftReg.Type = shiftType;
 		shiftReg.Amount = expr_to_num(Operand2);
-    //printf("amount to shift: %i\n", shiftReg.Amount);
 
   	result = *((int *) &shiftReg);
 
@@ -321,21 +316,22 @@ int as_shifted_reg_ass(TOKEN *line, int Rm)
     regOp.Rs = PARSE_REG(Rm + 2) | (1 << 4);
 
   	result = *((int *) &regOp);
+
 	}
 
 	return result;
 }
+
+
 
 /* Check if operand2 is an expression or a register */
 int check_op2(TOKEN *line, int op2){
   char *operand2 = line->tokens[op2];
 
   if(Is_Expression(operand2)){
-    //printf("!!!num constant:%i\n",as_numeric_constant(expr_to_num(operand2)));
     /* case for shift by a constant */
     return as_numeric_constant(expr_to_num(operand2));
   }
-  //printf("before going into as_shifted_reg\n");
   /* case for shift by a register */
   return as_shifted_reg_ass(line, op2);
 
@@ -503,13 +499,11 @@ int32_t ass_multiply_mul(TOKEN *line, ASSEMBLER_STRUCT *ass)
 
 int32_t ass_multiply_mla(TOKEN *line, ASSEMBLER_STRUCT *ass)
 {
-  //printf("inside multiply mla\n");
   int _ACC        = 1;
   int POS_OF_RD   = 1;
   int POS_OF_RM   = 2;
   int POS_OF_RS   = 3;
   int POS_OF_RN   = 4;
-  //printf("before return multiply mla\n");
   return ass_multiply(line, _ACC, POS_OF_RD, POS_OF_RM, POS_OF_RS, POS_OF_RN);
 }
 
@@ -564,21 +558,16 @@ int32_t ass_single_data_transfer(TOKEN *line, ASSEMBLER_STRUCT *ass)
   } else {   // Case Optional
 
     Imm = 1;
-     //printf("expr :%s\n", expr);
     /* Check if there is sign */
     if (expr[0] == '+' || expr[0] == '-') {
-    //puts("in if statement");
       /* If U is set then '+' else '-' */
-      UpFlag = (expr[0] == '+') ;
+      UpFlag = (expr[0] == '+');
       /* Remove the sign */
       expr++;
     }
     RnNum = atoi(rn+1);
     /* As shifted register */
     offset = as_shifted_reg_ass(newline, 3);
-    //printf("offset(SDT proc): %i\n",offset );
-    /* get value of U bit according to the sign of offset */
-    UpFlag = (expr[0] == '+' || expr[0] == '-' ) ? UpFlag : ( offset >= 0 );
 
     tokens_free(newline);
   }
@@ -676,7 +665,6 @@ int32_t lsl_func(TOKEN *line, ASSEMBLER_STRUCT *ass){
   asprintf(&new_line, "mov %s, %s, lsl %s", line->tokens[1],
                                             line->tokens[1],
                                             line->tokens[2]);
-  //printf("inside lsl_func, new_line: %s\n",new_line );
   TOKEN *new_token = (TOKEN*) malloc(sizeof(TOKEN));
   new_token = tokenise(new_line, " ,");
   return ass_data_proc_mov(new_token, ass);
@@ -849,4 +837,3 @@ int32_t ass_software_interrupt(TOKEN *line, ASSEMBLER_STRUCT *ass)
 
 	return *((int32_t *) &SWInstr);
 }
-
