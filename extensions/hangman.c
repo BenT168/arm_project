@@ -188,7 +188,7 @@ void nextquesHang() {
 	printf("Would you like to go to the next question? [y/n]\n");
   char c;
 	scanf(" %c", &c);
-	if(tolower(c) == 'y')
+	if(tolower(c) == 'y') {
 		system("clear");
 	} else if(tolower(c) == 'n') {
 		printf("Thank you for playing Hangman! We hope you enjoyed it!\n");
@@ -211,7 +211,8 @@ void hangman() {
   /* create the dash line */
   char answer;
   if(count > 0) goto scan;
-  char* dash = strdup(dashes(answers(ques)));
+  char* dash = (char*)malloc((strlen(dashes(answers(ques))) + 1) * sizeof(char));
+  dash = dashes(answers(ques));
 
   /* read the input */
   scan: ;
@@ -228,6 +229,7 @@ void hangman() {
     fails++;
     /* show the new hangman when it's wrong */
     showHangman(5 - fails + 1);
+      printf("                           %s                             \n",dash);
     /* if all lives are used GAME OVER */
     if(fails == 6) {
       printf("                                                                \n");
@@ -299,6 +301,7 @@ void hangman() {
     printf("    Thank you for playing Hangman! We hope you enjoyed it!\n");
     exit(EXIT_SUCCESS);
   }
+  count++;
   goto repeat;
 }
 
