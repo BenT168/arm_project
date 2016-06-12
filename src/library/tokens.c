@@ -45,21 +45,19 @@ TOKEN* tokenise(char *str, const char *delim)
   int Tokncount = 0; // initial room for string
 	char *token = NULL;
   size_t space = 0;
-   // allocate space for tokens
+   // allocate space for tokenst
    // tokens are added to this array;
 
   token_struct->line = strdup(str);
 
-  char* save;
-
-  token = strtok_r(str, delim, &save); // get the first token
+  token = strtok(str, delim); // get the first token
 
   while(token != NULL) {
 		if (*token == '\0') continue; // Discard empty tokens
 		space              	 = sizeof(char *) * (Tokncount + 1);
 		token_struct->tokens  = tokens_chk(realloc(token_struct->tokens, space));
 		token_struct->tokens[Tokncount++] = strdup(token);
-		token = strtok_r(NULL, delim, &save);
+		token = strtok(0, delim);
   }
 
 	token_struct->tokenCount = Tokncount;

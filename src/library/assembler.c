@@ -57,15 +57,12 @@ uint16_t assemble_constant_write(ASSEMBLER_STRUCT *ass, int32_t word)
 
 void assemble_write(ASSEMBLER_STRUCT *ass, int32_t word)
 {
-
   binary_instruct *instr = assemble_chk(malloc(sizeof(binary_instruct)));
   instr->binary_word = word;
   instr->word_address = ass->current_address;
   int current_instruct = ass->current_address / sizeof(int32_t);
   ass->instr[current_instruct] = instr;
   ass->current_address += sizeof(int32_t);
-
-
 }
 
 
@@ -76,9 +73,7 @@ int32_t *assemble_generate_bin(ASSEMBLER_STRUCT *ass)
   for(int i = 0; i < (ass->TOTAL_line); i++)
   {
     words[i] = (ass->instr[i])->binary_word;
-
   }
-
   return words;
 }
 
@@ -121,7 +116,7 @@ ASSEMBLER_STRUCT *assemble(TOKEN *lines, function_assPtr func, const char *delim
       list_insert_ascending(symbolTable, delchr(label, ':'), address);
       // add symbol at end of list each time
 
-      displayList(symbolTable);
+      //displayList(symbolTable);
 
       if(current_Line[0] == '/') { //comment encountered
         char* comment = delchr(delchr(current_Line, '/'), '/');
