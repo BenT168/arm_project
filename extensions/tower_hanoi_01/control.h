@@ -7,9 +7,7 @@
 
 void controlKey_from(SDLKey);
 void controlKey_to(SDLKey);
-//void main_control();
-void main_control_in();
-void main_control_out();
+void main_control();
 
 
 #endif

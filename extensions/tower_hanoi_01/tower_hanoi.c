@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "SDL/SDL.h"
+//#include "show.h"
 
 
 stack_item_t stack;
@@ -9,9 +10,6 @@ stack_item_t stack;
 extern int num_of_elem;
 
 void initialise(int max_num){
-  //currentTower = 0;
-  //currentElem = 0;
-
 
   for (int i = 0; i < tower_num; i++){
     for (int j = 0; j < max_num; j++){
@@ -51,10 +49,10 @@ void push(int towerNum, int item){
 
 /* Find the top ring value*/
 int peek(int towerNum){
-  if (isEmpty(towerNum)) {
+  int top_elem = getTopRing(towerNum);
+  if (top_elem == -1) {
     return 0;
   }
-  int top_elem = getTopRing(towerNum);
   //printf("the top to ring is %i\n", top_elem);
   return towers[towerNum][top_elem];
 }
@@ -63,8 +61,8 @@ int peek(int towerNum){
 int pop(int towerNum){
 
   if(isEmpty(towerNum)){
-    perror("The tower you selected is empty.");
-    return towerNum;
+//perror("The tower you selected is empty.");
+    return -1;
   }
 
   int top_elem = getTopRing(towerNum);
@@ -79,18 +77,19 @@ int pop(int towerNum){
 void move(int from, int to){
   int from_elem = pop(from);
   int to_top_elem = peek(to);
-  printf("from ring is %i in %i\n", from_elem, from);
-  printf("to ring is %i in %i\n", to_top_elem, to);
+  //printf("from ring is %i in %i\n", from_elem, from);
+  //printf("to ring is %i in %i\n", to_top_elem, to);
 
   /* Check moving condition */
-  if(from_elem < to_top_elem || isEmpty(to)){
+   if (from_elem == -1) {
+     perror("The tower you selected is empty.");
+  } else if(from_elem < to_top_elem || isEmpty(to)){
+    printf("going to move rings\n");
     push(to, from_elem);
-
     if(check_win()){
       printf("Congradulation. You have won!!\n");
-      //return 1;
+      //drawScreen();
     }
-
   } else {
     printf("This is an invalid move, please try again...\n");
     push(from, from_elem);  // push the top ring back

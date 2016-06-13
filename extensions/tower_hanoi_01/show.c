@@ -208,6 +208,7 @@ void drawScreen(void)
 {
     if (check_win())
     {
+      win = SDL_LoadBMP("images/winning.bmp");
       setBackground(win);
       return;
     }
@@ -293,9 +294,8 @@ int main(int argc, char **argv){
   //Game Loop
   while(gameRunning == 1){
 
-    main_control_in();
-    main_control_out();
-    
+    main_control();
+
     drawScreen();
     //update screen
     SDL_Flip(screen);
