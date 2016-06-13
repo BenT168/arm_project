@@ -9,114 +9,161 @@
 
 \maketitle
 
-\section{I. Work Splitting between team members}
+\section{Work Splitting between team members}
 
 
-The first meeting was hold after the introduction lecture of the project last 
-Thursday. The discussion was started with the analysis of the project 
-specification. We started splitting the work when every team member had some 
-basic understanding on how the project works. Before working on the project, 
-each of us had done some reading on the C programming.  We decided to have a 
-header file for all the bit manipulation functions planned to focus 
+The first meeting was hold after the introduction lecture of the project last
+Thursday. The discussion was started with the analysis of the project
+specification. We started splitting the work when every team member had some
+basic understanding on how the project works. Before working on the project,
+each of us had done some reading on the C programming.  We decided to have a
+header file for all the bit manipulation functions planned to focus
 on the implementation of first part before moving on to the second part.\\
 \\
 The tasks for Part 1 was being split as below:\\
-Ben Sheng Tan	\\
- - structure and function for data processing instruction \\
- - function for decoding the instruction from pipeline \\
- - header and part of the implementation files for bitwise \\
- - header and implementation files for register \\
- - modification of MakeFile \\
-Adanna Akwataghibe\\
- - the emulator binary file loader and the main method \\
- - the multiply instruction in emulator and its helper methods\\
- - part of the structures of ARM\\
-Lan Yi	\\
- - structure and function for single data transfer instruction\\
- - function for printing bits in implementation file for bitwise\\
- - part of the structures of ARM\\
-Ching Yin Wong\\
- - structure and function for branch instruction\\
- - function for getting bits in implementation file for bitwise\\
- - function for checking condition function in emulator.c\\
- - emulator function in emulator.c\\
+
+\medskip
+
+\begin{tabular}{ |p{5cm}|p{10cm}| }
+\hline
+Ben Sheng Tan
+&  - structure and function for data processing instruction \\
+& - function for decoding the instruction from pipeline \\
+& - header and part of the implementation files for bitwise \\
+& - header and implementation files for register \\
+& - modification of MakeFile \\
+\hline
+Adanna Akwataghibe
+&  - the emulator binary file loader and the main method \\
+& - the multiply instruction in emulator and its helper methods\\
+& - part of the structures of ARM\\
+\hline
+Lan Yi
+&  - structure and function for single data transfer instruction\\
+& - function for printing bits in implementation file for bitwise\\
+& - part of the structures of ARM\\
+\hline
+Ching Yin Wong
+& - structure and function for branch instruction\\
+& - function for getting bits in implementation file for bitwise\\
+& - function for checking condition function in emulator.c\\
+& - emulator function in emulator.c\\
+\hline
+\end{tabular}
+
+\bigskip
+
 \\
-The tasks of debugging and refining code were done by Ben Sheng Tan and Ching 
-Yin Wong while the implementation of the binary file writer and the abstract 
-data structure for assembler were carried out by Adanna and Lan Yi at the same 
+The tasks of debugging and refining code were done by Ben Sheng Tan and Ching
+Yin Wong while the implementation of the binary file writer and the abstract
+data structure for assembler were carried out by Adanna and Lan Yi at the same
 stage.\\
 
-\section{II. Structure for Emulator}
+\pagebreak
 
-For part 1 , we have broken into several sections in emulate.c and several 
+\section{Structure for Emulator}
+
+For part 1 , we have broken into several sections in emulate.c and several
 files in library, as listed below:\\
-\\src \\
-\\emulate.c\\
- - MACRO -> contains functions for 8 bits and 32 bits in reading and writing 
-from/to memory and the inclusive header files for register, which contains 
-the info about REGISTER READ/WRITE  \\
- - FUNCTION PROTOTYPE -> contains code lines with the function name, parameters
- and the result it returns\\
- - BINARY FILE LOADER -> contains the function to read binary file reader or 
+
+\begin{tabular}{ |p{5cm}|p{10cm}| }
+\hline
+\multicolumn{2}{|c|}{src/emulate.c} \\
+\hline
+Macro & contains functions for 8 bits and 32 bits in reading and writing
+from/to memory and the inclusive header files for register, which contains
+the info about REGISTER READ/WRITE . \\
+\hline
+Function Prototype &  contains code lines with the function name, parameters
+and the result it returns. \\
+\hline
+Binary File Loader & contains the function to read binary file reader or
 otherwise, read the arm program \\
- - CORE -> contains, mainly, the pipeline simulation function - a series of 
-functions for easier flag operations - an instruction decoder which 
-identifies the instruction type based on the specified bits - a function that 
-checks the 4-bit conditions at the beginning - a function to print the arm 
-state\\
- - INSTRUCTIONS -> contains 4 functions for executing each type of instruction\\
- - MAIN -> contains main function for running the file \\
+\hline
+Core & contains, mainly, the pipeline simulation function - a series of
+functions for easier flag operations - an instruction decoder which
+identifies the instruction type based on the specified bits - a function that
+checks the 4-bit conditions at the beginning - a function to print the arm
+state \\
+\hline
+Main & contains main function for running the file \\
+\hline
+Instructions  & functions for initialising the constant integer, shifted registers
+and checking if operand is an expression or a register and shift register. \\
+\hline
+Main & contains main function for running the file\\
+\hline
+\end{tabular}
+
+\bigskip
 \\
-src/library\\
- \\arm11.h \\
-Pipeline, state of arm, register definition and flag definition
- \\instruction.h \\	
-Structure of the instructions, type of shift and definition of mnemonic
-\\bitwise.h and bitwise.c	\\
- - declare the functions written in implementation file and define some 
-essential methods for bit (header file) \\
- - functions for printing bits, getting bits, rotating left and right 
-(implementation file) \\
-\\register.h and register.c\\
- - declare the functions written in implementation file, define the register 
-write and register read and the structure of CPSR flag (header file)\\
- - shifting functions for immediate register and shift register (implementation
- file)\\
- 
-\section{III. Group Dynamics}
+
+\begin{tabular}{ |p{5cm}|p{10cm}|  }
+\hline
+\multicolumn{2}{|c|}{ src/library  } \\
+\hline
+arm11.h & Pipeline, state of arm, register definition and flag definition \\
+\hline
+instruction.h & Structure of the instructions, type of shift and definition of
+mnemonic\\
+ \hline
+bitwise.h & declare the functions written in implementation file
+and define some essential methods for bit \\
+\hline
+bitwise.c & functions for printing bits, getting bits, rotating left and right\\
+\hline
+register.h  &  declare the functions written in implementation file, define the
+register write and register read and the structure of CPSR flag \\
+\hline
+register.c & shifting functions for immediate register and shift register \\
+\hline
+\end{tabular}
+
+\pagebreak
+
+\section{Group Dynamics}
 
 The group has worked very well so far with strong communication with each other
-. Although we had a few bumps on our different programming styles, we had 
+. Although we had a few bumps on our different programming styles, we had
 refined and restructured the codes when we merged our works for part 1. As most
- of the group members are unfamiliar with git, we spent a day on git to get 
+ of the group members are unfamiliar with git, we spent a day on git to get
 used to the environment working using git. \\\\
-Below are some of the problems we faced and solutions we found when carrying 
-out our project:\\\\
- Problems\\	
- - using pointers correctly \\
- - allocating memory correctly (when using malloc and calloc)\\
- - dealing with merge conflicts \\
- - dealing with segmentation fault \\\\
- Solutions\\	
- - practice coding using pointers\\
- - the dynamic memory allocation and remembering to free memory afterwards\\ 
- - telling team members when pushing of pulling from git \\
- - using valgrind to check for leaks is extremely useful.\\
+Below are some of the problems we faced and solutions we found when carrying
+out our project:\\
 
-\section{IV. Future Task Collaboration}
+\begin{tabular}{ |p{5cm}|p{10cm}| }
+\hline
+Problems
+& - using pointers correctly \\
+& - allocating memory correctly (when using malloc and calloc)\\
+& - dealing with merge conflicts \\
+& - dealing with segmentation fault \\
+\hline
+Solutions
+& - practice coding using pointers\\
+& - the dynamic memory allocation and remembering to free memory afterwards\\
+& - telling team members when pushing of pulling from git \\
+& - using valgrind to check for leaks is extremely useful.\\
+\hline
+\end{tabular}
 
-For Part two (assembler), task allocation was done among all the team 
-members. As all the group members are unfamiliar with coding in C, we will 
-practice more to get used to the concept of pointers and structure. The real 
-challenge will be the multiples coding styles in C programming, therefore, we 
-will ensure that the similar style is applied to prevent any confusion.\\\\
- 
-Below are some of the precautions we will beware of:\\\\
- 
-Precautions\\	
- - merge conflict can be a pain and could take a long time to sort out, so 
-communication with team is  very important to prevent this\\
- - allocate memory correctly to avoid segmentation fault \\\\
+\section{Future Task Collaboration}
 
+For Part two (assembler), task allocation was done among all the team
+members. As all the group members are unfamiliar with coding in C, we will
+practice more to get used to the concept of pointers and structure. The real
+challenge will be the multiples coding styles in C programming, therefore, we
+will ensure that the similar style is applied to prevent any confusion.\\
+
+Below are some of the precautions we will beware of:\\
+
+\begin{tabular}{ |p{5cm}|p{10cm}| }
+\hline
+Precautions
+& - merge conflict can be a pain and could take a long time to
+sort out, so communication with team is  very important to prevent this\\
+& - allocate memory correctly to avoid segmentation fault\\
+\hline
+ \end{tabular}
 
 \end{document}

@@ -39,6 +39,7 @@ void Hangmanprogram();
 
 int days_in_month[]={0,31,28,31,30,31,30,31,31,30,31,30,31};
 int score = 0;
+int holiday = 0;
 
 /* check if it is a leap year */
 int determineleapyear(int year)
@@ -145,10 +146,12 @@ char* intToDay(int day) {
 
 /* Date Game */
 void Dateprogram() {
+	if(holiday > 1) goto date;
 
   printf("~~~~~~~~~~~~~~~~~~~~Welcome to Date game!~~~~~~~~~~~~~~~~~~~~\n");
 
-	/* normall date game or holiday game randomlly */
+	/* normal date game or holiday game randomlly */
+	date:;
   int date_or_holiday = randomGen(4);
   /* get holiday game at the rate 25% */
   if (date_or_holiday == 1)
@@ -208,7 +211,8 @@ void Dateprogram() {
 
 	if(tolower(ans) == 'y')
 	{
-		Dateprogram();
+		printf("                                         \n");
+		goto date;
 	} else if(tolower(ans) == 'n') {
 	  printf("Goodbye! We hope you enjoyed the game!\n");
   } else {
@@ -303,6 +307,8 @@ void Holidayrogram() {
 
 	if(tolower(ans) == 'y')
 	{
+		printf("                                          \n");
+		holiday++;
 		Dateprogram();
 	} else if(tolower(ans) == 'n') {
 		printf("Goodbye! We hope you enjoyed the game!\n");
@@ -380,6 +386,27 @@ void Historyprogram() {
 	printf("                                                               \n");
 	printf("-------------------------------ENJOY---------------------------------\n");
 	printf("                                                               \n");
+	printf("Continue? [y/n]\n");
+  /*Check if user wants to continue */
+  repeatCont : ;
+	char userIN;
+	scanf(" %c", &userIN);
+	char ch = tolower(userIN);
+
+	if(ch == 'y') {
+		system("clear");
+		goto easyL;
+	} else if(ch == 'n') {
+		printf("Thank you for playing the History game! We hope you enjoyed it!\n");
+		exit(EXIT_SUCCESS);
+	} else {
+		printf("Sorry, you have typed in an invalid letter!\n");
+		printf("Please type in a, y or n.\n");
+		goto repeatCont;
+	}
+
+
+	easyL: ;
 	printf("                                                               \n");
   printf("------------------------- Level: EASY -------------------------------\n");
 	printf("                                                               \n");
@@ -387,7 +414,7 @@ void Historyprogram() {
 	easylevel();
 
 	/* easy -> medium */
-	nextlevel();
+  system("clear");
 	int newScore = score;  // save current score
 
 	if (score >= 2) {
@@ -399,6 +426,7 @@ void Historyprogram() {
 		printf("All the questions in easy level are done\n");
 		printf("Sorry you didn't have enough score to go to medium level.\n");
 		printf("Would you like to go to start again? [y/n]\n");
+		score = 0;
 
 		E_to_M: ;
 		/* get input */
@@ -425,7 +453,7 @@ void Historyprogram() {
   mediumlevel();
 
 	/* medium -> hard */
-	nextlevel();
+	system("clear");
 
 	if ((score - newScore) >= 2) {
 		printf("                                                               \n");
@@ -436,6 +464,7 @@ void Historyprogram() {
 		printf("All the questions in medium level are done\n");
 		printf("Sorry you didn't have enough score to go to hard level.\n");
 		printf("Would you like to go to start again? [y/n]\n");
+		score = 0;
 
 		M_to_H: ;
 		/* get input */
@@ -464,8 +493,6 @@ void Historyprogram() {
 	hardlevel();
 
   printf("                 You have a total of %i points!!            \n",score);
-	printf("                                                               \n");
-	printf("Thank you for playing the History game! We hope you enjoyed it!\n");
 
 
 	if (score == 10) {  // check if all questions are correct
@@ -489,10 +516,27 @@ void Hangmanprogram() {
 	printf("                                                               \n");
 	printf("------------------------        ~~~        --------------------------\n");
 	printf("                                                               \n");
-	printf("         Write a letter each go. And if you think you have the word\n");
-	printf("             ,you can write the whole word in the game! \n");
+	printf("      Write a letter each go, until you get the whole word  \n");
 	printf("                                                               \n");
 	printf("-------------------------------ENJOY--------------------------------\n");
+
+  printf("Continue? [y/n]\n");
+  /* Check if user would like to continue */
+	repeatCont : ;
+	char userIN;
+	scanf(" %c", &userIN);
+	char ch = tolower(userIN);
+
+	if(ch == 'y') {
+		system("clear");
+	} else if(ch == 'n') {
+		printf("Thank you for playing the History game! We hope you enjoyed it!\n");
+		exit(EXIT_SUCCESS);
+	} else {
+		printf("Sorry, you have typed in an invalid letter!\n");
+		printf("Please type in a, y or n.\n");
+		goto repeatCont;
+	}
 
 	hangman();
 }
