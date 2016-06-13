@@ -8,12 +8,14 @@
 
 #include "hangman.h"
 
-
 int longestWord = 23;
 int fails = 0;
+int ques = 1;
+int passQues = 0;
 
 void showHangman(int);
 
+/* Create dash line for inputing answer */
 char* dashes(char* answer) {
   char* dash = (char*)malloc(sizeof(char) * (strlen(answer)+1));
   dash[0] = '_';
@@ -28,6 +30,7 @@ char* dashes(char* answer) {
 }
 
 
+/* 10 perpared questions */
 void questions(int i) {
   char* dash = (char*)malloc(sizeof(char) * longestWord);
 	switch(i) {
@@ -130,6 +133,8 @@ void questions(int i) {
       dash = dashes(answers(10));
       printf("                            %s                              \n   ", dash);
       printf("                                                              \n");
+      break;
+
 		default:
 		  break;
 	}
@@ -137,6 +142,9 @@ void questions(int i) {
 }
 
 
+
+
+/* answers for the 10 questions */
 char* answers(int ans) {
   char* answer = "world war two";
   switch(ans) {
@@ -154,17 +162,8 @@ char* answers(int ans) {
   return answer;
 }
 
-int isUpperCase(char ch) {
-   if (ch >= 'A' && ch <= 'Z') {
-     return 1;
-   }
-   return 0;
-}
 
-char toLowerCase(char c) {
-  return c + 32;
-}
-
+/* check if the input is contained in correct answer */
 int isinAnswer(char c, char* answer) {
   if(strchr(answer, c) != NULL) {
     return 1;
@@ -172,6 +171,7 @@ int isinAnswer(char c, char* answer) {
   return 0;
 }
 
+/* update dash line */
 char* checkanswer(char c, char* answer, char* updateDash) {
   for(int i = 0; i < strlen(answer); i++) {
     if(answer[i] == c) {
@@ -182,140 +182,202 @@ char* checkanswer(char c, char* answer, char* updateDash) {
 }
 
 
+/* ask whether go to next question or not */
+void nextquesHang() {
+	printf("                                                               \n");
+	printf("Would you like to go to the next question? [y/n]\n");
+  char c;
+	scanf(" %c", &c);
+	if(tolower(c) == 'y')
+		system("clear");
+	} else if(tolower(c) == 'n') {
+		printf("Thank you for playing Hangman! We hope you enjoyed it!\n");
+		exit(EXIT_SUCCESS);
+	} else {
+		printf("Sorry, you have typed in an invalid letter!\n");
+		printf("Please type in y or n.\n");
+		nextquesHang();
+	}
+}
 
+
+/* Hangman Game */
 void hangman() {
-  questions(1);
+  /* show question */
+  questions(ques);
   int count = 0;
   printf("Write a letter:\n ");
   repeat: ;
+  /* create the dash line */
   char answer;
   if(count > 0) goto scan;
-  char* dash = strdup(dashes(answers(1)));
+  char* dash = strdup(dashes(answers(ques)));
+
+  /* read the input */
   scan: ;
   scanf(" %c", &answer);
   char c = tolower(answer);
 
-  if(isinAnswer(c, answers(1))) {
-    char* result = checkanswer(c, answers(1), dash);
+  /* check input */
+  if(isinAnswer(c, answers(ques))) {
+    char* result = checkanswer(c, answers(ques), dash);
     dash = result;
     printf("                           %s                                 \n",result);
-  } else {
-    printf("                                                               \n");
-    printf("                  Wrong letter.                           \n");
+  } else {  // case incorrect input
     printf("                                                               \n");
     fails++;
+    /* show the new hangman when it's wrong */
     showHangman(5 - fails + 1);
+    /* if all lives are used GAME OVER */
+    if(fails == 6) {
+      printf("                                                                \n");
+      printf("               Sorry! You have been hanged.                   \n");
+      printf("---------------------------------------------------------------\n");
+      printf("   To start again               TYPE ----------------  a \n");
+    	printf("   To go to next question       TYPE ----------------  y \n");
+    	printf("   To quit                      TYPE ----------------  n \n");
+      printf("---------------------------------------------------------------\n");
+
+      wrong : ;
+      /* read input for decision */
+      char input;
+      scanf(" %c", &input);
+      char d = tolower(input);
+
+      if(d == 'a') {
+        fails = 0;
+        hangman();
+      } else if(d == 'y') {
+        ques++;
+        fails = 0;
+        hangman();
+      } else if(d == 'n') {
+        printf("                                                               \n");
+      	printf("    Thank you for playing Hangman! We hope you enjoyed it!\n");
+        exit(EXIT_SUCCESS);
+      } else {
+    		printf("Sorry, you have typed in an invalid letter!\n");
+    		printf("Please type in a, y or n.\n");
+    		goto wrong;
+    	}
+    }
   }
-  count++;
-  goto repeat;
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  /* correct answer */
-  int day = 25;
-  	char* month = "December";
-
-  	/* read input */
-    int buffInt;
-  	char buffer[20];
-  	scanf(" %i %s", &buffInt, buffer);
-
-  	/* check answer */
-  	if(day == buffInt && strcasecmp(month, buffer) == 0) {
-  		printf("               Good job! That's the correct answer.               \n");
-  		printf("                                                               \n");
-  	} else {
-  		printf("                   You have the wrong answer.                    \n");
-  		printf("                 %i %s is the correct date                 \n", day, month);
-  		printf("                                                               \n");
-  	}
-
-  	//nextques();
-
+  /* we completed the word! */
+  if(strcmp(dash, answers(ques)) == 0) {
+    passQues++;
     printf("                                                               \n");
+    printf("    Congratulations!!! You have gotten the correct answer!     \n");
+
+    /* got all the questions correct */
+    if(passQues == 10) {
+      printf("                                                               \n");
+      printf("        OMG!!! You passed all the questions!!!        \n");
+      printf("        You are an amazing specimen of nature XD      \n");
+      printf("                                                               \n");
+      exit(EXIT_SUCCESS);
+    }
+    /* answered all questions but with some error */
+    if(ques == 10) {
+      printf("                                                               \n");
+      printf("              You have done the last question!                \n");
+      printf("             You have passed %i questions in total. \n", passQues);
+      printf("    Thank you for playing Hangman! We hope you enjoyed it!\n");
+      exit(EXIT_SUCCESS);
+    }
+    nextquesHang();
+    ques++;
+    fails = 0;
+    hangman();
+  }
+
+  if(ques == 10) {
+    printf("                                                               \n");
+    printf("              You have done the last question!                \n");
+    printf("             You have passed %i questions in total. \n", passQues);
+    printf("    Thank you for playing Hangman! We hope you enjoyed it!\n");
+    exit(EXIT_SUCCESS);
+  }
+  goto repeat;
 }
+
+
+
 
 void showHangman(int choice) { //This function show the hangman after each wrong try
 
   switch(choice) {
     case 0:
     system("clear");
-	  printf("\n\t||===== ");
-	  printf("\n\t||    | ");
-	  printf("\n\t||   %cO/",'\\');
-	  printf("\n\t||    | ");
-	  printf("\n\t||   / %c",'\\');
-	  printf("\n\t||      ");
+    printf("                  Wrong letter.                           \n");
+	  printf("\n\t              ||===== ");
+	  printf("\n\t              ||    | ");
+	  printf("\n\t              ||   %cO/",'\\');
+	  printf("\n\t              ||    | ");
+	  printf("\n\t              ||   / %c",'\\');
+	  printf("\n\t              ||      ");
+    printf("                                                               \n");
 	  break;
 
     case 1:
     system("clear");
-	  printf("\n\t||===== ");
-	  printf("\n\t||    | ");
-	  printf("\n\t||   %cO/",'\\');
-	  printf("\n\t||    | ");
-	  printf("\n\t||     %c",'\\');
-	  printf("\n\t||      ");
+    printf("                  Wrong letter.                           \n");
+	  printf("\n\t              ||===== ");
+	  printf("\n\t              ||    | ");
+	  printf("\n\t              ||   %cO/",'\\');
+	  printf("\n\t              ||    | ");
+	  printf("\n\t              ||     %c",'\\');
+	  printf("\n\t              ||      ");
+    printf("                                                               \n");
 	  break;
 
     case 2:
     system("clear");
-	  printf("\n\t||===== ");
-	  printf("\n\t||    | ");
-	  printf("\n\t||   %cO/",'\\');
-	  printf("\n\t||    | ");
-	  printf("\n\t||      ");
-	  printf("\n\t||      ");
+    printf("                  Wrong letter.                           \n");
+	  printf("\n\t              ||===== ");
+	  printf("\n\t              ||    | ");
+	  printf("\n\t              ||   %cO/",'\\');
+	  printf("\n\t              ||    | ");
+	  printf("\n\t              ||      ");
+	  printf("\n\t              ||      ");
+    printf("                                                               \n");
 	  break;
 
     case 3:
     system("clear");
-	  printf("\n\t||===== ");
-	  printf("\n\t||    | ");
-	  printf("\n\t||   %cO/",'\\');
-	  printf("\n\t||      ");
-	  printf("\n\t||      ");
-	  printf("\n\t||      ");
+    printf("                  Wrong letter.                           \n");
+	  printf("\n\t              ||===== ");
+	  printf("\n\t              ||    | ");
+	  printf("\n\t              ||   %cO/",'\\');
+	  printf("\n\t              ||      ");
+	  printf("\n\t              ||      ");
+	  printf("\n\t              ||      ");
+    printf("                                                               \n");
 	  break;
 
     case 4:
     system("clear");
-	  printf("\n\t||===== ");
-	  printf("\n\t||    | ");
-	  printf("\n\t||   %cO ",'\\');
-	  printf("\n\t||      ");
-	  printf("\n\t||      ");
-	  printf("\n\t||      ");
+    printf("                  Wrong letter.                           \n");
+	  printf("\n\t              ||===== ");
+	  printf("\n\t              ||    | ");
+	  printf("\n\t              ||   %cO ",'\\');
+	  printf("\n\t              ||      ");
+	  printf("\n\t              ||      ");
+	  printf("\n\t              ||      ");
+    printf("                                                               \n");
 	  break;
 
     case 5:
     system("clear");
-	  printf("\n\t||===== ");
-	  printf("\n\t||    | ");
-	  printf("\n\t||    O ");
-	  printf("\n\t||      ");
-	  printf("\n\t||      ");
-	  printf("\n\t||      ");
+    printf("                  Wrong letter.                           \n");
+	  printf("\n\t              ||===== ");
+	  printf("\n\t              ||    | ");
+	  printf("\n\t              ||    O ");
+	  printf("\n\t              ||      ");
+	  printf("\n\t              ||      ");
+	  printf("\n\t              ||      ");
+    printf("                                                               \n");
 	  break;
   }
 }
-
-
- int main() {
-   hangman();
-   exit(EXIT_SUCCESS);
-
- }

@@ -1,3 +1,5 @@
+
+
 #include <stdlib.h>
 #include <stdint.h>
 #include <assert.h>
@@ -45,7 +47,9 @@
 
 
 
+
 ///////////////////////////// FUNCTION PROTOTYPE //////////////////////////////
+
 
 struct ARM_State *arm_Ptr;
 
@@ -54,14 +58,14 @@ void read_ARM(const char *);
 void emulator(void);
 int  check_cond(int32_t);
 void decode_instr(int32_t);
-static void decode_checker_1(int32_t);
-static void decode_checker_2(int32_t);
+static void decode_checker(int32_t);
 void print_register_state(void);
 
-/* As shift register function */
-int32_t as_shifted_reg(int32_t value, int8_t setCond);
-/* As immediate value funcion */
-int32_t as_immediate_reg(int value);
+
+int32_t as_shifted_reg(int32_t, int8_t);
+/* AS SHIFT REGISTER FUNCTION */
+int32_t as_immediate_reg(int);
+/* AS IMMEDIATE REGISER FUNCTION */
 
 void data_processing(int32_t);
 int32_t convert();
@@ -69,22 +73,26 @@ int32_t convert2complement();
 void multiply(int32_t);
 void single_data_transfer(int32_t);
 void branch(int32_t);
+
 void block_data_transfer(int32_t); //extension
 void software_interrupt(int32_t);  //extension
 
+
 ////////////////////////// BINARY FILE LOADER ////////////////////////////////
+
 
 void read_ARM(const char *filename)
 {
+  /* open the file r = read , b = binary  */
   FILE *file = fopen(filename, "rb");
 
-  int size_instruct = 4;   // 32 bits = 4 bytes
+  int size_instruct = 4; // 32 bits = 4 bytes
 
   if (file != NULL)
   {
     fseek(file, 0, SEEK_END);
-    long size = ftell(file);    //Size of file in bytes
-    fseek(file, 0, SEEK_SET);   //Go back to start
+    long size = ftell(file);  //size of file in bytes
+    fseek(file, 0, SEEK_SET); //go back to start
 
     /* allocate memory */
     int num_instruct = size / size_instruct;
@@ -97,16 +105,18 @@ void read_ARM(const char *filename)
     {
       fputs("Error reading file", stderr);
     } else {
-       fclose(file);    // Close the file if no error occures
+       fclose(file);   // Close the file if no error occures
     }
+
   } else {
     perror("Error opening file");
   }
 }
 
-////////////////////////////// EMULATE CORE ///////////////////////////////////
 
-/* Emulator */
+//////////////////////////// EMULATE CORE /////////////////////////////////////
+
+/* emulator */
 void emulator()
 {
   REG_WRITE(PC, 0);
@@ -127,7 +137,7 @@ void emulator()
 
   arm_Ptr->pipeline->decoded = arm_Ptr->pipeline->fetched;
   arm_Ptr->pipeline->fetched = MEM_R_32bits(REG_READ(PC));
-  INC_PC(4);
+  INC_PC(4);;
 
   fetched_code = arm_Ptr->pipeline->fetched;
   decoded_code = arm_Ptr->pipeline->decoded;
@@ -142,32 +152,25 @@ void emulator()
 }
 
 
-/* decode instruction by checking specific bits */
+/*decode instruction */
 void decode_instr(int32_t word)
 {
   switch (BIT_GET(word, 27))
   {
     case 1:
-      IS_SET(BIT_GET(word,26)) ? software_interrupt(word)
-                               : decode_checker_1(word);
+      branch(word);
       break;
     case 0:
       IS_SET(BIT_GET(word, 26)) ? single_data_transfer(word)
-                                : decode_checker_2(word);
+                                : decode_checker(word);
       break;
     default:
       break;
 	}
 }
 
-/* first helper function for decode_instr */
-static void decode_checker_1(int32_t word)
-{
-  IS_SET(BIT_GET(word, 25)) ? branch(word) : block_data_transfer(word);
-}
-
-/* second helper function for decode_instr */
-static void decode_checker_2(int32_t word)
+/* helper function for decode_instr */
+static void decode_checker(int32_t word)
 {
   if(IS_SET(BIT_GET(word, 25)))
   {
@@ -182,7 +185,7 @@ static void decode_checker_2(int32_t word)
   }
 }
 
-/* check condiitons */
+/* Check condiitons */
 int check_cond(int32_t word)
 {
   int cond = get_bits(word, 28, 31);
@@ -214,6 +217,7 @@ int check_cond(int32_t word)
   }
 }
 
+
 /* Print Register State (upon termination) */
 void print_register_state()
 {
@@ -238,7 +242,7 @@ void print_register_state()
   }
 }
 
-//////////////////////////////// SHIFTING /////////////////////////////////////
+///////////////////////////// SHIFTING //////////////////////////////////////
 
 /* as immediate register */
 int32_t as_immediate_reg(int value)
@@ -266,13 +270,13 @@ int32_t as_shifted_reg(int32_t value, int8_t setCond)
   if (IS_SET(Flag))
   {
   	int Rs = REG_READ(get_bits(Amt, 1, 4));
-  	Amt = get_bits(Rs, 0, 8);
+  	Amt = get_bits(Rs, 0, 7); //getting the last byte of Rs register
   }
 
-  /* Check for different shift types */
+/* Check for different shift types */
   switch (Type)
   {
-    /* Arithmetic and logical shift left are equivalent */
+      /* Arithmetic and logical shift left are equivalent */
   	case LSL :
   	{
   		value = reg << Amt;
@@ -285,8 +289,9 @@ int32_t as_shifted_reg(int32_t value, int8_t setCond)
       {
 			  CPSR_PUT(C, carryAmt);
 			}
-      break;
   	}
+    break;
+
 
     /* LSR is basically the same as LSL */
   	case LSR :
@@ -294,14 +299,14 @@ int32_t as_shifted_reg(int32_t value, int8_t setCond)
   		value = reg >> Amt;
   		if (Amt != 0)
       {
-			  carryAmt = BIT_GET(reg, Amt - 1);
+			  carryAmt = BIT_GET(reg, Amt);
 			}
   		if (IS_SET(setCond))
       {
 				CPSR_PUT(C, carryAmt);
 			}
-      break;
   	}
+    break;
 
     /* ASR is basically the same as LSR */
   	case ASR :
@@ -309,9 +314,9 @@ int32_t as_shifted_reg(int32_t value, int8_t setCond)
   		value = reg >> Amt;
   		if (Amt != 0)
       {
-   			carryAmt = BIT_GET(reg, Amt - 1);
+   			carryAmt = BIT_GET(reg, Amt);
 			}
-  		if (IS_SET(setCond))
+  		if (setCond == 1)
       {
 			  CPSR_PUT(C, carryAmt);
         /* The high bits are filled with bit 31 */
@@ -320,8 +325,8 @@ int32_t as_shifted_reg(int32_t value, int8_t setCond)
 					BIT_PUT(value, 31 - j, bit);
     		}
 			}
-      break;
   	}
+    break;
 
     /* In ROR the bits are shifted in cycle */
   	case ROR :
@@ -333,13 +338,14 @@ int32_t as_shifted_reg(int32_t value, int8_t setCond)
 	return value;
 }
 
+
 //////////////////////////EMULATE INSTRUCTION///////////////////////////////////
 
 /* A global variable for checking branch condition */
 int resultforBranch = 0;
 
 
-////////// Data Processing //////////
+////////// Data Processing ///////////
 
 void data_processing(int32_t word)
 {
@@ -350,12 +356,13 @@ void data_processing(int32_t word)
 	int SetCond  = DPInst->SetCond;  // 20
 	int Rn       = DPInst->Rn;       // 19-16
 	int Rd       = DPInst->Rd;       // 15-12
+	int Operand2 = DPInst->Operand2; // 11-0
 
-  /* The rst operand is always the content of register Rn */
+  /* The first operand is always the content of register Rn */
 	int Operand1 = arm_Ptr->registers[Rn];
 
   /* The second operand depends on I flag being set or not */
-	int Operand2 = IS_CLEAR(ImmOp) ? as_shifted_reg(Operand2, SetCond)
+	Operand2     = IS_CLEAR(ImmOp) ? as_shifted_reg(Operand2, SetCond)
 	           		                 : as_immediate_reg(Operand2);
 
   /* initialise the result */
@@ -399,7 +406,7 @@ void data_processing(int32_t word)
       break;
   }
 
-	/* Update CPSR flags if set condition is set */
+  /* Update CPSR flags if set condition is set */
 	if (IS_SET(SetCond))
   {
   	CPSR_PUT(Z, (result == 0));
@@ -408,7 +415,7 @@ void data_processing(int32_t word)
     /* Check result for setting flags */
     switch (OpCode)
     {
-  	  case SUB:
+  	  case SUB :
         if(result <= 0)
         {
           CPSR_PUT(C, 0);
@@ -416,12 +423,12 @@ void data_processing(int32_t word)
           CPSR_PUT(C, 1);
         }
         break;
-  	  case RSB:
-  	  case CMP:
+  	  case RSB :
+  	  case CMP :
         CPSR_PUT(C, (result >= 0)); break;
-    	case ADD:
+    	case ADD :
         CPSR_PUT(C, CPSR_GET(V)); break;
-      default : break;
+      default  : break;
     }
 	}
 }
@@ -442,11 +449,13 @@ int32_t convert(int32_t reg)
   return result;
 }
 
+
 int32_t convert2complement(int32_t reg)
 {
   int32_t negatedReg = ~reg;
   return negatedReg + 1;
 }
+
 
 void multiply(int32_t word)
 {
@@ -472,17 +481,16 @@ void multiply(int32_t word)
     mulResult += dataRn;
   }
 
+  /* Update CPSR flags if set condition is set */
   REG_WRITE(Rd, mulResult);
 
-  /* Update CPSR flags if set condition is set */
   if(IS_SET(SetCond))
   {
-    int bit31 = BIT_GET(mulResult, 31);  //N is the 31 bit of result
+    int bit31 = BIT_GET(mulResult, 31); //N is the 31 bit of result
     CPSR_PUT(N, bit31);
     (mulResult == 0) ? (CPSR_SET(Z)) : !(CPSR_SET(Z));
   }
 }
-
 
 ////////// Single Data Transfer //////////
 
@@ -547,7 +555,6 @@ void single_data_transfer(int32_t word)
   }
 }
 
-
 ////////// Branch ///////////
 
 void branch(int32_t word)
@@ -556,16 +563,15 @@ void branch(int32_t word)
   int branchOffset =  6;  // 32-24-2=6 bits left that is needed to get 32 bits
 
   BranchInstruct *BranchInst = (BranchInstruct *) &word;
+  int Cond = BranchInst->Cond;   // 31-28
 
-  int Cond = BranchInst->Cond;  // 31-28
-
-  /* Check conditions for bne and bqe */
-  if (resultforBranch == 0 && Cond == 0)  //beq, equal
+  /* Check comditions for bne and bqe */
+  if(resultforBranch == 0 && Cond == 0)  //beq, equal
   {
     goto branchCode;
-  } else if (resultforBranch != 0 && Cond == 1) {  //bne, not equal
+  } else if(resultforBranch != 0 && Cond == 1) {  //bne, not equal
     goto branchCode;
-  } else if (Cond == 14) {  // al or b, nothing should be done
+  } else if(Cond == 14) {  // al or b, nothing should be done
     goto branchCode;
   }
   /* stop for other mnemonics or everything is done */
@@ -580,28 +586,29 @@ void branch(int32_t word)
     INC_PC(signed_bits);
     arm_Ptr->pipeline->fetched = MEM_R_32bits(REG_READ(PC));
 
-    INC_PC(4);  //PC = PC + 4;
-
+    INC_PC(4); //PC = PC + 4;
   end: ;
 }
 
-/*block data transfer */
 
-uint get_address_for_BDT(){
-  int dataRegList = BDTInst->RegList;  //each bit corresponding to a register
-  int dataRn      = BDTInst->Rn;       // base register
+// extension //
+
+/* Block Data Transfer */
+
+uint get_address_for_BDT(int32_t word){
+
+  BDTInstruct *BDTInst = (BDTInstruct *) &word;
+
+  int dataRn      = BDTInst->Rn;         // base register
   int dataU       = BDTInst->Up;
   int dataP       = BDTInst->P;
 
   int RegRn = arm_Ptr->registers[dataRn];
 
-  PC_bit = BIT_GET(dataRegList, 15);
-
 //If P is set(pre-indexing), offset is +- to Rn BEFORE transferring data.
 //If P is not set(post-indextin), offset is +- to rn AFTER transfering data.
 // So if P is set, we increment addr by 4 so we can deal with the offset first
 //(as illustrated in the diagram p.41, 42 http://bear.ces.cwru.edu/eecs_382/ARM7-TDMI-manual-pt2.pdf)
-
 uint Address;
 if(IS_SET(dataU)){
   Address = RegRn + (IS_SET(dataP) ? 4 : 0);
@@ -614,73 +621,71 @@ if(IS_SET(dataU)){
 }
 
 
-void LDM(){
+void LDM(int32_t word){
   BDTInstruct *BDTInst = (BDTInstruct *) &word;
 
   int dataRegList = BDTInst->RegList;  //each bit corresponding to a register
-  int dataRn      = BDTInst->Rn;       // base register
-  int dataL       = BDTInst->L;
-  int dataS       = BDTInst->SetCond;
-  int dataU       = BDTInst->Up;
-  int dataP       = BDTInst->P;
+  int dataRn      = BDTInst->Rn;         // base register
+  int dataS       = BDTInst->S;
 
   int RegRn = arm_Ptr->registers[dataRn];
 
-  uint Address = get_address_for_BDT();
-  /* The registers are transferred in the order lowest to highest */
+  int PC_bit = BIT_GET(dataRegList, 15);
+
+  uint Address = get_address_for_BDT(word);
+  //The registers are transferred in the order lowest to highest
     for(int reg = 0; reg < 15; reg++){
-      registers[reg] = Address;
+      REG_WRITE(RegRn, Address);
       Address += 4;
     }
 
-  if(IS_SET(PC_bit) && IS_SET(S)){
-    REG_WRITE(registers[PC], registers[Address]); //R15 is loaded
-    Register.CPSR = Register.SPSR;
+  if(IS_SET(PC_bit) && IS_SET(dataS)){
+    REG_WRITE(arm_Ptr->registers[PC], MEM_R_32bits(Address)); //R15 is loaded
+    arm_Ptr->registers[CPSR] = arm_Ptr->SPSR;
   }
 }
 
 
 void block_data_transfer(int32_t word){
   BDTInstruct *BDTInst = (BDTInstruct *) &word;
-
-  int dataRegList = BDTInst->RegList;  //each bit corresponding to a register
-  int dataRn      = BDTInst->Rn;       // base register
   int dataL       = BDTInst->L;
-  int dataS       = BDTInst->SetCond;
-  int dataU       = BDTInst->Up;
-  int dataP       = BDTInst->P;
+  int dataS       = BDTInst->S;
 
-  int RegRn = arm_Ptr->registers[dataRn];
-
-  if(IS_SET(dataL)){
-    LDM();
+  if(IS_SET(dataL)){ //When L is set, do LDM else do STM
+    LDM(word);
   } else {
     if(IS_SET(dataS)){
-      Register.Mode = ARM_Mode.User;
+      arm_Ptr->mode = User;
     }
   }
+
 }
 
 /* software interrupt */
 void software_interrupt(int32_t word)
 {
-  uint SPSR = Register.CPSR;
-  Register.Mode = ARM_Mode.Supervisor;
-  Register[14]  = Register[15] - 2;
-  Register.SPSR = SPSR;
-  Register.FLAG_PUT(SPSR_Flag.T, false);
-  Register.FLAG_PUT(SPSR_Flag.I, true);
-  Register.FLAG_PUT(SPSR_Flag.E, false);
+  int32_t SPSR = arm_Ptr->registers[CPSR];
+  arm_Ptr->mode = Supervisor;
+  arm_Ptr->registers[14]  = arm_Ptr->registers[PC] - 2;
+  arm_Ptr->SPSR = SPSR;
 
-  Register[15] = HighVectors ? 0xffff0008 : 8;
-
-  if (OnSoftwareInterrupt != null)
-  {
-      uint Code = Opcode & 0xff;
-      OnSoftwareInterrupt(this, new SoftwareInterruptEventArgs(Code));
-  }
+  arm_Ptr->registers[PC] = 0xffff0008;
 }
+/*
+int32_t *OnSoftwareInterrupt;
 
+  FLAG_PUT(T, 0);
+  FLAG_PUT(I, 1);
+  FLAG_PUT(E, 0);
+
+  arm_Ptr->registers[15] = 0xffff0008; // Registers[15] = PC
+
+  if(OnSoftwareInterrupt != NULL)
+  {
+    int Code = Opcode & 0xff;
+    REG_WRITE(arm_Ptr, code);
+  }
+*/
 
 /////////////////////////MAIN  FUNCTION//////////////////////////////////////
 
@@ -703,7 +708,6 @@ int main(int argc, char **argv)
     printf("Please type in a bin file\n");
     exit(EXIT_FAILURE);
   }
-
   /* Read input file and emulate */
   read_ARM(argv[1]);
   emulator();
