@@ -19,6 +19,9 @@ SDL_Surface *ring3       = NULL; // 140 * 30, Yellow
 SDL_Surface *ring4       = NULL; // 120 * 30, Green
 SDL_Surface *ring5       = NULL; // 100 * 30, Blue
 SDL_Surface *ring6       = NULL; // 80  * 30, Violet
+SDL_Surface *nextLevel   = NULL; // 640 * 480
+SDL_Surface *end         = NULL; // 640 * 480
+
 
 const int towerPos[] = { 105, 315, 525 };
 
@@ -29,5 +32,7 @@ void drawRing(int, int, int);
 void drawTower(int, int[]);
 void drawScreen(void);
 void getRingNum(SDLKey);
+void next_level();
+void endGame();
 
 #endif

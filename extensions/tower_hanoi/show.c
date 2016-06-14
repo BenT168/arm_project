@@ -114,9 +114,14 @@ void drawTower(int towerNum, int rings[]) {
 void drawScreen(void) {
     /* If player wins put the winning image */
     if (check_win()) {
-      win = SDL_LoadBMP("images/winning.bmp");
-      setBackground(win);
-      return;
+      if (num_of_elem == Max_elem) { // in case highest level
+        win = SDL_LoadBMP("images/winning.bmp");
+        setBackground(win);
+        return;
+      } else { // in case can go to next level
+        next_level();
+        return;
+      }
     }
     /* Put background image */
     setBackground(background);
@@ -131,12 +136,78 @@ void drawScreen(void) {
 void getRingNum(SDLKey key) {
   switch (key) {
     case SDLK_ESCAPE: exit(0); break;
+    case SDLK_KP3:
     case SDLK_3: num_of_elem = 3; break;
+    case SDLK_KP4:
     case SDLK_4: num_of_elem = 4; break;
+    case SDLK_KP5:
     case SDLK_5: num_of_elem = 5; break;
+    case SDLK_KP6:
     case SDLK_6: num_of_elem = 6; break;
     default: break;
   }
+}
+
+/* put the ending image */
+void endGame() {
+  end = SDL_LoadBMP("images/ending.bmp");
+  setBackground(end);
+  SDL_Flip(screen);
+}
+
+/* ask if want to go to next level */
+void next_level() {
+  nextLevel = SDL_LoadBMP("images/next_level.bmp");
+  setBackground(nextLevel);
+  SDL_Flip(screen);
+
+  next: ;
+  SDL_Event next_event;
+
+  while (SDL_PollEvent(&next_event)) {
+    setBackground(nextLevel);
+    SDL_Flip(screen);
+    switch(next_event.type) {
+      case SDL_QUIT: exit(0); break;
+      case SDL_KEYUP:
+        switch(next_event.key.keysym.sym){
+          case SDLK_n: break;
+          default :
+          break;
+        }
+      case SDL_KEYDOWN:
+        switch (next_event.key.keysym.sym) {
+          case SDLK_ESCAPE: exit(0); break;
+          case SDLK_r: // restart this level
+            reset(num_of_elem);
+            return;
+            break;
+          case SDLK_RETURN:
+          case SDLK_KP_ENTER:
+          case SDLK_y:       // go to next level
+            num_of_elem ++;
+            initialise(num_of_elem);
+            /* game loop */
+            while(gameRunning == 1) {
+              main_control();  // get SDL key
+              drawScreen();    //update screen
+              SDL_Flip(screen);
+              SDL_Delay(16);
+            }
+            cleanUp();
+            return;
+            break;
+          case SDLK_n:  // not continue
+            endGame();
+            break;
+          default: goto next; break;
+        }
+        break;
+      default: goto next; break;
+    }
+  }
+  goto next;
+
 }
 
 /* The main Function */

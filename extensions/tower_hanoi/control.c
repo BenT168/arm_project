@@ -15,8 +15,11 @@ int keys[2] = {-1, -1};
 /* Get input key */
 void controlKey_get(SDLKey key) {
   switch(key) {
+    case SDLK_KP1:
     case SDLK_1: currentTower = 0; break;
+    case SDLK_KP2:
     case SDLK_2: currentTower = 1; break;
+    case SDLK_KP3:
     case SDLK_3: currentTower = 2; break;
     case SDLK_r: keys[0] = -2; break;
     case SDLK_ESCAPE: exit(0); break;

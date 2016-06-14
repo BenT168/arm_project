@@ -26,5 +26,4 @@ int pop(int);
 void move(int, int);
 int check_win();
 
-
 #endif
