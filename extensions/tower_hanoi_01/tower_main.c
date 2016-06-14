@@ -7,32 +7,21 @@
 //#include <pigpio.h>
 
 
-//SDL_Surface *screen = NULL;
-//SDL_Surface *background = NULL;
+
 SDL_Surface *sprite = NULL;
 
 int gameRunning = 1;
 SDL_Event event;
 
-/*
-void apply_surface(int x,int y, SDL_Surface* source, SDL_Surface* destination){
-  SDL_Rect rectangle;
-  rectangle.x = x;
-  rectangle.y = y;
 
-  SDL_BlitSurface(source, NULL, destination, &rectangle);
-}
-*/
 int main(int argc, char **argv){
   int num_of_elem;
 
   main: ;
   printf("Please enter the number of elements you want: ");
 
-  //printf("There are %d elements to start with.\n", scanf("%d\n", &x));
 
  scanf(" %d", &num_of_elem);
- //printf("you type in %i\n", num_of_elem);
   if (num_of_elem == 0) {
     printf("Your input is not avilible.\n");
     return -1;
@@ -69,11 +58,6 @@ while(SDL_PollEvent(&event)){
     gameRunning = 0;
   }
 }
-/*
-  //Apply surfaces
-  apply_surface(0,0,background, screen);
-  apply_surface(150, 150, sprite, screen);
-*/
 
   drawScreen();
   //update screen
