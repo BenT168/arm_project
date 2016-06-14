@@ -93,8 +93,6 @@ char *delchr(char *buffer, char chr)
 
 ASSEMBLER_STRUCT *assemble(TOKEN *lines, function_assPtr func, const char *delim)
 {
-  puts("in assmeble\n");
-
   symbolTableList* symbolTable = assemble_chk(malloc(sizeof(symbolTableList)));
   Queue* comments              = createQueue();
   list_initialise(symbolTable);
@@ -102,12 +100,9 @@ ASSEMBLER_STRUCT *assemble(TOKEN *lines, function_assPtr func, const char *delim
   // 1st Pass : Check for labels and comments
   uint16_t  address        = 0;
   int       label_count    = 0;
-  printf("lineC: %i\n",lines->tokenCount);
   for (int i = 0; i < lines->tokenCount; i++)
   {
-    printf("line_token: :%s\n",lines->tokens[i]);
     char *current_Line   = strdup(lines->tokens[i]);
-    printf("currennt_Line:%s\n",current_Line );
     TOKEN *line          = tokenise(current_Line, delim);
     char *label          = line->tokens[0];
 
@@ -121,14 +116,9 @@ ASSEMBLER_STRUCT *assemble(TOKEN *lines, function_assPtr func, const char *delim
 
       if(current_Line[0] == '/') { //comment encountered
         char* comment = delchr(delchr(current_Line, '/'), '/');
-        printf("com:%s\n", comment);
         //remove "//" in comment
         Enqueue(comments, comment);
       }
-
-      printf("comment:%s\n",comments->elements[0]);
-      printf("comment:%s\n",comments->elements[1]);
-      
 
       tokens_free(line);
       continue;

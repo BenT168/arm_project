@@ -59,7 +59,7 @@ SDL_Surface *getRingImg(int towerNum, int ringNum) {
     case 4: ring = ring3; break; //YELOOW
     case 3: ring = ring4; break; //GREEN
     case 2: ring = ring5; break; //BLUE
-    case 1: ring = ring6; break; //VOILET
+    case 1: ring = ring6; break; //VIOLET
     default:
       break;
   }
@@ -70,16 +70,10 @@ SDL_Surface *getRingImg(int towerNum, int ringNum) {
 void drawRing(int towerNum, int ringNum, int ringHeight) {
   int x = 0;  // x coordinate for ring
   int width;  // width of rings in pixels
-  //SDL_Rect ringOff;  // new offset, this changes the size of the ring
 
-  width = (num_of_elem - ringNum) * 20 + 60;
-  /* copy original offset */
-  /*
-  ringOff.x = 0;
-  ringOff.y = 60;
-  ringOff.w = 200 - ((num_of_elem - ringNum) * 20);
-  ringOff.h = 30;
-  */
+  /* Calculate width of the rings */
+  int ringVal = towers[towerNum][ringNum];
+  width = ringVal * 20 + 60;
 
   /* Get x coordinate for rings accoring to length */
   x = towerPos[towerNum] + 5 - width/2;
@@ -107,12 +101,12 @@ void drawTower(int towerNum, int rings[]) {
   rod      = SDL_LoadBMP("images/rod.bmp");
   hori_rod = SDL_LoadBMP("images/horizontal_rod.bmp");
 
-  apply_surface(towerPos[towerNum], 160, rod, screen);
-  apply_surface(towerPos[towerNum] - 95 , 460, hori_rod, screen);
+  apply_surface(towerPos[towerNum], 120, rod, screen);
+  apply_surface(towerPos[towerNum] - 95 , 420, hori_rod, screen);
 
   /* Draw ring by check values */
   for (int i = 0; i < num_of_elem; i ++) {
-     drawRing(towerNum, i, 430 - (30*i));
+     drawRing(towerNum, i, 390 - (30*i));
   }
 }
 
@@ -120,11 +114,15 @@ void drawTower(int towerNum, int rings[]) {
 void drawScreen(void) {
     /* If player wins put the winning image */
     if (check_win()) {
-      win = SDL_LoadBMP("images/winning.bmp");
-      setBackground(win);
-      return;
+      if (num_of_elem == Max_elem) { // in case highest level
+        win = SDL_LoadBMP("images/winning.bmp");
+        setBackground(win);
+        return;
+      } else { // in case can go to next level
+        next_level();
+        return;
+      }
     }
-
     /* Put background image */
     setBackground(background);
 
@@ -134,62 +132,136 @@ void drawScreen(void) {
     drawTower(2, towers[2]);
 }
 
+/* Read player's input for number of rings */
+void getRingNum(SDLKey key) {
+  switch (key) {
+    case SDLK_ESCAPE: exit(0); break;
+    case SDLK_KP3:
+    case SDLK_3: num_of_elem = 3; break;
+    case SDLK_KP4:
+    case SDLK_4: num_of_elem = 4; break;
+    case SDLK_KP5:
+    case SDLK_5: num_of_elem = 5; break;
+    case SDLK_KP6:
+    case SDLK_6: num_of_elem = 6; break;
+    default: break;
+  }
+}
 
-void init(void) {
-    fprintf( stderr, "Initializing the screen...\n" );
-    screen = SDL_SetVideoMode( SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_BPP,
-                           SDL_SWSURFACE );
-    if (!screen)
-    {
-        fprintf(stderr, "Could not set video mode %dx%dx%d: %s",
-                SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_BPP,
-                SDL_GetError());
-        exit( EXIT_FAILURE);
+/* put the ending image */
+void endGame() {
+  end = SDL_LoadBMP("images/ending.bmp");
+  setBackground(end);
+  SDL_Flip(screen);
+}
+
+/* ask if want to go to next level */
+void next_level() {
+  nextLevel = SDL_LoadBMP("images/next_level.bmp");
+  setBackground(nextLevel);
+  SDL_Flip(screen);
+
+  next: ;
+  SDL_Event next_event;
+
+  while (SDL_PollEvent(&next_event)) {
+    setBackground(nextLevel);
+    SDL_Flip(screen);
+    switch(next_event.type) {
+      case SDL_QUIT: exit(0); break;
+      case SDL_KEYUP:
+        switch(next_event.key.keysym.sym){
+          case SDLK_n: break;
+          default :
+          break;
+        }
+      case SDL_KEYDOWN:
+        switch (next_event.key.keysym.sym) {
+          case SDLK_ESCAPE: exit(0); break;
+          case SDLK_r: // restart this level
+            reset(num_of_elem);
+            return;
+            break;
+          case SDLK_RETURN:
+          case SDLK_KP_ENTER:
+          case SDLK_y:       // go to next level
+            num_of_elem ++;
+            initialise(num_of_elem);
+            /* game loop */
+            while(gameRunning == 1) {
+              main_control();  // get SDL key
+              drawScreen();    //update screen
+              SDL_Flip(screen);
+              SDL_Delay(16);
+            }
+            cleanUp();
+            return;
+            break;
+          case SDLK_n:  // not continue
+            endGame();
+            break;
+          default: goto next; break;
+        }
+        break;
+      default: goto next; break;
     }
+  }
+  goto next;
 
-
-    /* set up clean shut down routine */
-    atexit(cleanUp);
-
-    fprintf(stderr, "Init completed successfully!\n");
 }
 
 /* The main Function */
 int main(int argc, char **argv) {
 
-  main: ;
-  printf("Please enter the number of elements you want: ");
-
-  /* Read an integer input */
-  scanf(" %d", &num_of_elem);
-
-  if (num_of_elem == 0) {
-    printf("Your input is not avilible.\n");
-    return -1;
-  } else if (num_of_elem < 3 || num_of_elem > Max_elem) {
-    printf("The number you typed in is not avilible.\
-    Please type numbers in the range 3-%i\n", Max_elem);
-    goto main;
-  }
-
-  /* Initialise the game */
-  initialise(num_of_elem);
-
   SDL_Init(SDL_INIT_VIDEO);
 
   /* Set the screen */
-  screen = SDL_SetVideoMode(640, 480, 32, SDL_SWSURFACE);
+  screen = SDL_SetVideoMode(SCREEN_WIDTH, SCREEN_HEIGHT,
+                                          SCREEN_BPP, SDL_SWSURFACE);
+
+  /* Set the instruction page */
+  instruction = SDL_LoadBMP("images/welcome.bmp");
+  setBackground(instruction);
+  SDL_Flip(screen);
+
+  /* Checking input for Initialise the number of rings */
+  main: ;
+  SDL_Event check_event;
+
+  while (SDL_PollEvent(&check_event)) {
+    switch(check_event.type) {
+      case SDL_QUIT: exit(0); break;
+      case SDL_KEYDOWN:
+        getRingNum(check_event.key.keysym.sym);  // Read input
+        if (3 <= num_of_elem && num_of_elem <= 6) {
+          goto init;
+        } else {  // if the input is not a number 3-6
+          goto main;
+        }
+        break;
+      default: break;
+    }
+  }
+  goto main;
+
+  init: ;
+  /* Initialise the game */
+  initialise(num_of_elem);
+
   background = SDL_LoadBMP("images/background.bmp");
   if(background == NULL){
     exit(1);
   }
 
-  /* gmae loop */
+  /* game loop */
   while(gameRunning == 1) {
     main_control();  // get SDL key
     drawScreen();    //update screen
     SDL_Flip(screen);
     SDL_Delay(16);
   }
+
+  cleanUp();
+
   return 0;
 }
