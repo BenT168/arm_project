@@ -336,7 +336,6 @@ void nextques() {
 	printf("Would you like to go to the next question? [y/n]\n");
   char c;
 	scanf(" %c", &c);
-
 	if(tolower(c) == 'y')
 	{
 		system("clear");
@@ -495,6 +494,7 @@ void Historyprogram() {
 
   printf("                 You have a total of %i points!!            \n",score);
 
+
 	if (score == 10) {  // check if all questions are correct
 		printf("             WOW You have got the full marks !!\n");
 	}
@@ -511,18 +511,8 @@ void Hangmanprogram() {
   printf("                                                               \n");
 	printf("--------------------------------INFO---------------------------------\n");
 	printf("                                                               \n");
-
-	printf("      In this game, you will be asked about different dates in\n");
-	printf("             which historical events took place.\n");
-	printf("                                                               \n");
-	printf("------------------------        ~~~        --------------------------\n");
-	printf("                                                               \n");
-	printf("      You will have to guess which historical events\n");
-	printf("            happened (or holidays are on the day) \n");
-
 	printf("      In this game, you will be asked about names of  \n");
 	printf("             historical events took place.\n");
-
 	printf("                                                               \n");
 	printf("------------------------        ~~~        --------------------------\n");
 	printf("                                                               \n");
@@ -547,7 +537,6 @@ void Hangmanprogram() {
 		printf("Please type in a, y or n.\n");
 		goto repeatCont;
 	}
-
 
 	hangman();
 }

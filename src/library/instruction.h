@@ -201,8 +201,8 @@ typedef enum ShiftType
 #define mnemonic_toString(f) \
         f(add) f(sub) f(rsb) f(and) f(eor) f(orr) f(mov) f(tst) \
         f(teq) f(cmp) f(mul) f(mla) f(ldr) f(str) f(beq) f(bne) \
-        f(bge) f(blt) f(bgt) f(ble) f(b)   f(lsl) f(andeq) //*f(ldm)*/
-      //  f(stm) f(swi)
+        f(bge) f(blt) f(bgt) f(ble) f(b)   f(lsl) f(andeq) f(ldm) \
+        f(stm) f(swi)
 
 enum Mnemonic
 {

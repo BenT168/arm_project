@@ -12,5 +12,4 @@ char* dashes(char* answer);
 char* checkanswer(char c, char* answer, char* updateDash);
 void nextquesHang();
 
-
 #endif
