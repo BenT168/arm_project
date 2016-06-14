@@ -16,29 +16,15 @@ int currentElem;
 #define Max_elem 6
 #define tower_num 3
 
-
-typedef struct stack_item {
-  SDL_Rect num[Max_elem];
-  SDL_Rect position;
-  uint8_t colour;
-  int top[tower_num]; //there are three stacks
-  //struct stack_item *next;
-} stack_item_t;
-
-//typedef stack_item_t *Rod;
-
-
-
 void initialise(int);
 void reset(int);
 int isEmpty(int);
+int getTopRingPos (int);
 void push(int, int);
 int peek(int);
 int pop(int);
 void move(int, int);
-void print_stack(void);
 int check_win();
-
 
 
 #endif

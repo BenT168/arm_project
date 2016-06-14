@@ -5,8 +5,7 @@
 #include <stdio.h>
 #include "SDL/SDL.h"
 
-void controlKey_from(SDLKey);
-void controlKey_to(SDLKey);
+void controlKey_get(SDLKey);
 void main_control();
 
 
