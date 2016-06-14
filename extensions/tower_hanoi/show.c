@@ -59,7 +59,7 @@ SDL_Surface *getRingImg(int towerNum, int ringNum) {
     case 4: ring = ring3; break; //YELOOW
     case 3: ring = ring4; break; //GREEN
     case 2: ring = ring5; break; //BLUE
-    case 1: ring = ring6; break; //VOILET
+    case 1: ring = ring6; break; //VIOLET
     default:
       break;
   }
@@ -70,16 +70,10 @@ SDL_Surface *getRingImg(int towerNum, int ringNum) {
 void drawRing(int towerNum, int ringNum, int ringHeight) {
   int x = 0;  // x coordinate for ring
   int width;  // width of rings in pixels
-  //SDL_Rect ringOff;  // new offset, this changes the size of the ring
 
-  width = (num_of_elem - ringNum) * 20 + 60;
-  /* copy original offset */
-  /*
-  ringOff.x = 0;
-  ringOff.y = 60;
-  ringOff.w = 200 - ((num_of_elem - ringNum) * 20);
-  ringOff.h = 30;
-  */
+  /* Calculate width of the rings */
+  int ringVal = towers[towerNum][ringNum];
+  width = ringVal * 20 + 60;
 
   /* Get x coordinate for rings accoring to length */
   x = towerPos[towerNum] + 5 - width/2;
@@ -107,12 +101,12 @@ void drawTower(int towerNum, int rings[]) {
   rod      = SDL_LoadBMP("images/rod.bmp");
   hori_rod = SDL_LoadBMP("images/horizontal_rod.bmp");
 
-  apply_surface(towerPos[towerNum], 160, rod, screen);
-  apply_surface(towerPos[towerNum] - 95 , 460, hori_rod, screen);
+  apply_surface(towerPos[towerNum], 120, rod, screen);
+  apply_surface(towerPos[towerNum] - 95 , 420, hori_rod, screen);
 
   /* Draw ring by check values */
   for (int i = 0; i < num_of_elem; i ++) {
-     drawRing(towerNum, i, 430 - (30*i));
+     drawRing(towerNum, i, 390 - (30*i));
   }
 }
 
@@ -178,7 +172,8 @@ int main(int argc, char **argv) {
   SDL_Init(SDL_INIT_VIDEO);
 
   /* Set the screen */
-  screen = SDL_SetVideoMode(640, 480, 32, SDL_SWSURFACE);
+  screen = SDL_SetVideoMode(SCREEN_WIDTH, SCREEN_HEIGHT,
+                                          SCREEN_BPP, SDL_SWSURFACE);
   background = SDL_LoadBMP("images/background.bmp");
   if(background == NULL){
     exit(1);

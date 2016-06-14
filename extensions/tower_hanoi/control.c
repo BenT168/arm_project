@@ -30,7 +30,7 @@ void main_control(void) {
       case SDL_QUIT: exit(0); break;
       case SDL_KEYDOWN:
         controlKey_get(event.key.keysym.sym);
-        if (keys[0] == -1) {// case of don't have the first key yet
+        if (keys[0] == -1) {  // case of don't have the first key yet
           keys[0] = currentTower;
         } else if (keys[0] != -1 && keys[1] == -1) { // have 1st but not 2nd
           keys[1] = currentTower;
