@@ -225,16 +225,19 @@ int main(int argc, char **argv)
   }
 
   funcArray();
-
+  //printf("after funcArray\n");
   TOKEN *lines = read_Source(argv[1]);
+  //printf("after read_source\n");
 
   /* get lines of assembly codes */
   ass = malloc(sizeof(ASSEMBLER_STRUCT));
   ass = assemble(lines, &assembler_func, ",");
+  //printf("after assemble\n");
 
   /* assemble lines using assembler and get output to write to file */
   write_File(ass, argv[2]);
-  
+  //printf("after write_file\n");
+
   tokens_free(lines);
 
   assemble_free(ass);
@@ -670,6 +673,7 @@ int32_t lsl_func(TOKEN *line, ASSEMBLER_STRUCT *ass){
 
 int32_t ass_block_data_transfer(TOKEN *line, int L, int P, int Up)
 {
+  printf("comming into block data transfer\n");
   char *reglist   = line->tokens[2];
   char *reg_list  = strtok(line->tokens[2], "^"); // remove "^"
   char *rn        = strtok(line->tokens[1], "!"); // remove "!"
@@ -685,8 +689,7 @@ int32_t ass_block_data_transfer(TOKEN *line, int L, int P, int Up)
       uint8_t first_reg = PARSE_REG(expr_to_num(strtok(next_reg, "-")));
       uint8_t last_reg   = PARSE_REG(expr_to_num(strtok(NULL, "\n")));
       if (last_reg > 15) {
-        //TODO: handle some kind of error, possibly introduce some
-        // kind of halting mechanism (maybe the spec says something about it)
+        exit(EXIT_FAILURE);
       }
       mask = (uint16_t) ((uint16_t) ~0 >> (15 - last_reg)) << first_reg;
    }
@@ -726,6 +729,7 @@ Pre/Post indexing bit [P]
 
 int32_t ass_block_data_transfer_ldm(TOKEN *line, ASSEMBLER_STRUCT *ass)
 {
+  printf("inside ass_block_data_transfer_ldm\n");
   char *suffix    = line->tokens[0] + 3;
   int L; int P; int Up;
 
@@ -744,6 +748,7 @@ int32_t ass_block_data_transfer_ldm(TOKEN *line, ASSEMBLER_STRUCT *ass)
 
 int32_t ass_block_data_transfer_stm(TOKEN *line, ASSEMBLER_STRUCT *ass)
 {
+  printf("inside ass_block_data_transfer_stm\n");
   char *suffix    = line->tokens[0] + 3;
   int L; int P; int Up;
 
