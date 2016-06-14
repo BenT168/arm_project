@@ -1,20 +1,20 @@
-CC      = gcc
 CFLAGS  = -Wall -g -std=c99 -Werror -pedantic
-LFLAGS  ='sdl-config --libs' -lSDL
-OBJS    = tower.o
-PROG    = sdlcode
+LFLAGS  =	`sdl-config --libs` -lSDL
+OBJS    =	control.o show.o tower_hanoi.o
+PROG    = tower
+CXX			= gcc
 
-.SUFFIXES: .c .o
+#.SUFFIXES: .c .o
+all: $(PROG)
 
-.PHONY: all clean
+# compiling other source files.
+%.o: tower_hanoi/%.c tower_hanoi/%.h tower_hanoi/tower_struct.h
+			$(CXX) $(CFLAGS) -c $<
 
-all:	$(PROG)
-
+# linking the program
 $(PROG): $(OBJS)
-	      $(CC) $(OBJS) -o &(PROG) $(LFLAGS)
+	$(CXX) $(OBJS) -o $(PROG) $(LFLAGS)
 
-
-tower:	tower_hanoi.c tower_main.c show.c
-
+# cleaning everything that can be automatically recreated with "make"
 clean:
-  rm $(PROG) *.o
+	rm $(PROG) *.o
