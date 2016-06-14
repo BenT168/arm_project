@@ -57,15 +57,12 @@ uint16_t assemble_constant_write(ASSEMBLER_STRUCT *ass, int32_t word)
 
 void assemble_write(ASSEMBLER_STRUCT *ass, int32_t word)
 {
-
   binary_instruct *instr = assemble_chk(malloc(sizeof(binary_instruct)));
   instr->binary_word = word;
   instr->word_address = ass->current_address;
   int current_instruct = ass->current_address / sizeof(int32_t);
   ass->instr[current_instruct] = instr;
   ass->current_address += sizeof(int32_t);
-
-
 }
 
 
@@ -96,6 +93,8 @@ char *delchr(char *buffer, char chr)
 
 ASSEMBLER_STRUCT *assemble(TOKEN *lines, function_assPtr func, const char *delim)
 {
+  puts("in assmeble\n");
+
   symbolTableList* symbolTable = assemble_chk(malloc(sizeof(symbolTableList)));
   Queue* comments              = createQueue();
   list_initialise(symbolTable);
@@ -103,10 +102,12 @@ ASSEMBLER_STRUCT *assemble(TOKEN *lines, function_assPtr func, const char *delim
   // 1st Pass : Check for labels and comments
   uint16_t  address        = 0;
   int       label_count    = 0;
-
+  printf("lineC: %i\n",lines->tokenCount);
   for (int i = 0; i < lines->tokenCount; i++)
   {
+    printf("line_token: :%s\n",lines->tokens[i]);
     char *current_Line   = strdup(lines->tokens[i]);
+    printf("currennt_Line:%s\n",current_Line );
     TOKEN *line          = tokenise(current_Line, delim);
     char *label          = line->tokens[0];
 
@@ -120,9 +121,14 @@ ASSEMBLER_STRUCT *assemble(TOKEN *lines, function_assPtr func, const char *delim
 
       if(current_Line[0] == '/') { //comment encountered
         char* comment = delchr(delchr(current_Line, '/'), '/');
+        printf("com:%s\n", comment);
         //remove "//" in comment
         Enqueue(comments, comment);
       }
+
+      printf("comment:%s\n",comments->elements[0]);
+      printf("comment:%s\n",comments->elements[1]);
+      
 
       tokens_free(line);
       continue;
@@ -135,6 +141,7 @@ ASSEMBLER_STRUCT *assemble(TOKEN *lines, function_assPtr func, const char *delim
 
 
   // Initialize Assembly Program
+
   int line_total         = lines->tokenCount - label_count;
   ass->instr             = malloc(sizeof(binary_instruct));
   ass->TOTAL_line        = line_total;

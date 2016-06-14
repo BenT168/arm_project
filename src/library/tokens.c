@@ -24,6 +24,7 @@ void tokens_free(TOKEN *lines)
 	{
 		free(lines->tokens[i]);
 	}
+
   free(lines->line);
 	free(lines);
 }
@@ -40,7 +41,7 @@ TOKEN* tokenise(char *str, const char *delim)
 {
 	token_struct  = tokens_chk(malloc(sizeof(token_struct)));
 	token_struct ->tokens   = tokens_chk(malloc(0));
-
+  //printf("str: %s\n", str);
   int Tokncount = 0; // initial room for string
 	char *token = NULL;
   size_t space = 0;
@@ -48,9 +49,10 @@ TOKEN* tokenise(char *str, const char *delim)
    // tokens are added to this array;
 
   token_struct->line = strdup(str);
+  //printf("tokenLine: %s\n", token_struct->line);
 
   token = strtok(str, delim); // get the first token
-
+  //printf("toekn: %s\n",token);
   while(token != NULL) {
 		if (*token == '\0') continue; // Discard empty tokens
 		space              	 = sizeof(char *) * (Tokncount + 1);
@@ -59,8 +61,13 @@ TOKEN* tokenise(char *str, const char *delim)
 		token = strtok(0, delim);
   }
 
-	token_struct->tokenCount = Tokncount;
+  // printf("tokens: %s\n", token_struct->tokens[0]);
+  // printf("tokens: %s\n", token_struct->tokens[1]);
+  // printf("tokens: %s\n", token_struct->tokens[2]);
+  // printf("tokens: %s\n", token_struct->tokens[3]);
 
+	token_struct->tokenCount = Tokncount;
+  printf("tokenC: %i\n",token_struct->tokenCount);
 	return token_struct;
 
 }
