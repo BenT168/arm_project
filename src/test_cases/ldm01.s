@@ -1,1 +1,1 @@
-LDMDA R0!,{R1,R3,R4}
+LDM r8,{r0,r2,r9}
