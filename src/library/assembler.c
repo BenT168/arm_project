@@ -93,7 +93,6 @@ char *delchr(char *buffer, char chr)
 
 ASSEMBLER_STRUCT *assemble(TOKEN *lines, function_assPtr func, const char *delim)
 {
-
   symbolTableList* symbolTable = assemble_chk(malloc(sizeof(symbolTableList)));
   Queue* comments              = createQueue();
   list_initialise(symbolTable);
@@ -101,7 +100,6 @@ ASSEMBLER_STRUCT *assemble(TOKEN *lines, function_assPtr func, const char *delim
   // 1st Pass : Check for labels and comments
   uint16_t  address        = 0;
   int       label_count    = 0;
-
   for (int i = 0; i < lines->tokenCount; i++)
   {
     char *current_Line   = strdup(lines->tokens[i]);

@@ -58,7 +58,9 @@ void read_ARM(const char *);
 void emulator(void);
 int  check_cond(int32_t);
 void decode_instr(int32_t);
-static void decode_checker(int32_t);
+//static void decode_checker(int32_t);
+static void decode_checker_1(int32_t);
+static void decode_checker_2(int32_t);
 void print_register_state(void);
 
 
@@ -137,7 +139,7 @@ void emulator()
 
   arm_Ptr->pipeline->decoded = arm_Ptr->pipeline->fetched;
   arm_Ptr->pipeline->fetched = MEM_R_32bits(REG_READ(PC));
-  INC_PC(4);;
+  INC_PC(4);
 
   fetched_code = arm_Ptr->pipeline->fetched;
   decoded_code = arm_Ptr->pipeline->decoded;
@@ -153,6 +155,7 @@ void emulator()
 
 
 /*decode instruction */
+/*
 void decode_instr(int32_t word)
 {
   switch (BIT_GET(word, 27))
@@ -168,9 +171,52 @@ void decode_instr(int32_t word)
       break;
 	}
 }
+*/
 
 /* helper function for decode_instr */
+/*
 static void decode_checker(int32_t word)
+{
+  if(IS_SET(BIT_GET(word, 25)))
+  {
+    data_processing(word);
+  } else {
+    if(IS_CLEAR(BIT_GET(word, 4)))
+    {
+      data_processing(word);
+    } else{
+      (IS_SET(BIT_GET(word, 7))) ? multiply(word) : data_processing(word);
+    }
+  }
+}
+
+*/
+
+void decode_instr(int32_t word)
+{
+  switch (BIT_GET(word, 27))
+  {
+    case 1:
+      IS_SET(BIT_GET(word,26)) ? software_interrupt(word)
+                               : decode_checker_1(word);
+      break;
+    case 0:
+      IS_SET(BIT_GET(word, 26)) ? single_data_transfer(word)
+                                : decode_checker_2(word);
+      break;
+    default:
+      break;
+	}
+}
+
+/* first helper function for decode_instr */
+static void decode_checker_1(int32_t word)
+{
+  IS_SET(BIT_GET(word, 25)) ? branch(word) : block_data_transfer(word);
+}
+
+/* second helper function for decode_instr */
+static void decode_checker_2(int32_t word)
 {
   if(IS_SET(BIT_GET(word, 25)))
   {
@@ -700,7 +746,6 @@ int main(int argc, char **argv)
   }
   arm_Ptr = calloc (1, sizeof(ARM_State));
   arm_Ptr->pipeline = calloc(1, sizeof(Pipeline));
-
   /* Check input */
   if(arm_Ptr == NULL)
   {
