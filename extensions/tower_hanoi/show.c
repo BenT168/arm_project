@@ -153,6 +153,19 @@ void endGame() {
   end = SDL_LoadBMP("images/ending.bmp");
   setBackground(end);
   SDL_Flip(screen);
+
+  quit: ;
+  SDL_Event end_event;
+
+  if (SDL_PollEvent(&end_event)) {
+    switch (end_event.type) {
+      case SDL_QUIT:
+      case SDL_KEYDOWN: exit(0); break;
+      default: goto quit; break;
+    }
+  } else {
+    goto quit;
+  }
 }
 
 /* ask if want to go to next level */
