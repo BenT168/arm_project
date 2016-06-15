@@ -58,7 +58,6 @@ void read_ARM(const char *);
 void emulator(void);
 int  check_cond(int32_t);
 void decode_instr(int32_t);
-//static void decode_checker(int32_t);
 static void decode_checker_1(int32_t);
 static void decode_checker_2(int32_t);
 void print_register_state(void);
@@ -155,42 +154,6 @@ void emulator()
 
 
 /*decode instruction */
-/*
-void decode_instr(int32_t word)
-{
-  switch (BIT_GET(word, 27))
-  {
-    case 1:
-      branch(word);
-      break;
-    case 0:
-      IS_SET(BIT_GET(word, 26)) ? single_data_transfer(word)
-                                : decode_checker(word);
-      break;
-    default:
-      break;
-	}
-}
-*/
-
-/* helper function for decode_instr */
-/*
-static void decode_checker(int32_t word)
-{
-  if(IS_SET(BIT_GET(word, 25)))
-  {
-    data_processing(word);
-  } else {
-    if(IS_CLEAR(BIT_GET(word, 4)))
-    {
-      data_processing(word);
-    } else{
-      (IS_SET(BIT_GET(word, 7))) ? multiply(word) : data_processing(word);
-    }
-  }
-}
-
-*/
 
 void decode_instr(int32_t word)
 {
