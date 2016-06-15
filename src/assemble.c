@@ -1,3 +1,5 @@
+
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -90,6 +92,9 @@ char* writeBuffer(char* buffer) {
   for(int i = 0; i < strlen(buffer); i++) {
     if(buffer[i] == ' ') {
       buffer[i] = ',';
+    } else if(buffer[i] == '{' || buffer[i] == '}') {
+      buffer[i] = ' ';
+      writeBuffer(buffer);
     }
   }
   return buffer;
@@ -99,15 +104,12 @@ char* writeBuffer(char* buffer) {
 TOKEN *read_Source(const char *sourceFile)
 {
   FILE *file = fopen(sourceFile, "rt");
-
   fseek(file, 0, SEEK_END);
   /* Size of file in bytes */
   long size = ftell(file);
   fseek(file, 0, SEEK_SET); //go back to start
   char buffer[size];
-
   fread(buffer, 1, size, file);
-
   /* Check the file */
   if(ferror(file)) {
     perror("Error reading from sourceFile.\n");
@@ -130,13 +132,10 @@ void write_File(ASSEMBLER_STRUCT *ass, const char *binaryFile)
 
    /* get binary code from assembler program */
   int32_t *program = assemble_generate_bin(ass);
-
   /* size of each element that will be written */
   size_t size = ass->TOTAL_line * sizeof(int32_t);
-
   /* Check size */
   assert(fwrite(program, 1, size, file) == size);
-
   free(program);
   fclose(file);
 }
@@ -211,9 +210,7 @@ int32_t assembler_func(TOKEN *line, ASSEMBLER_STRUCT *ass) {
   return function_Array[i](line, ass);
 }
 
-
 //////////////////////////////// MAIN ////////////////////////////////////////
-
 int main(int argc, char **argv)
 {
   /* Need two files (+ executer) */
@@ -225,7 +222,6 @@ int main(int argc, char **argv)
   }
 
   funcArray();
-
   TOKEN *lines = read_Source(argv[1]);
 
   /* get lines of assembly codes */
@@ -234,7 +230,6 @@ int main(int argc, char **argv)
 
   /* assemble lines using assembler and get output to write to file */
   write_File(ass, argv[2]);
-
   tokens_free(lines);
 
   assemble_free(ass);
@@ -670,30 +665,48 @@ int32_t lsl_func(TOKEN *line, ASSEMBLER_STRUCT *ass){
 
 int32_t ass_block_data_transfer(TOKEN *line, int L, int P, int Up)
 {
-  char *reglist   = line->tokens[2];
-  char *reg_list  = strtok(line->tokens[2], "^"); // remove "^"
-  char *rn        = strtok(line->tokens[1], "!"); // remove "!"
-  char *next_reg  = strtok(reg_list, " {, }"); // remove "{, }"
+
+  char** regList = (char**)malloc(sizeof(char*) * line->tokenCount - 2);
+  int count = line->tokenCount - 2; //number of registers in reglist
+  int j = 2;
+  for(int i = 0; i < line->tokenCount - 2; i++) {
+    if(line->tokens[j][0] == '/') { //remove comment from regList
+      count = line->tokenCount - 3;
+      break;
+    }
+    regList[i] = line->tokens[j];
+    j++;
+  }
+  char *rn         = strtok(line->tokens[1], "!"); // remove "!"
 
   uint16_t RegList = 0;
   uint16_t mask;
+  char* setS = "n";
 
-  while (next_reg != NULL) {
-    if (strchr(next_reg, '-') == NULL) {                    // ...,Rn,...
-      mask = (uint16_t) 1 << PARSE_REG(expr_to_num(next_reg));
-    } else {                                              //...,Ra-Rb,...
-      uint8_t first_reg = PARSE_REG(expr_to_num(strtok(next_reg, "-")));
-      uint8_t last_reg   = PARSE_REG(expr_to_num(strtok(NULL, "\n")));
+    for(int i = 0; i < count; i++) {
+    if (strchr(regList[i], '-') == NULL) {
+      if(strcmp(regList[i],"^") == 0) {
+        setS = strdup(regList[i]);
+        goto endloop;
+      }
+      mask = (uint16_t) 1 << PARSE_REG(expr_to_num(regList[i]));
+    } else {
+      char* savePtr;
+      char* first = strtok_r(regList[i], "-", &savePtr);
+      char* last  = strtok_r(NULL, "-", &savePtr);
+                                                          //...,Ra-Rb,...
+      uint8_t first_reg = PARSE_REG(expr_to_num(first));
+      uint8_t last_reg   = PARSE_REG(expr_to_num(last));
       if (last_reg > 15) {
-        //TODO: handle some kind of error, possibly introduce some
-        // kind of halting mechanism (maybe the spec says something about it)
+        perror("Register number greater than 15");
+        exit(EXIT_FAILURE);
       }
       mask = (uint16_t) ((uint16_t) ~0 >> (15 - last_reg)) << first_reg;
    }
 
     RegList |= mask;
-    next_reg = strtok (NULL, " {, ]!^");
   }
+  endloop:;
 
   BDTInstruct BDTInst;
 
@@ -701,10 +714,10 @@ int32_t ass_block_data_transfer(TOKEN *line, int L, int P, int Up)
   BDTInst._100    = 4;
   BDTInst.P       = P;
   BDTInst.Up      = Up;
-  BDTInst.S       = (reglist[strlen(reglist) - 1] == '^');
-  BDTInst.W       = (rn[strlen(rn) - 1] == '!');
+  BDTInst.S       = strcmp(setS, "^") == 0;
+  BDTInst.W       = (rn[strlen(rn) - 1] == '!') == 0;
   BDTInst.L       = L;
-  BDTInst.Rn      = PARSE_REG(expr_to_num(rn));
+  BDTInst.Rn      = expr_to_num(rn);
   BDTInst.RegList = RegList;
 
   return *((int32_t *) &BDTInst);

@@ -58,7 +58,9 @@ void read_ARM(const char *);
 void emulator(void);
 int  check_cond(int32_t);
 void decode_instr(int32_t);
-static void decode_checker(int32_t);
+//static void decode_checker(int32_t);
+static void decode_checker_1(int32_t);
+static void decode_checker_2(int32_t);
 void print_register_state(void);
 
 
@@ -75,7 +77,7 @@ void single_data_transfer(int32_t);
 void branch(int32_t);
 
 void block_data_transfer(int32_t); //extension
-void software_interrupt(int32_t); //extension
+void software_interrupt(int32_t);  //extension
 
 
 ////////////////////////// BINARY FILE LOADER ////////////////////////////////
@@ -137,7 +139,7 @@ void emulator()
 
   arm_Ptr->pipeline->decoded = arm_Ptr->pipeline->fetched;
   arm_Ptr->pipeline->fetched = MEM_R_32bits(REG_READ(PC));
-  INC_PC(4);;
+  INC_PC(4);
 
   fetched_code = arm_Ptr->pipeline->fetched;
   decoded_code = arm_Ptr->pipeline->decoded;
@@ -153,6 +155,7 @@ void emulator()
 
 
 /*decode instruction */
+/*
 void decode_instr(int32_t word)
 {
   switch (BIT_GET(word, 27))
@@ -168,9 +171,52 @@ void decode_instr(int32_t word)
       break;
 	}
 }
+*/
 
 /* helper function for decode_instr */
+/*
 static void decode_checker(int32_t word)
+{
+  if(IS_SET(BIT_GET(word, 25)))
+  {
+    data_processing(word);
+  } else {
+    if(IS_CLEAR(BIT_GET(word, 4)))
+    {
+      data_processing(word);
+    } else{
+      (IS_SET(BIT_GET(word, 7))) ? multiply(word) : data_processing(word);
+    }
+  }
+}
+
+*/
+
+void decode_instr(int32_t word)
+{
+  switch (BIT_GET(word, 27))
+  {
+    case 1:
+      IS_SET(BIT_GET(word,26)) ? software_interrupt(word)
+                               : decode_checker_1(word);
+      break;
+    case 0:
+      IS_SET(BIT_GET(word, 26)) ? single_data_transfer(word)
+                                : decode_checker_2(word);
+      break;
+    default:
+      break;
+	}
+}
+
+/* first helper function for decode_instr */
+static void decode_checker_1(int32_t word)
+{
+  IS_SET(BIT_GET(word, 25)) ? branch(word) : block_data_transfer(word);
+}
+
+/* second helper function for decode_instr */
+static void decode_checker_2(int32_t word)
 {
   if(IS_SET(BIT_GET(word, 25)))
   {
@@ -230,6 +276,7 @@ void print_register_state()
     printf("$%-3i: %10d (0x%08x)\n", i, reg, reg);
   }
 
+  /* print out the result */
   printf("PC  : %10d (0x%08x)\n", REG_READ(PC), REG_READ(PC));
   printf("CPSR: %10d (0x%08x)\n", REG_READ(CPSR), REG_READ(CPSR));
 
@@ -340,7 +387,7 @@ int32_t as_shifted_reg(int32_t value, int8_t setCond)
 
 //////////////////////////EMULATE INSTRUCTION///////////////////////////////////
 
-/* global variable for checking branch condition */
+/* A global variable for checking branch condition */
 int resultforBranch = 0;
 
 
@@ -398,7 +445,7 @@ void data_processing(int32_t word)
   	case TEQ :
   	case TST :
     case CMP :
-      resultforBranch = result;
+      resultforBranch = result;  // save result to check condition in branch
       break;
     default :
       REG_WRITE(Rd, result);
@@ -470,7 +517,7 @@ void multiply(int32_t word)
   int32_t dataRm = convert(REG_READ(Rm));
   int32_t dataRs = convert(REG_READ(Rs));
 
-  /* access multiplication */
+  /* multiplication */
   int32_t mulResult = dataRm * dataRs;
 
   /* If accumulate bit is set, an accumulate should also be done */
@@ -576,7 +623,7 @@ void branch(int32_t word)
   /* stop for other mnemonics or everything is done */
   goto end;
 
-  /* shift to jump in branch */
+  /* do shifting to jump in branch */
   branchCode: ;
     int32_t signed_bits = (((BranchInst->Offset) << \
     branchShift) << branchOffset) >> branchOffset;
@@ -699,10 +746,10 @@ int main(int argc, char **argv)
   }
   arm_Ptr = calloc (1, sizeof(ARM_State));
   arm_Ptr->pipeline = calloc(1, sizeof(Pipeline));
-
+  /* Check input */
   if(arm_Ptr == NULL)
   {
-    printf( "No argument in input\n");
+    printf("No argument in input\n");
     printf("Please type in a bin file\n");
     exit(EXIT_FAILURE);
   }

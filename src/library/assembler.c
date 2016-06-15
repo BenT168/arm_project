@@ -57,15 +57,12 @@ uint16_t assemble_constant_write(ASSEMBLER_STRUCT *ass, int32_t word)
 
 void assemble_write(ASSEMBLER_STRUCT *ass, int32_t word)
 {
-
   binary_instruct *instr = assemble_chk(malloc(sizeof(binary_instruct)));
   instr->binary_word = word;
   instr->word_address = ass->current_address;
   int current_instruct = ass->current_address / sizeof(int32_t);
   ass->instr[current_instruct] = instr;
   ass->current_address += sizeof(int32_t);
-
-
 }
 
 
@@ -103,7 +100,6 @@ ASSEMBLER_STRUCT *assemble(TOKEN *lines, function_assPtr func, const char *delim
   // 1st Pass : Check for labels and comments
   uint16_t  address        = 0;
   int       label_count    = 0;
-
   for (int i = 0; i < lines->tokenCount; i++)
   {
     char *current_Line   = strdup(lines->tokens[i]);
@@ -135,6 +131,7 @@ ASSEMBLER_STRUCT *assemble(TOKEN *lines, function_assPtr func, const char *delim
 
 
   // Initialize Assembly Program
+
   int line_total         = lines->tokenCount - label_count;
   ass->instr             = malloc(sizeof(binary_instruct));
   ass->TOTAL_line        = line_total;
