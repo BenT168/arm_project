@@ -49,13 +49,15 @@ TOKEN* tokenise(char *str, const char *delim)
 
   token_struct->line = strdup(str);
 
-  token = strtok(str, delim); // get the first token
+  char* save;
+  token = strtok_r(str, delim, &save); // get the first token
+
   while(token != NULL) {
 		if (*token == '\0') continue; // Discard empty tokens
 		space              	 = sizeof(char *) * (Tokncount + 1);
 		token_struct->tokens  = tokens_chk(realloc(token_struct->tokens, space));
 		token_struct->tokens[Tokncount++] = strdup(token);
-		token = strtok(0, delim);
+		token = strtok_r(NULL, delim, &save);
   }
 
 	token_struct->tokenCount = Tokncount;
